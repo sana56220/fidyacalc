@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fidya Calculator</title>
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3498db">
+    
+    <!-- PDF and Image Generation Libraries --> 
+    <script src="html2canvas.min.js"></script>
+<script src="jspdf.umd.min.js"></script>
+
+    <style>
+    	@font-face {
+    font-family: 'NotoNastaliq';
+    src: url('NotoNastaliqUrdu-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+        /* -----------------------------------------------------------
+           VARIABLES & RESET
+           ----------------------------------------------------------- */
+        :root {
+            --bg-color: #f4f7f6;
+            --text-color: #333333;
+            --panel-bg: #ffffff;
+            --input-bg: #ffffff;
+            --input-border: #999999;
+            --accent-color: #3498db;
+            --accent-hover: #2980b9;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --share-color: #9b59b6; 
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            --header-bg: #ffffff;
+            --border-radius: 8px;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --font-urdu: 'NotoNastaliq', serif;
+            
+            --placeholder-color: #555555;
+
+            /* COMPACT SIZING VARIABLES */
+            --input-height: 34px;
+            --base-font: 13px;
+            
+            --info-btn-border: #333333;
+            --info-btn-text: #333333;
+            --info-btn-bg: #ffffff;
+            
+            /* APP MAX WIDTH FOR CONSISTENCY ACROSS DPIS */
+            --app-max-width: 450px; 
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --panel-bg: #1e1e1e;
+            --input-bg: #2c2c2c;
+            --input-border: #555555;
+            --accent-color: #00bcd4;
+            --accent-hover: #00acc1;
+            --success-color: #00e676;
+            --error-color: #cf6679;
+            --share-color: #ba68c8;
+            --glass-bg: rgba(30, 30, 30, 0.95);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            --header-bg: #1e1e1e;
+            --info-btn-border: #dddddd;
+            --info-btn-text: #dddddd;
+            --info-btn-bg: #1e1e1e;
+
+            --placeholder-color: #bbbbbb; 
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+            padding-top: 55px;
+            font-size: var(--base-font);
+            line-height: 1.3;
+            min-height: 100vh;
+            /* CENTER LAYOUT FOR LARGE SCREENS/DPI */
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+        }
+
+        .numeric-value { font-family: 'Segoe UI', sans-serif; font-weight: 600; }
+
+        /* 
+           =============================================================
+           CRITICAL FIX FOR TOP ROW INPUTS (Urdu Size & Indent)
+           =============================================================
+        */
+        
+        /* 1. General English Input Style (Standard Size) */
+        .bio-one-row input {
+            font-size: 0.75rem !important; /* Normal English Size */
+            padding-top: 0;
+        }
+
+        /* 2. SPECIFIC RULE: When .auto-urdu class is added to top row inputs */
+        /* This forces the font to be VERY SMALL when Urdu is detected */
+        .bio-one-row input.auto-urdu {
+            font-family: var(--font-urdu) !important;
+            direction: rtl !important;
+            text-align: right;
+            
+            /* FORCE SMALL SIZE */
+            font-size: 10px !important; 
+            
+            /* Adjust spacing so it doesn't look cut off */
+            line-height: 2.8 !important; 
+            padding-top: 4px !important;
+            padding-bottom: 0 !important;
+
+            /* ADDED INDENT: Matches the Urdu Mode 0.5ch gap */
+            text-indent: 0.5ch !important;
+        }
+
+        [dir="rtl"] .report-field-value {
+             font-family: var(--font-urdu) !important;
+        }
+
+        [dir="rtl"] #infoBtn {
+            font-family: serif !important; 
+            line-height: 1 !important;
+            padding-top: 3px !important; 
+        }
+        
+        [dir="rtl"] #closePopup {
+            font-family: sans-serif !important; 
+        }
+
+        [dir="rtl"] input {
+            font-family: var(--font-main) !important; 
+            direction: ltr !important; 
+            text-align: right; 
+            line-height: normal; 
+        }
+
+        /* This handles Urdu placeholder or typing when in Urdu Mode (RTL) */
+        [dir="rtl"] .bio-one-row input {
+            font-size: 10px !important;
+            padding-top: 5px; 
+            text-indent: 0.5ch; /* This is the reference rule you liked */
+        }
+
+        [dir="rtl"] input::placeholder {
+            font-family: var(--font-urdu) !important;
+            direction: rtl;
+        }
+
+        [dir="rtl"] label { line-height: 1.5; padding-right: 5px; overflow: visible; }
+        
+        /* HEADER - FIXED WIDTH FOR CONSISTENCY */
+        .top-bar {
+            position: fixed; top: 0; 
+            width: 100%; 
+            max-width: var(--app-max-width); /* Lock width */
+            height: 50px;
+            background-color: var(--header-bg); box-shadow: var(--shadow);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 15px; z-index: 1000;
+            /* Center the fixed header */
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .app-title { font-size: 0.85rem; font-weight: 700; color: var(--text-color); }
+
+        .header-controls { display: flex; gap: 10px; align-items: center; }
+
+        .icon-btn {
+            background: none; border: none; cursor: pointer; color: var(--text-color);
+            font-size: 1.1rem; padding: 4px; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; width: 28px; height: 28px;
+        }
+
+        #infoBtn {
+            background: var(--info-btn-bg); color: var(--info-btn-text);
+            border: 1.5px solid var(--info-btn-border); width: 24px; height: 24px;
+            font-size: 0.85rem; border-radius: 50%; 
+            font-family: serif; 
+            font-weight: bold; font-style: italic;
+            display: flex; align-items: center; justify-content: center;
+            padding-top: 3px; 
+            line-height: 1;
+        }
+
+        /* CONTAINER & INPUTS */
+        .container { 
+            width: 100%;
+            max-width: var(--app-max-width); /* Force mobile width on all screens */
+            margin: 0 auto; 
+            padding: 10px 15px;
+        }
+
+        .input-section { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+        }
+
+        .bio-one-row {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            gap: 6px;
+            align-items: flex-end;
+        }
+
+        .bio-field-group { display: flex; flex-direction: column; }
+        .bio-large { flex: 2; width: 0; }
+        .bio-small { flex: 1; width: 0; }
+
+        .bio-one-row input { padding: 0 5px; font-size: 0.85rem; text-overflow: ellipsis; }
+        
+        .input-group { 
+            display: flex; flex-direction: column; position: relative; 
+            min-height: 54px;
+            justify-content: flex-start; 
+        }
+        
+        .row-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: start; }
+
+        label {
+            font-size: 0.65rem;
+            font-weight: 600; 
+            margin-bottom: 2px;
+            color: var(--text-color);
+            min-height: 18px; 
+            line-height: 18px;
+            white-space: nowrap; display: block; overflow: visible;
+        }
+
+        .required-star { color: var(--error-color); margin: 0 2px; }
+
+        input {
+            width: 100%; height: var(--input-height); padding: 0 8px; border: 1px solid var(--input-border);
+            background-color: var(--input-bg); border-radius: var(--border-radius); 
+            color: var(--text-color); font-family: var(--font-main); appearance: none; transition: border-color 0.3s;
+        }
+        
+        /* GENERAL TEXT INPUTS (Default) */
+        input[type="text"] {
+            font-size: 0.75rem !important;
+        }
+        input[type="text"]::placeholder {
+            font-size: 0.7rem !important;
+            color: var(--placeholder-color) !important;
+            opacity: 1 !important; 
+        }
+
+        /* NUMERIC INPUTS SIZE */
+        input[type="number"] {
+            font-size: 0.8rem !important; 
+            font-weight: 600;
+        }
+        input[type="number"]::placeholder {
+            font-size: 0.7rem !important; 
+            font-weight: normal;
+            color: var(--placeholder-color) !important;
+            opacity: 1 !important;
+        }
+
+        /* Fix for RTL mode typing */
+        [dir="rtl"] input[type="text"] { font-family: var(--font-urdu) !important; direction: rtl !important; text-align: right; }
+        input:focus { border-color: var(--accent-color); background-color: var(--panel-bg); box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1); }
+        
+        ::placeholder { 
+            color: var(--placeholder-color); 
+            opacity: 1; 
+            font-family: inherit; 
+        }
+
+        /* Custom Dropdown */
+        .custom-dropdown-container { position: relative; width: 100%; }
+        .custom-dropdown-trigger {
+            width: 100%; height: var(--input-height); padding: 0 8px; border: 1px solid var(--input-border);
+            background-color: var(--input-bg); border-radius: var(--border-radius); 
+            font-size: 0.75rem;
+            color: var(--text-color); display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none;
+        }
+        .custom-dropdown-trigger:focus { border-color: var(--accent-color); }
+        
+        .custom-dropdown-trigger.placeholder { 
+            color: var(--placeholder-color); 
+            font-size: 0.7rem; 
+            opacity: 1;
+        }
+
+        .arrow { width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 4px solid var(--text-color); transition: transform 0.3s; opacity: 0.7; }
+        .custom-dropdown-container.open .arrow { transform: rotate(180deg); }
+        .custom-dropdown-menu {
+            position: absolute; top: 100%; left: 0; width: 100%; background-color: var(--panel-bg);
+            border: 1px solid var(--input-border); border-radius: var(--border-radius); box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-top: 2px; opacity: 0; visibility: hidden; transform: translateY(-5px); transition: all 0.2s; z-index: 100; overflow: hidden;
+        }
+        .custom-dropdown-container.open .custom-dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+        .dropdown-item { padding: 8px; cursor: pointer; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 0.85rem; }
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-item:hover { background-color: var(--input-bg); color: var(--accent-color); }
+
+        /* Errors */
+        .input-error { border-color: var(--error-color) !important; background-color: rgba(231, 76, 60, 0.05) !important; }
+        .missing-highlight { border-color: var(--error-color) !important; animation: shake 0.4s ease-in-out; }
+        .error-msg-label { color: var(--error-color); font-size: 0.65rem; margin-top: 1px; display: none; height: 10px; line-height: 10px; }
+        .error-msg-label.visible { display: block; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+        /* Calculation Section */
+        #calculationSection { margin-top: 6px; display: none; }
+        .calc-card { 
+            background: var(--glass-bg); border: 1px solid var(--glass-border); 
+            border-radius: var(--border-radius); padding: 5px 10px;
+            box-shadow: var(--shadow); display: flex; flex-direction: column; 
+        }
+        .result-row { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 2px 0;
+            margin: 0; min-height: 24px;
+            border-bottom: 1px solid rgba(0,0,0,0.03); 
+        }
+        .result-row:last-child { border-bottom: none; }
+        .res-label { 
+            font-size: 0.8rem;
+            font-weight: 500; white-space: nowrap; overflow: visible; line-height: 1.4; padding-right: 5px; 
+        }
+        .res-value { 
+            font-size: 0.9rem;
+            font-weight: 600; color: var(--accent-color); line-height: 1; flex-shrink: 0; font-family: var(--font-main) !important; 
+        }
+        .bounce-in { animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards; }
+        .bounce-out { animation: bounceOut 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards; }
+        @keyframes bounceIn { 0% { opacity: 0; transform: scaleY(0); } 60% { opacity: 1; transform: scaleY(1.05); } 100% { opacity: 1; transform: scaleY(1); } }
+        @keyframes bounceOut { 0% { opacity: 1; transform: scaleY(1); } 100% { opacity: 0; transform: scaleY(0); } }
+
+        /* Popup (READ ONLY) */
+        .popup-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(3px); z-index: 2000; display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s;
+        }
+        .popup-overlay.active { opacity: 1; visibility: visible; }
+        .popup-card-container {
+            width: 90%; max-width: 450px; height: 85%; background-color: var(--bg-color); border-radius: 20px;
+            display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.3); overflow: hidden; transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .popup-overlay.active .popup-card-container { transform: scale(1); }
+        .popup-header { flex-shrink: 0; height: 50px; background-color: var(--panel-bg); box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom-left-radius: 20px; border-bottom-right-radius: 5px; z-index: 20; }
+        [dir="rtl"] .popup-header { border-bottom-left-radius: 5px; border-bottom-right-radius: 20px; }
+        .popup-title { font-weight: bold; font-size: 1rem; color: var(--text-color); }
+        
+        .popup-content { flex-grow: 1; overflow-y: auto; padding: 15px; font-size: 0.85rem; line-height: 1.6; color: var(--text-color); -webkit-overflow-scrolling: touch; }
+        .content-display { white-space: pre-wrap; font-size: 0.85rem; }
+        [dir="rtl"] .content-display { font-family: var(--font-urdu) !important; font-size: 0.8rem !important; line-height: 2.2 !important; padding-top: 10px !important; padding-bottom: 10px !important; }
+
+        .popup-footer { flex-shrink: 0; height: 50px; background-color: var(--panel-bg); display: flex; align-items: center; justify-content: center; border-top-left-radius: 5px; border-top-right-radius: 20px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 20; position: relative; }
+        [dir="rtl"] .popup-footer { border-top-left-radius: 20px; border-top-right-radius: 5px; }
+        
+        .modern-checkbox-wrapper { 
+            display: flex; align-items: center; justify-content: center; 
+            gap: 15px; 
+            cursor: pointer; user-select: none; padding: 10px; 
+            width: 100%;
+        }
+        .modern-checkbox-wrapper span { 
+            font-size: 0.85rem; font-weight: 500; color: var(--text-color); 
+            line-height: 1.5;
+        }
+        .modern-checkbox-wrapper input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+        .checkmark { height: 18px; width: 18px; background-color: transparent; border: 2px solid var(--text-color); border-radius: 5px; position: relative; flex-shrink: 0; box-sizing: border-box; transition: 0.2s; }
+        .modern-checkbox-wrapper:hover .checkmark { border-color: var(--accent-color); }
+        .modern-checkbox-wrapper input:checked ~ .checkmark { background-color: var(--success-color); border-color: var(--success-color); }
+        .checkmark:after { content: ""; position: absolute; display: none; left: 5px; top: 1px; width: 4px; height: 9px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+        .modern-checkbox-wrapper input:checked ~ .checkmark:after { display: block; }
+        
+        .popup-controls { display: flex; gap: 8px; align-items: center; }
+
+        #closePopup {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--text-color);
+            border-radius: 50%;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            font-family: sans-serif;
+            line-height: 1;
+        }
+
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background-color: var(--text-color); color: var(--bg-color); padding: 8px 16px; border-radius: 30px; font-size: 0.8rem; z-index: 3000; opacity: 0; pointer-events: none; text-align: center; transition: 0.3s; }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* Report Styles */
+        .report-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-color); z-index: 2500; opacity: 0; visibility: hidden; transition: 0.3s; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
+        .report-overlay.active { opacity: 1; visibility: visible; }
+        .report-container { width: 100%; max-width: 600px; margin: 20px auto; background: var(--panel-bg); border: 1px solid var(--input-border); box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 20px; border-radius: 10px; color: var(--text-color); position: relative; }
+        
+        .btn-close-rep { 
+            position: absolute; 
+            top: 10px; 
+            right: 10px; 
+            width: 30px; 
+            height: 30px;
+            background: var(--panel-bg); 
+            border: 1px solid var(--text-color); 
+            border-radius: 50%;
+            font-size: 1rem; 
+            color: var(--text-color); 
+            cursor: pointer; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        [dir="rtl"] .btn-close-rep { right: auto; left: 10px; }
+
+        .report-header { text-align: center; border-bottom: 2px solid var(--accent-color); padding-bottom: 10px; margin-bottom: 15px; }
+        .report-header h2 { font-size: 1.5rem; margin-bottom: 5px; color: var(--accent-color); }
+        .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .report-row-full { grid-column: span 2; display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(0,0,0,0.1); padding: 5px 0; }
+        .report-field-label { font-weight: bold; font-size: 0.9rem; }
+        .report-field-value { font-weight: normal; font-size: 1rem; }
+
+        /* ENGLISH SPECIFIC: SMALLER FONT FOR LABELS & VALUES */
+        [dir="ltr"] .report-field-label { font-size: 0.8rem; }
+        [dir="ltr"] .report-field-value { font-size: 0.85rem; }
+        
+        .report-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 10px; 
+            table-layout: fixed; 
+        }
+        .report-table th, .report-table td { 
+            border: 1px solid var(--input-border); 
+            padding: 5px; 
+            text-align: center; 
+            word-wrap: break-word; 
+            overflow-wrap: break-word;
+        }
+        .report-table th { background-color: rgba(0,0,0,0.05); font-size: 0.8rem; }
+        .report-table .numeric-value { font-size: 0.8rem; }
+        
+        .report-table tr:last-child td {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            background-color: rgba(0,0,0,0.02);
+            font-weight: 600;
+        }
+
+        .report-actions { 
+            position: fixed; 
+            bottom: 60px; 
+            /* Fixed width for buttons too */
+            width: 100%;
+            max-width: 450px;
+            display: flex; 
+            justify-content: center; 
+            gap: 15px; 
+            pointer-events: none; 
+        }
+        .report-btn { pointer-events: auto; padding: 10px 15px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 5px; color: white; font-size: 0.85rem; }
+        .btn-img { background-color: var(--accent-color); }
+        .btn-pdf { background-color: var(--error-color); }
+        .btn-share { background-color: var(--share-color); }
+
+        [dir="rtl"] { font-family: var(--font-urdu); }
+        .icon-svg { width: 18px; height: 18px; fill: currentColor; }
+
+        /* -----------------------------------------------------------
+           URDU SPECIFIC REPORT RESIZING
+           ----------------------------------------------------------- */
+        [dir="rtl"] .report-header h2 {
+            font-size: 1.2rem !important;
+        }
+        
+        [dir="rtl"] .report-field-label {
+            font-size: 0.75rem !important;
+        }
+        
+        [dir="rtl"] .report-field-value {
+            font-size: 0.8rem !important;
+        }
+        
+        [dir="rtl"] .report-table th {
+            font-size: 0.75rem !important;
+            padding-top: 10px !important;
+            padding-bottom: 10px !important;
+            line-height: 1.6 !important;
+        }
+        
+        [dir="rtl"] .report-table td {
+            font-size: 0.75rem !important;
+            padding: 4px;
+        }
+        
+        [dir="rtl"] .report-table tr:last-child td {
+             padding-top: 12px !important;
+             padding-bottom: 12px !important;
+        }
+        
+        [dir="rtl"] #tdTotal {
+            font-size: 0.65rem !important; 
+            white-space: nowrap; 
+        }
+
+        [dir="rtl"] .report-container div[style*="font-size:0.8rem"] {
+             font-size: 0.7rem !important; 
+        }/* --- 1. بنیادی /* 1. اردو نستعلیق کا اطلاق (صرف ٹیکسٹ کے لیے) */
+[dir="rtl"] label, 
+[dir="rtl"] .app-title, 
+[dir="rtl"] .res-label, 
+[dir="rtl"] #genderText, 
+[dir="rtl"] .dropdown-item, 
+[dir="rtl"] .report-field-label,
+[dir="rtl"] .report-title,
+[dir="rtl"] .summary-item,
+[dir="rtl"] .summary-text,
+[dir="rtl"] .report-footer,
+[dir="rtl"] th, 
+[dir="rtl"] td {
+    font-family: var(--font-urdu), serif !important;
+}
+
+/* 2. ان پٹ اور پلیس ہولڈرز */
+[dir="rtl"] input,
+[dir="rtl"] input::placeholder {
+    font-family: var(--font-urdu), serif !important;
+}
+
+/* 3. نمبروں کو انگریزی فونٹ میں رکھنے کا جادوئی رول */
+/* یہ رول اردو کے درمیان آنے والے ہندسوں (0-9) کو انگلش فونٹ دے گا */
+@font-face {
+    font-family: 'EnglishNumbers';
+    src: local('Arial'), local('Segoe UI'), local('sans-serif');
+    unicode-range: U+0030-0039; /* یہ صرف 0 سے 9 تک کے نمبروں کو ٹارگٹ کرتا ہے */
+}
+
+/* ان تمام جگہوں پر نمبرز کے لیے انگلش فونٹ اپلائی کریں */
+input[type="number"],
+.numeric-value,
+.total-amount,
+.summary-number,
+#displayAge, 
+#displayWheatPrice,
+#totalFidya,
+.res-label,
+.calculation-result,
+td:nth-child(2), 
+td:nth-child(3) {
+    font-family: 'EnglishNumbers', 'Segoe UI', sans-serif !important;
+    direction: ltr !important;
+}
+
+/* 4. انگریزی موڈ (LTR) کے لیے ڈیفالٹ سیٹنگ */
+[dir="ltr"] * {
+    font-family: var(--font-main), sans-serif;
+}
+
+
+/* 9 اور 12 جیسے نمبروں کے لیے ایک خاص رول */
+[dir="rtl"] .numeric-text {
+    font-family: 'Segoe UI', Arial, sans-serif !important;
+    font-weight: bold;
+    margin: 0 2px;
+}
+
+/* --- حتمی اور صاف فونٹس کا نظام --- */
+
+/* 1. تمام اردو ٹیکسٹ پر نستعلیق کا اطلاق */
+[dir="rtl"] label, 
+[dir="rtl"] .app-title, 
+[dir="rtl"] .res-label, 
+[dir="rtl"] #genderText, 
+[dir="rtl"] .dropdown-item, 
+[dir="rtl"] .report-field-label,
+[dir="rtl"] .report-title,
+[dir="rtl"] .summary-item,
+[dir="rtl"] .summary-text,
+[dir="rtl"] .report-footer,
+[dir="rtl"] th, 
+[dir="rtl"] td {
+    font-family: var(--font-urdu), serif !important;
+}
+
+/* 2. پلیس ہولڈرز کے لیے اردو فونٹ */
+[dir="rtl"] input::placeholder {
+    font-family: var(--font-urdu) !important;
+}
+
+/* 3. نمبروں کو ہمیشہ انگریزی فونٹ میں رکھنا (0-9) */
+@font-face {
+    font-family: 'EnglishNumbers';
+    src: local('Segoe UI'), local('Arial'), sans-serif;
+    unicode-range: U+0030-0039;
+}
+
+/* ان جگہوں پر نمبرز انگلش میں نظر آئیں گے */
+input, 
+.numeric-value, 
+.total-amount, 
+.summary-number, 
+#displayAge, 
+#displayWheatPrice, 
+#totalFidya, 
+.calculation-result,
+td:nth-child(2), 
+td:nth-child(3),
+.numeric-text {
+    font-family: 'EnglishNumbers', 'Segoe UI', sans-serif !important;
+    direction: ltr !important;
+    unicode-bidi: bidi-override;
+}
+
+/* 4. انگریزی موڈ (LTR) کے لیے ڈیفالٹ فونٹ */
+[dir="ltr"] * {
+    font-family: var(--font-main), sans-serif;
+}
+
+/* 5. اردو موڈ میں ان پٹ کا خاص سائز (جو آپ کو پسند ہے) */
+[dir="rtl"] .bio-one-row input {
+    font-size: 10px !important;
+    text-indent: 0.5ch;
+    padding-top: 5px;
+}
+
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="top-bar">
+        <div class="app-title" id="appTitle">Fidya Calculator</div>
+        <div class="header-controls">
+            <button class="icon-btn" id="reportBtn" title="Generate Report">
+                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 8h-1V3H6v5H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zM8 5h8v3H8V5zm8 12v2H8v-4h8v2zm2-2v-2H6v2H4v-4c0-.55.45-1 1-1h14c.55 0 1 .45 1 1v4h-2z"/><circle cx="18" cy="11.5" r="1"/></svg>
+            </button>
+            <button class="icon-btn" id="themeToggle">
+                <svg class="icon-svg sun-icon" viewBox="0 0 24 24" style="display: block;"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.93c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.42 1.42c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.42-1.42zm13.44 14.14c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.42 1.42c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.42-1.42zm-14.86 1.42l1.42 1.42c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.42-1.42c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41zm14.14-14.14l1.42 1.42c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.42-1.42c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41z"></path></svg>
+                <svg class="icon-svg moon-icon" viewBox="0 0 24 24" style="display: none;"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-3.03 0-5.5-2.47-5.5-5.5 0-1.82.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"></path></svg>
+            </button>
+            <button class="icon-btn" id="langToggle" style="font-size: 0.8rem; font-weight: bold; width: auto; padding: 0 5px;">En</button>
+            <button class="icon-btn" id="infoBtn">i</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Input Section -->
+        <div class="input-section">
+            
+            <!-- FIXED SINGLE ROW: Name, Father, Caste -->
+            <div class="bio-one-row">
+                <!-- Name (Large) -->
+                <div class="bio-field-group bio-large">
+                    <label for="txtName"><span id="lblName">Name</span></label>
+                    <input type="text" id="txtName" placeholder="Name">
+                </div>
+                <!-- Father (Large) -->
+                <div class="bio-field-group bio-large">
+                    <label for="txtFather"><span id="lblFather">Father's Name</span></label>
+                    <input type="text" id="txtFather" placeholder="Father Name">
+                </div>
+                <!-- Caste (Small) -->
+                <div class="bio-field-group bio-small">
+                    <label for="txtCaste"><span id="lblCaste">Caste</span></label>
+                    <input type="text" id="txtCaste" placeholder="Caste">
+                </div>
+            </div>
+
+            <div class="row-group">
+                <div class="input-group">
+                    <label for="genderTrigger"><span id="lblGender">Gender</span><span class="required-star">*</span></label>
+                    <input type="hidden" id="gender" value="">
+                    <div class="custom-dropdown-container" id="customGenderDropdown">
+                        <div class="custom-dropdown-trigger placeholder" id="genderTrigger" tabindex="0">
+                            <span id="genderText">Select</span>
+                            <div class="arrow"></div>
+                        </div>
+                        <div class="custom-dropdown-menu">
+                            <div class="dropdown-item" data-value="male">Late Male</div>
+                            <div class="dropdown-item" data-value="female">Late Female</div>
+                        </div>
+                    </div>
+                    <div class="error-msg-label" id="errGender">Select Gender</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="age"><span id="lblAge">Age</span><span class="required-star">*</span></label>
+                    <input type="number" id="age" inputmode="numeric" pattern="[0-9]*" placeholder="Select Gender first">
+                    <div class="error-msg-label" id="errAge">Invalid Age</div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="wheatPrice"><span id="lblWheat">Wheat Price: (40 KGs)</span><span class="required-star">*</span></label>
+                <input type="number" id="wheatPrice" inputmode="numeric" pattern="[0-9]*" placeholder="Enter 40 KGs Wheat Price">
+                <div class="error-msg-label" id="errWheat">Required</div>
+            </div>
+
+            <div class="input-group">
+                <label for="availableAmount"><span id="lblAmount">Available Amount: (Optional)</span></label>
+                <input type="number" id="availableAmount" inputmode="numeric" pattern="[0-9]*" placeholder="Available Amount (Optional)">
+            </div>
+        </div>
+
+        <!-- Calculation Section -->
+        <div id="calculationSection">
+            <div class="calc-card">
+                <div class="result-row"><span class="res-label" id="clLate">Age 12Yrs less</span><span class="res-value numeric-value" id="valLate">-</span></div>
+                <div class="result-row"><span class="res-label" id="clDays">Days</span><span class="res-value numeric-value" id="valDays">0</span></div>
+                <div class="result-row"><span class="res-label" id="clPrayers">Prayers</span><span class="res-value numeric-value" id="valPrayers">0</span></div>
+                <div class="result-row"><span class="res-label" id="clFasts">Fasts</span><span class="res-value numeric-value" id="valFasts">0</span></div>
+                <div class="result-row"><span class="res-label" id="clPrayerFidya">Prayer Fidya</span><span class="res-value numeric-value" id="valPrayerFidya">0</span></div>
+                <div class="result-row"><span class="res-label" id="clFastFidya">Fast Fidya</span><span class="res-value numeric-value" id="valFastFidya">0</span></div>
+                <div class="result-row"><span class="res-label" id="clTotalFidya">Total Fidya</span><span class="res-value numeric-value" id="valTotalFidya">0</span></div>
+                
+                <div id="roundsGroup" style="display:none;">
+                    <div class="result-row"><span class="res-label" id="clPrayerRounds">Prayer Rounds</span><span class="res-value numeric-value" id="valPrayerRounds">0</span></div>
+                    <div class="result-row"><span class="res-label" id="clFastRounds">Fast Rounds</span><span class="res-value numeric-value" id="valFastRounds">0</span></div>
+                    <div class="result-row"><span class="res-label" id="clTotalRounds">Total Rounds</span><span class="res-value numeric-value" id="valTotalRounds">0</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">Message</div>
+
+    <!-- REPORT POPUP (FULL SCREEN) -->
+    <div class="report-overlay" id="reportOverlay">
+        <button class="btn-close-rep" id="closeReportBtn">✕</button>
+        <div class="report-container" id="reportContentArea">
+            <div class="report-header">
+                <h2 id="repTitle">Fidya Report</h2>
+            </div>
+            
+            <div class="report-row-full">
+                <span class="report-field-label" id="repLblName">Name:</span>
+                <span class="report-field-value" id="repValName">-</span>
+            </div>
+            <div class="report-row-full">
+                <span class="report-field-label" id="repLblFather">Father's Name:</span>
+                <span class="report-field-value" id="repValFather">-</span>
+            </div>
+            <div class="report-row-full">
+                <span class="report-field-label" id="repLblCaste">Caste:</span>
+                <span class="report-field-value" id="repValCaste">-</span>
+            </div>
+            
+            <div class="report-grid" style="margin-top: 15px;">
+                <div class="report-row-full">
+                    <span class="report-field-label" id="repLblAge">Total Age:</span>
+                    <span class="report-field-value numeric-value" id="repValAge">0</span>
+                </div>
+                <div class="report-row-full">
+                    <span class="report-field-label" id="repLblCalcAge">Calculated Age:</span>
+                    <span class="report-field-value numeric-value" id="repValCalcAge">0</span>
+                </div>
+                <div class="report-row-full">
+                    <span class="report-field-label" id="repLblAmount">Available Amount:</span>
+                    <span class="report-field-value numeric-value" id="repValAmount">0</span>
+                </div>
+            </div>
+
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th id="thType" style="width: 16%;">Type</th>
+                        <th id="thCount" style="width: 24%;">Count</th>
+                        <th id="thFidya" style="width: 35%;">Fidya Amount</th>
+                        <th id="thRounds" style="width: 25%;">Rounds</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="tdPrayer">Prayer</td>
+                        <td class="numeric-value" id="tdValPCount">0</td>
+                        <td class="numeric-value" id="tdValPFidya">0</td>
+                        <td class="numeric-value" id="tdValPRounds">-</td>
+                    </tr>
+                    <tr>
+                        <td id="tdFast">Fast</td>
+                        <td class="numeric-value" id="tdValFCount">0</td>
+                        <td class="numeric-value" id="tdValFFidya">0</td>
+                        <td class="numeric-value" id="tdValFRounds">-</td>
+                    </tr>
+                    <!-- Total Row (CSS handles height/style) -->
+                    <tr>
+                        <td id="tdTotal">Total</td>
+                        <td>-</td>
+                        <td class="numeric-value" id="tdValTotalFidya">0</td>
+                        <td class="numeric-value" id="tdValTotalRounds">-</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div style="margin-top:20px; text-align:center; font-size:0.8rem; opacity:0.6;">
+                Generated by Fidya Calculator
+            </div>
+        </div>
+
+        <div class="report-actions">
+            <button class="report-btn btn-img" id="btnSaveImg">
+                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                Picture
+            </button>
+            <button class="report-btn btn-pdf" id="btnSavePdf">
+                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v2.5zm2.5 3.5h-1.5V7h1.5v6zm2 0h-1.5v-2h-2v2h-1.5V7h5.5v2h-2v4zM20 22H4c-1.1 0-2-.9-2-2V6h2v14h16v2z"/></svg>
+                PDF
+            </button>
+            <button class="report-btn btn-share" id="btnShareRep">
+                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+                Share
+            </button>
+        </div>
+    </div>
+
+    <!-- Info Popup (FLOATING MODAL) - READ ONLY -->
+    <div class="popup-overlay" id="infoPopup">
+        <div class="popup-card-container">
+            <div class="popup-header">
+                <div class="popup-controls">
+                    <button class="icon-btn" id="closePopup">✕</button>
+                    <span class="popup-title" id="popupTitle">Note</span>
+                </div>
+                <div class="popup-controls">
+                    <button class="icon-btn" id="popupLangToggle">En</button>
+                    <button class="icon-btn" id="popupThemeToggle">☀</button>
+                </div>
+            </div>
+            <div class="popup-content">
+                <div id="textDisplay" class="content-display"></div>
+            </div>
+            <div class="popup-footer">
+                <label class="modern-checkbox-wrapper">
+                    <span id="lblDontShow">Don't show again</span>
+                    <input type="checkbox" id="dontShowAgain">
+                    <span class="checkmark"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STRINGS = {
+            en: {
+                appTitle: "Fidya Calculator",
+                gender: "Gender",
+                age: "Age:",
+                wheat: "Wheat Price:(40 KGs)",
+                amount: "Available Amount: (Optional) For Rounds",
+                lblName: "Name Late Mal/Fem",
+                lblFather: "Father's Name",
+                lblCaste: "Caste",
+                phName: "Name",
+                phFather: "Father",
+                phCaste: "Caste",
+                selDefault: "Select Gender",
+                male: "Late Male",
+                female: "Late Female",
+                phAgeGenderMissing: "Select Gender first",
+                phAgeMale: "Age greater than 12",
+                phAgeFemale: "Age greater than 9",
+                phWheat: "Enter 40 KGs Wheat Price",
+                phAmount: "Available Amount (Optional)",
+                errAgeInvalid: "Invalid Age",
+                errReq: "Required",
+                errGenderFirst: "Select Gender first",
+                errAgeFirst: "Kindly provide age first.",
+                errGenderAgeFirst: "Kindly provide Gender and Age first",
+                errAllFirst: "Please fill all required fields first",
+                lblMaleLate: "Age-12Yrs less",
+                lblFemaleLate: "Age-9Yrs less",
+                lblDays: "Days",
+                lblPrayers: "Prayers",
+                lblFasts: "Fasts",
+                lblPrayerFidya: "Prayer Fidya",
+                lblFastFidya: "Fast Fidya",
+                lblTotalFidya: "Total Fidya",
+                lblPrayerRounds: "Prayer Rounds",
+                lblFastRounds: "Fast Rounds",
+                lblTotalRounds: "Total Rounds",
+                repTitle: "Fidya Report",
+                repLblName: "Name:",
+                repLblFather: "Father's Name:",
+                repLblCaste: "Caste:",
+                repLblAge: "Total Age:",
+                repLblCalcAge: "Calculated Age:",
+                repLblAmount: "Available Amount: (for rounds)",
+                thType: "Type", thCount: "Count", thFidya: "Fidya Amount", thRounds: "Rounds",
+                tdPrayer: "Prayer", 
+                tdFast: "Fast", // Changed from "Fasts" to "Fast"
+                tdTotal: "Total",
+                popupTitle: "Note",
+                lblDontShow: "Don't show again",
+                defaultPopupText: "Welcome to the Fidya Calculator. Use this tool to calculate fidya based on wheat price.",
+            },
+            ur: {
+                appTitle: "فدیہ کیلکولیٹر",
+                gender: "جنس", // Changed from صنف
+                age: "عمر :",
+                wheat: "گندم کی قیت: (ایک من)",
+                amount: " موجود رقم: (اختیاری) لوٹ پھیر کیلئے",
+                lblName: "نام مرحوم / مرحومہ",
+                lblFather: "ولدیت",
+                lblCaste: "قومیت",
+                phName: "نام",
+                phFather: "ولدیت",
+                phCaste: "قوم",
+                selDefault: "جنس منتخب کریں", // Changed from انتخاب
+                male: "مرحوم",
+                female: "مرحومہ",
+                phAgeGenderMissing: "پہلے جنس منتخب کریں",
+                phAgeMale: "عمر 12 سال سے زیادہ",
+                phAgeFemale: "عمر 9 سال سے زیادہ",
+                phWheat: "ایک من گندم کی قیمت درج کریں",
+                phAmount: "موجود رقم درج کریں اگر ہے",
+                errAgeInvalid: "عمر درست نہیں ہے",
+                errReq: "ضروری ہے",
+                errGenderFirst: "پہلے جنس منتخب کریں",
+                errAgeFirst: "اس سے پہلے عمر درج کریں",
+                errGenderAgeFirst: "پہلے جنس اور عمر درج کریں",
+                errAllFirst: "براہ کرم پہلے تمام ضروری معلومات درج کریں",
+                lblMaleLate: "عمر سے 12 سال کم",
+                lblFemaleLate: "عمر سے 9 سال کم",
+                lblDays: "دن",
+                lblPrayers: "نمازیں",
+                lblFasts: "روزے",
+                lblPrayerFidya: "نماز فدیہ",
+                lblFastFidya: "روزہ فدیہ",
+                lblTotalFidya: "کل فدیہ",
+                lblPrayerRounds: "نماز لوٹ پھیر",
+                lblFastRounds: "روزہ لوٹ پھیر",
+                lblTotalRounds: "کل لوٹ پھیر",
+                repTitle: "فدیہ رپورٹ",
+                repLblName: "نام:",
+                repLblFather: "ولدیت:",
+                repLblCaste: "قوم:",
+                repLblAge: "کل عمر:",
+                repLblCalcAge: "حساب شدہ عمر:",
+                repLblAmount: "موجود رقم: (لوٹ پھیر کے لیے)",
+                thType: "قسم", thCount: "تعداد", thFidya: "فدیہ رقم", thRounds: "لوٹ پھیر",
+                tdPrayer: "نماز", tdFast: "روزہ", tdTotal: "کل میزان",
+                popupTitle: "نوٹ",
+                lblDontShow: "دوبارہ نہ دکھائیں",
+                defaultPopupText: `<b>مسئلہ 1211: 29 ذیقعدہ 1317ھ</b>
+<br><br>
+<b>سوال:</b> کیا فرماتے ہیں علمائے دین اس مسئلہ میں کہ ایک شخص مرگیا اس نے عمر بھر نماز نہ پڑھی یا کبھی پڑھی اس کی عمر ستر پچھتر برس کی ہوئی کفارہ نماز کے بہت سے گیہوں یا جوَ ہوں گے اور اس قدر مال نہیں تو اس کے ادا ہونے کا کیا طریقہ ہے ؟ بینوا توجروا
+<br><br>
+<b>الجواب:</b> اس کا طریقہ یہ ہے کہ مثلاً 12 برس ادنٰی مدت بلوغ کی نکال کر 60 برس کی نمازیں اس کے ذمہ تھیں سال کے دن 355 ہیں تو ایک سال کی نمازوں کے فدیے 2130 ہوئے اور 60 برس کے 127800۔
+<br>
+ایک نماز کا فدیہ گیہوں سے نصف صاع یعنی بریلی کی تول سے ایک سیر سات چھٹانک دو ماشے ساڑھے چھ رتی اور انگریزی سیر سے کہ 80 روپیہ بھر کا ہے پونے دو سیر اور پون چھٹانک اور بیسواں حصہ چھٹانک کا یعنی ایک سیر تیرہ چھٹانک پانچواں حصہ چھٹانک کا کم۔
+<br>
+اس مقدار كو 2130 میں ضرب دیں تو سال بھر کی نمازوں کا کفارہ ہو اور 127800 میں ضرب دیں تو 60 سال کا، یہ تقریباً پونے پانچ ہزار من گیہوں ہوئے۔
+<br><br>
+<b>لوٹ پھیر (حیلہ اسقاط) کا طریقہ:</b>
+<br>
+اس قدر دینے کی طاقت نہیں تو جتنے کی قدرت ہو اس قدر فقیر کو دے کر مالک کردے قبضہ دلا دیں پھر فقیر اپنی طرف سے انھیں ہبہ کردے یہ پھر دوبارہ نیت کفارہ اسے دے کر قبضہ دلادیں وہ پھر انھیں ہبہ کردے یہ سہ بارہ ایسا ہی کریں یہاں تک کہ یہ الٹ پھیر اس مقدار کو پہنچ جائے جتنے بڑی مقدار سے دور کریں گے جلد ختم ہوگا۔
+<br>
+دور کے لئے یہ بھی کرسکتے ہیں کہ کسی سے مثلاً سو روپیہ کی تھیلی قرض لے کر وہ کفارے میں فقیر کو دیں اور یوں ہی الٹ پھیر کریں کہ روپے سے دور آسان ہوگا، اخیر میں فقیر کو کچھ دے کر راضی کریں۔
+<br><br>
+<b>فتاوٰی بزازیہ میں ہے:</b>
+<br>
+<span style="font-family: serif; color: var(--accent-color);">"ان لم یکن لہ مال یستقرض نصف صاع ویعطیہ المسکین علی الوارث ثم الوارث علی المسکین ثم وثم حتی یتم لکل صلوٰۃ نصف صاع کما ذکرنا"</span> 1؎ اھ وتفصیل الکلام فی فتاوٰنا۔ واﷲ تعالٰی اعلم
+<br><br>
+اگر میت کا مال نہیں تو نصف صاع قرض لے کر مسکین کو دیا جائے پھر وہ مسکین اسے وارث پر صدقہ کرتے جائیں یہاں تک کہ ہر نماز عوض نصف صاع ہوجائے جیسا کہ ہم نے ذکر کیا اھ ۔
+<br>
+<small>(1؎ فتاوٰی بزازیہ علٰی ھامش الفتاوی الہندیۃ التاسع عشرفی الفوائت مطبوعہ نورانی کتب خانہ پشاور 4/69)</small>
+<br>
+اور تفصیلی گفتگو ہمارے فتاوٰی میں ہے ۔ واﷲ تعالٰی اعلم`,
+            }
+        };
+
+        let currentLang = 'en';
+        let currentTheme = 'light';
+
+        const els = {
+            html: document.documentElement,
+            appTitle: document.getElementById('appTitle'),
+            themeToggle: document.getElementById('themeToggle'),
+            langToggle: document.getElementById('langToggle'),
+            infoBtn: document.getElementById('infoBtn'),
+            reportBtn: document.getElementById('reportBtn'),
+            sunIcon: document.querySelector('.sun-icon'),
+            moonIcon: document.querySelector('.moon-icon'),
+            txtName: document.getElementById('txtName'),
+            txtFather: document.getElementById('txtFather'),
+            txtCaste: document.getElementById('txtCaste'),
+            lblName: document.getElementById('lblName'),
+            lblFather: document.getElementById('lblFather'),
+            lblCaste: document.getElementById('lblCaste'),
+            genderInput: document.getElementById('gender'),
+            genderTrigger: document.getElementById('genderTrigger'),
+            genderText: document.getElementById('genderText'),
+            customDropdown: document.getElementById('customGenderDropdown'),
+            age: document.getElementById('age'),
+            wheat: document.getElementById('wheatPrice'),
+            amount: document.getElementById('availableAmount'),
+            lblGender: document.getElementById('lblGender'),
+            lblAge: document.getElementById('lblAge'),
+            lblWheat: document.getElementById('lblWheat'),
+            lblAmount: document.getElementById('lblAmount'),
+            errGender: document.getElementById('errGender'),
+            errAge: document.getElementById('errAge'),
+            errWheat: document.getElementById('errWheat'),
+            calcSection: document.getElementById('calculationSection'),
+            roundsGroup: document.getElementById('roundsGroup'),
+            clLate: document.getElementById('clLate'),
+            clDays: document.getElementById('clDays'),
+            clPrayers: document.getElementById('clPrayers'),
+            clFasts: document.getElementById('clFasts'),
+            clPrayerFidya: document.getElementById('clPrayerFidya'),
+            clFastFidya: document.getElementById('clFastFidya'),
+            clTotalFidya: document.getElementById('clTotalFidya'),
+            clPrayerRounds: document.getElementById('clPrayerRounds'),
+            clFastRounds: document.getElementById('clFastRounds'),
+            clTotalRounds: document.getElementById('clTotalRounds'),
+            valLate: document.getElementById('valLate'),
+            valDays: document.getElementById('valDays'),
+            valPrayers: document.getElementById('valPrayers'),
+            valFasts: document.getElementById('valFasts'),
+            valPrayerFidya: document.getElementById('valPrayerFidya'),
+            valFastFidya: document.getElementById('valFastFidya'),
+            valTotalFidya: document.getElementById('valTotalFidya'),
+            valPrayerRounds: document.getElementById('valPrayerRounds'),
+            valFastRounds: document.getElementById('valFastRounds'),
+            valTotalRounds: document.getElementById('valTotalRounds'),
+            toast: document.getElementById('toast'),
+            popup: document.getElementById('infoPopup'),
+            closePopup: document.getElementById('closePopup'),
+            popupTitle: document.getElementById('popupTitle'),
+            popupLangToggle: document.getElementById('popupLangToggle'),
+            popupThemeToggle: document.getElementById('popupThemeToggle'),
+            textDisplay: document.getElementById('textDisplay'),
+            lblDontShow: document.getElementById('lblDontShow'),
+            dontShowAgain: document.getElementById('dontShowAgain'),
+            reportOverlay: document.getElementById('reportOverlay'),
+            closeReportBtn: document.getElementById('closeReportBtn'),
+            btnSaveImg: document.getElementById('btnSaveImg'),
+            btnSavePdf: document.getElementById('btnSavePdf'),
+            btnShareRep: document.getElementById('btnShareRep'),
+            reportContentArea: document.getElementById('reportContentArea')
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSettings(); applyLanguage(); applyTheme(); updatePlaceholders();
+            
+            // Check font on load in case of pre-filled data
+            setDynamicFont(els.txtName);
+            setDynamicFont(els.txtFather);
+            setDynamicFont(els.txtCaste);
+
+            if (localStorage.getItem('dontShowPopup') !== 'true') openPopup();
+        });
+
+        const toggleThemeLogic = () => { currentTheme = currentTheme === 'light' ? 'dark' : 'light'; applyTheme(); saveSettings(); };
+        els.themeToggle.addEventListener('click', toggleThemeLogic);
+        els.popupThemeToggle.addEventListener('click', toggleThemeLogic);
+
+        const toggleLangLogic = () => { 
+            // Removed Auto-Translation Logic
+            currentLang = currentLang === 'en' ? 'ur' : 'en';
+            applyLanguage(); 
+            validateInput(els.age); 
+            validateInput(els.wheat); 
+            calculate(); 
+            saveSettings(); 
+        };
+        
+        els.langToggle.addEventListener('click', toggleLangLogic);
+        els.popupLangToggle.addEventListener('click', toggleLangLogic);
+
+        els.genderTrigger.addEventListener('click', (e) => { e.stopPropagation(); els.customDropdown.classList.toggle('open'); });
+        document.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                els.genderInput.value = e.target.getAttribute('data-value');
+                els.genderText.innerText = e.target.innerText;
+                els.genderTrigger.classList.remove('placeholder');
+                els.customDropdown.classList.remove('open');
+                validateInput(els.genderInput); updatePlaceholders(); calculate();
+            });
+        });
+        document.addEventListener('click', (e) => { if (!els.customDropdown.contains(e.target)) els.customDropdown.classList.remove('open'); });
+
+        // Add Input Listeners for Auto-Font Detection
+        [els.txtName, els.txtFather, els.txtCaste].forEach(input => {
+            input.addEventListener('input', (e) => {
+                setDynamicFont(e.target);
+            });
+        });
+
+        [els.age, els.wheat, els.amount].forEach(input => {
+            input.addEventListener('input', (e) => { checkDependency(e.target); validateInput(e.target); calculate(); });
+            input.addEventListener('focus', (e) => { checkDependency(e.target, true); });
+        });
+
+        els.infoBtn.addEventListener('click', openPopup);
+        els.closePopup.addEventListener('click', closePopup);
+        els.dontShowAgain.addEventListener('change', (e) => { localStorage.setItem('dontShowPopup', e.target.checked); });
+
+        els.reportBtn.addEventListener('click', openReport);
+        els.closeReportBtn.addEventListener('click', closeReport);
+        els.btnSaveImg.addEventListener('click', downloadAsImage);
+        els.btnSavePdf.addEventListener('click', downloadAsPdf);
+        els.btnShareRep.addEventListener('click', shareReport);
+
+        function applyTheme() {
+            els.html.setAttribute('data-theme', currentTheme);
+            if(currentTheme === 'dark') { els.sunIcon.style.display = 'none'; els.moonIcon.style.display = 'block'; els.popupLangToggle.innerText = els.langToggle.innerText; els.popupThemeToggle.innerText = '🌙'; }
+            else { els.sunIcon.style.display = 'block'; els.moonIcon.style.display = 'none'; els.popupLangToggle.innerText = els.langToggle.innerText; els.popupThemeToggle.innerText = '☀'; }
+        }
+
+        function applyLanguage() {
+            const s = STRINGS[currentLang];
+            els.html.setAttribute('dir', currentLang === 'ur' ? 'rtl' : 'ltr');
+            els.appTitle.innerText = s.appTitle; els.langToggle.innerText = currentLang === 'en' ? 'En' : 'Ur'; els.popupLangToggle.innerText = currentLang === 'en' ? 'En' : 'Ur';
+            els.lblGender.innerText = s.gender; els.lblAge.innerText = s.age; els.lblWheat.innerText = s.wheat; els.lblAmount.innerText = s.amount;
+            els.lblName.innerText = s.lblName; els.lblFather.innerText = s.lblFather; els.lblCaste.innerText = s.lblCaste;
+            const items = document.querySelectorAll('.dropdown-item');
+            items[0].innerText = s.male; items[1].innerText = s.female;
+            if(!els.genderInput.value) els.genderText.innerText = s.selDefault;
+            else els.genderText.innerText = els.genderInput.value === 'male' ? s.male : s.female;
+            els.clDays.innerText = s.lblDays; els.clPrayers.innerText = s.lblPrayers; els.clFasts.innerText = s.lblFasts;
+            els.clPrayerFidya.innerText = s.lblPrayerFidya; els.clFastFidya.innerText = s.lblFastFidya; els.clTotalFidya.innerText = s.lblTotalFidya;
+            els.clPrayerRounds.innerText = s.lblPrayerRounds; els.clFastRounds.innerText = s.lblFastRounds; els.clTotalRounds.innerText = s.lblTotalRounds;
+            els.clLate.innerText = (els.genderInput.value === 'male') ? s.lblMaleLate : ((els.genderInput.value === 'female') ? s.lblFemaleLate : (currentLang === 'en' ? "Calculated Age" : "حساب شدہ عمر"));
+            els.popupTitle.innerText = s.popupTitle; els.lblDontShow.innerText = s.lblDontShow; 
+            
+            // Set Static Text
+            els.textDisplay.innerHTML = s.defaultPopupText;
+
+            updatePlaceholders();
+        }
+
+        // -------------------------------------------------------------
+        // DYNAMIC FONT DETECTION (Urdu/Arabic Range)
+        // -------------------------------------------------------------
+        const urduRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+
+        function setDynamicFont(element) {
+            if (!element) return;
+            const text = element.value || "";
+            // If text contains Urdu/Arabic chars, add the class
+            if (urduRegex.test(text)) {
+                element.classList.add('auto-urdu');
+            } else {
+                element.classList.remove('auto-urdu');
+            }
+        }
+
+        // Helper to set font on Report Element based on content
+        function setReportElementFont(elementId, textContent) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            el.innerText = textContent || "-";
+            if (urduRegex.test(textContent)) {
+                el.classList.add('auto-urdu');
+            } else {
+                el.classList.remove('auto-urdu');
+            }
+        }
+
+        function updatePlaceholders() {
+            const s = STRINGS[currentLang], g = els.genderInput.value;
+            els.age.placeholder = !g ? s.phAgeGenderMissing : (g === 'male' ? s.phAgeMale : s.phAgeFemale);
+            els.wheat.placeholder = s.phWheat; els.amount.placeholder = s.phAmount;
+            els.txtName.placeholder = s.phName; els.txtFather.placeholder = s.phFather; els.txtCaste.placeholder = s.phCaste;
+        }
+
+        function checkDependency(target, isFocus=false) {
+            const s = STRINGS[currentLang], id = target.id, g = els.genderInput.value;
+            let msg = "", missingEl = null;
+            if (id === 'age' && !g) { msg = s.errGenderFirst; missingEl = els.genderTrigger; }
+            else if (id === 'wheatPrice') { if (!g) { msg = s.errGenderFirst; missingEl = els.genderTrigger; } else if (!els.age.value) { msg = s.errAgeFirst; missingEl = els.age; } }
+            else if (id === 'availableAmount') { if (!g || !els.age.value || !els.wheat.value) { msg = s.errAllFirst; missingEl = !g ? els.genderTrigger : (!els.age.value ? els.age : els.wheat); } }
+            if (missingEl) {
+                missingEl.classList.add('missing-highlight'); if(missingEl.id==='genderTrigger') missingEl.style.borderColor='var(--error-color)';
+                setTimeout(() => { missingEl.classList.remove('missing-highlight'); if(missingEl.id==='genderTrigger') missingEl.style.borderColor='var(--input-border)'; }, 500);
+                showToast(msg);
+            }
+        }
+
+        function validateInput(input) {
+            const s = STRINGS[currentLang];
+            if(input.id==='gender') {
+                if(!input.value) { els.genderTrigger.style.borderColor='var(--error-color)'; els.errGender.innerText=s.errReq; els.errGender.classList.add('visible'); return false; }
+                else { els.genderTrigger.style.borderColor='var(--input-border)'; els.errGender.classList.remove('visible'); return true; }
+            }
+            const val=input.value, id=input.id; let isValid=true, errMsg="", errEl=id==='age'?els.errAge:null;
+            if(id==='age') {
+                const age=parseFloat(val), g=els.genderInput.value, min=g==='male'?13:(g==='female'?10:0);
+                if(val && (min>0 && (age<min||age>150))) { isValid=false; errMsg=s.errAgeInvalid; }
+            }
+            if(errEl) {
+                if(!isValid) { input.classList.add('input-error'); errEl.innerText=errMsg; errEl.classList.add('visible'); }
+                else { input.classList.remove('input-error'); errEl.classList.remove('visible'); }
+            }
+            return isValid;
+        }
+
+        function calculate() {
+            const g=els.genderInput.value, ageStr=els.age.value, wheatStr=els.wheat.value;
+            if (!g || !ageStr || !wheatStr) { hideResults(); return; }
+            const age=parseFloat(ageStr), wheat=parseFloat(wheatStr), minAge=g==='male'?13:10;
+            if (age<minAge || age>150) { hideResults(); return; }
+            showResults();
+            const lateYears=age-(g==='male'?12:9), days=lateYears*355, prayers=days*6, fasts=lateYears*30;
+            const fidyaPerUnit=(wheat/40)*1.92, prayerFidya=fidyaPerUnit*prayers, fastFidya=fidyaPerUnit*fasts, total=prayerFidya+fastFidya;
+            els.clLate.innerText = g==='male'?STRINGS[currentLang].lblMaleLate:STRINGS[currentLang].lblFemaleLate;
+            els.valLate.innerText=lateYears; els.valDays.innerText=days.toLocaleString(); els.valPrayers.innerText=prayers.toLocaleString(); els.valFasts.innerText=fasts.toLocaleString();
+            els.valPrayerFidya.innerText=Math.round(prayerFidya).toLocaleString(); els.valFastFidya.innerText=Math.round(fastFidya).toLocaleString(); els.valTotalFidya.innerText=Math.round(total).toLocaleString();
+            const amtStr=els.amount.value;
+            if(amtStr && parseFloat(amtStr)>0) {
+                els.roundsGroup.style.display='block'; const amt=parseFloat(amtStr);
+                const pR=Math.ceil(prayerFidya/amt), fR=Math.ceil(fastFidya/amt);
+                els.valPrayerRounds.innerText=pR.toLocaleString(); els.valFastRounds.innerText=fR.toLocaleString(); els.valTotalRounds.innerText=(pR+fR).toLocaleString();
+            } else els.roundsGroup.style.display='none';
+        }
+
+        function showResults() { if(els.calcSection.style.display!=='block') { els.calcSection.style.display='block'; els.calcSection.classList.remove('bounce-out'); els.calcSection.classList.add('bounce-in'); } }
+        function hideResults() { if(els.calcSection.style.display==='block') { els.calcSection.classList.remove('bounce-in'); els.calcSection.classList.add('bounce-out'); setTimeout(()=>{els.calcSection.style.display='none'},400); } }
+
+        function openPopup() { els.popup.classList.add('active'); els.dontShowAgain.checked=localStorage.getItem('dontShowPopup')==='true'; }
+        function closePopup() { els.popup.classList.remove('active'); }
+
+        function openReport() {
+            // -------------------------------------------------------------
+            //  VALIDATION CHECK: Prevent report opening if data missing
+            // -------------------------------------------------------------
+            if (!els.genderInput.value || !els.age.value || !els.wheat.value) {
+                showToast(STRINGS[currentLang].errAllFirst);
+                return;
+            }
+            if (els.calcSection.style.display === 'none') {
+                 showToast(STRINGS[currentLang].errAllFirst);
+                 return;
+            }
+
+            const s = STRINGS[currentLang];
+            const genderVal = els.genderInput.value;
+            const hasName = els.txtName.value && els.txtName.value.trim().length > 0;
+            
+            // -------------------------------------------------------------
+            //  DYNAMIC LABEL LOGIC: Only show "Late Male/Female" if Name is present
+            // -------------------------------------------------------------
+            if (currentLang === 'ur') {
+                if (hasName) {
+                    // Name exists: show proper respectful label
+                    if (genderVal === 'male') {
+                        document.getElementById('repLblName').innerText = "نام مرحوم:";
+                    } else {
+                        document.getElementById('repLblName').innerText = "نام مرحومہ:";
+                    }
+                } else {
+                    // Name is empty: just show generic "Name"
+                    document.getElementById('repLblName').innerText = "نام:";
+                }
+            } else {
+                if (hasName) {
+                    if (genderVal === 'male') {
+                        document.getElementById('repLblName').innerText = "Name (Late Male):";
+                    } else {
+                        document.getElementById('repLblName').innerText = "Name (Late Female):";
+                    }
+                } else {
+                    document.getElementById('repLblName').innerText = "Name:";
+                }
+            }
+            
+            document.getElementById('repTitle').innerText = s.repTitle;
+            document.getElementById('repLblFather').innerText = s.repLblFather;
+            document.getElementById('repLblCaste').innerText = s.repLblCaste;
+            document.getElementById('repLblAge').innerText = s.repLblAge;
+            document.getElementById('repLblCalcAge').innerText = els.clLate.innerText + ":";
+            document.getElementById('repLblAmount').innerText = s.repLblAmount;
+            document.getElementById('thType').innerText = s.thType; document.getElementById('thCount').innerText = s.thCount; document.getElementById('thFidya').innerText = s.thFidya; document.getElementById('thRounds').innerText = s.thRounds;
+            document.getElementById('tdPrayer').innerText = s.tdPrayer; 
+            document.getElementById('tdFast').innerText = s.tdFast;
+            document.getElementById('tdTotal').innerText = s.tdTotal;
+
+            // Apply Dynamic Font Logic to Report Values
+            setReportElementFont('repValName', els.txtName.value);
+            setReportElementFont('repValFather', els.txtFather.value);
+            setReportElementFont('repValCaste', els.txtCaste.value);
+
+            document.getElementById('repValAge').innerText = els.age.value;
+            document.getElementById('repValCalcAge').innerText = els.valLate.innerText;
+            document.getElementById('repValAmount').innerText = els.amount.value ? parseFloat(els.amount.value).toLocaleString() : "-";
+            document.getElementById('tdValPCount').innerText = els.valPrayers.innerText;
+            document.getElementById('tdValPFidya').innerText = els.valPrayerFidya.innerText;
+            document.getElementById('tdValFCount').innerText = els.valFasts.innerText;
+            document.getElementById('tdValFFidya').innerText = els.valFastFidya.innerText;
+            document.getElementById('tdValTotalFidya').innerText = els.valTotalFidya.innerText;
+            if (els.roundsGroup.style.display !== 'none') {
+                document.getElementById('tdValPRounds').innerText = els.valPrayerRounds.innerText;
+                document.getElementById('tdValFRounds').innerText = els.valFastRounds.innerText;
+                document.getElementById('tdValTotalRounds').innerText = els.valTotalRounds.innerText;
+            } else {
+                document.getElementById('tdValPRounds').innerText = "-"; document.getElementById('tdValFRounds').innerText = "-"; document.getElementById('tdValTotalRounds').innerText = "-";
+            }
+            els.reportOverlay.classList.add('active');
+        }
+
+        function closeReport() { els.reportOverlay.classList.remove('active'); }
+        function downloadAsImage() {
+            const container = els.reportContentArea;
+            html2canvas(container, { scale: 2, useCORS: true, backgroundColor: window.getComputedStyle(container).backgroundColor }).then(canvas => {
+                const link = document.createElement('a'); link.download = 'Fidya-Report.png'; link.href = canvas.toDataURL('image/png'); link.click();
+            });
+        }
+        function downloadAsPdf() {
+            const container = els.reportContentArea; const { jsPDF } = window.jspdf;
+            html2canvas(container, { scale: 2, useCORS: true, backgroundColor: window.getComputedStyle(container).backgroundColor }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png'); const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth(); const imgProps = pdf.getImageProperties(imgData);
+                const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, imgHeight); pdf.save('Fidya-Report.pdf');
+            });
+        }
+        
+        async function shareReport() {
+            const container = els.reportContentArea;
+            try {
+                // 1. Capture report as canvas
+                const canvas = await html2canvas(container, { scale: 2, useCORS: true, backgroundColor: window.getComputedStyle(container).backgroundColor });
+                
+                // 2. Convert to Blob
+                canvas.toBlob(async (blob) => {
+                    const file = new File([blob], "fidya-report.png", { type: "image/png" });
+                    
+                    // 3. Check for native share support
+                    if (navigator.share) {
+                        try {
+                            await navigator.share({
+                                title: 'Fidya Report',
+                                text: 'Here is the Fidya calculation report.',
+                                files: [file]
+                            });
+                        } catch (err) {
+                            console.error('Share failed:', err);
+                        }
+                    } else {
+                        // Fallback: Download if sharing isn't supported
+                        showToast("Sharing not supported on this device/browser.");
+                        const link = document.createElement('a');
+                        link.download = 'Fidya-Report.png';
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                    }
+                }, 'image/png');
+            } catch (e) {
+                console.error('Error generating image for share:', e);
+                showToast("Error generating report for sharing.");
+            }
+        }
+
+        function showToast(m) { els.toast.innerText=m; els.toast.classList.add('show'); setTimeout(()=>els.toast.classList.remove('show'),3000); }
+        function saveSettings() { localStorage.setItem('fidyaTheme',currentTheme); localStorage.setItem('fidyaLang',currentLang); }
+        function loadSettings() {
+            const t=localStorage.getItem('fidyaTheme'); if(t)currentTheme=t;
+            const l=localStorage.getItem('fidyaLang'); if(l)currentLang=l;
+        }
+    </script>
+ <script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js", {
+      scope: "./"  // ← یہ اہم ہے!
+    })
+    .then(reg => console.log("✅ SW registered:", reg.scope))
+    .catch(err => console.error("❌ SW failed:", err));
+  });
+}
+</script>
+
+</body>
+</html>
