@@ -1226,7 +1226,10 @@ td:nth-child(3),
             if (age<minAge || age>150) { hideResults(); return; }
             showResults();
             const lateYears=age-(g==='male'?12:9), days=lateYears*355, prayers=days*6, fasts=lateYears*30;
-            const fidyaPerUnit=(wheat/40)*1.92, prayerFidya=fidyaPerUnit*prayers, fastFidya=fidyaPerUnit*fasts, total=prayerFidya+fastFidya;
+            const base = (wheat / 40);
+const raw = base * 1.92;
+const fidyaPerUnit = Number.isInteger(raw) ? raw : Math.ceil(raw);
+prayerFidya=fidyaPerUnit*prayers, fastFidya=fidyaPerUnit*fasts, total=prayerFidya+fastFidya;
             els.clLate.innerText = g==='male'?STRINGS[currentLang].lblMaleLate:STRINGS[currentLang].lblFemaleLate;
             els.valLate.innerText=lateYears; els.valDays.innerText=days.toLocaleString(); els.valPrayers.innerText=prayers.toLocaleString(); els.valFasts.innerText=fasts.toLocaleString();
             els.valPrayerFidya.innerText=Math.round(prayerFidya).toLocaleString(); els.valFastFidya.innerText=Math.round(fastFidya).toLocaleString(); els.valTotalFidya.innerText=Math.round(total).toLocaleString();
