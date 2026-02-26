@@ -1227,17 +1227,18 @@ td:nth-child(3),
             showResults();
             const lateYears=age-(g==='male'?12:9), days=lateYears*355, prayers=days*6, fasts=lateYears*30;
             // input: wheat in grams
-const wheat = 5000; // example, آپ یہاں کوئی بھی value دے سکتے ہیں
+let wheat;
+if (Number.isInteger(wheatInput)) {
+  wheat = wheatInput;
+} else {
+  wheat = Math.ceil(wheatInput);
+}
 
-// 1920 grams فی شخص فدیہ
-const fidyaPerPerson = 1920; // grams
-
-// integer math version
-// 1. wheat * fidyaPerPerson کو پہلے multiply کریں
-// 2. پھر 40 سے divide کریں
-// 3. آخر میں ceil لگائیں تاکہ rounding صحیح ہو
+const fidyaPerPerson = 1920;
 const raw = (wheat * fidyaPerPerson) / 40;
 const fidyaPerUnit = Math.ceil(raw);
+
+console.log(fidyaPerUnit);
 
 console.log(fidyaPerUnit); // ہمیشہ ایک جیسا رزلٹ آئے گا
 prayerFidya=fidyaPerUnit*prayers, fastFidya=fidyaPerUnit*fasts, total=prayerFidya+fastFidya;
