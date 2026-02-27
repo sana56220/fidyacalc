@@ -1220,38 +1220,93 @@ td:nth-child(3),
         }
 
         function calculate() {
-            const g=els.genderInput.value, ageStr=els.age.value, wheatStr=els.wheat.value;
-            if (!g || !ageStr || !wheatStr) { hideResults(); return; }
-            const age=parseFloat(ageStr), wheat=parseFloat(wheatStr), minAge=g==='male'?13:10;
-            if (age<minAge || age>150) { hideResults(); return; }
-            showResults();
-            const lateYears=age-(g==='male'?12:9), days=lateYears*355, prayers=days*6, fasts=lateYears*30;
-            // input: wheat in grams
-let wheat;
-if (Number.isInteger(wheatInput)) {
-  wheat = wheatInput;
-} else {
-  wheat = Math.ceil(wheatInput);
+    const g = els.genderInput.value;
+    
+    // 1. ان پٹ ویلیوز حاصل کریں
+    // parseFloat خالی اسٹرنگ پر NaN ریٹرن کرتا ہے، جسے ہم ہینڈل کریں گے
+    let ageVal = parseFloat(els.age.value);
+    let wheatVal = parseFloat(els.wheat.value);
+    let amtVal = parseFloat(els.amount.value);
+
+    // اگر جنڈر نہیں ہے یا نمبر غلط ہیں تو صاف ستھرا باہر نکلیں
+    if (!g || isNaN(ageVal) || isNaN(wheatVal)) { 
+        hideResults(); 
+        return; 
+    }
+
+    // ان پٹ کو انٹیجر میں تبدیل (اعشاریہ ہٹانا - Floor)
+    // Math.floor صرف درست نمبروں پر کام کرتا ہے
+    const age = Math.floor(ageVal);
+    const wheat = Math.floor(wheatVal);
+    
+    // ایمائونٹ کی سیفٹی چیک
+    // اگر ایمائونٹ خالی ہے، منفی ہے یا صفر ہے تو ہم اسے 0 مانتے ہیں
+    let amountInt = 0;
+    if (!isNaN(amtVal) && amtVal > 0) {
+        amountInt = Math.floor(amtVal);
+    }
+
+    // عمر کی حد چیک کریں
+    const minAge = g === 'male' ? 13 : 10;
+    if (age < minAge || age > 150) { 
+        hideResults(); 
+        return; 
+    }
+
+    showResults();
+
+    // بنیادی کیلکولیشن (ویسی ہی رہی)
+    const lateYears = age - (g === 'male' ? 12 : 9);
+    const days = lateYears * 355;
+    const prayers = days * 6;
+    const fasts = lateYears * 30;
+
+    // 2. Wheat / 40 والی منطق (آپ کی ہدایت کے مطابق)
+    const base = wheat / 40;
+    const raw = base * 1.92;
+    
+    // اگر اعشاریہ آیا تو اوپر والا عدد لیں (Ceiling)، ورنہ ویسا ہی رکھیں
+    // Number.isInteger چیک کرتا ہے کہ کیا نمبر مکمل ہے
+    let fidyaPerUnit;
+    if (Number.isInteger(raw)) {
+        fidyaPerUnit = raw;
+    } else {
+        fidyaPerUnit = Math.ceil(raw);
+    }
+
+    const prayerFidya = fidyaPerUnit * prayers;
+    const fastFidya = fidyaPerUnit * fasts;
+    const total = prayerFidya + fastFidya;
+
+    // UI اپڈیٹس
+    els.clLate.innerText = g === 'male' ? STRINGS[currentLang].lblMaleLate : STRINGS[currentLang].lblFemaleLate;
+    els.valLate.innerText = lateYears;
+    els.valDays.innerText = days.toLocaleString();
+    els.valPrayers.innerText = prayers.toLocaleString();
+    els.valFasts.innerText = fasts.toLocaleString();
+    
+    // رقوم کی ڈسپلے (راؤنڈنگ کے ساتھ)
+    els.valPrayerFidya.innerText = Math.round(prayerFidya).toLocaleString();
+    els.valFastFidya.innerText = Math.round(fastFidya).toLocaleString();
+    els.valTotalFidya.innerText = Math.round(total).toLocaleString();
+
+    // 3. Rounds کیلکولیشن (سیفٹی کے ساتھ)
+    if (amountInt > 0) {
+        els.roundsGroup.style.display = 'block';
+        
+        // تقسیم سے پہلے یقینی بناتے ہیں کہ ڈینومینیٹر (amountInt) صفر نہ ہو
+        // آپ کی ہدایت: اگر فلونگ آئے تو اوپر والا عدد لیں
+        const pR = Math.ceil(prayerFidya / amountInt);
+        const fR = Math.ceil(fastFidya / amountInt);
+        
+        els.valPrayerRounds.innerText = pR.toLocaleString();
+        els.valFastRounds.innerText = fR.toLocaleString();
+        els.valTotalRounds.innerText = (pR + fR).toLocaleString();
+    } else {
+        // اگر ایمائونٹ نہیں ڈالا گیا یا صفر ہے تو راؤنڈز چھپا دیں
+        els.roundsGroup.style.display = 'none';
+    }
 }
-
-const fidyaPerPerson = 1920;
-const raw = (wheat * fidyaPerPerson) / 40;
-const fidyaPerUnit = Math.ceil(raw);
-
-console.log(fidyaPerUnit);
-
-console.log(fidyaPerUnit); // ہمیشہ ایک جیسا رزلٹ آئے گا
-prayerFidya=fidyaPerUnit*prayers, fastFidya=fidyaPerUnit*fasts, total=prayerFidya+fastFidya;
-            els.clLate.innerText = g==='male'?STRINGS[currentLang].lblMaleLate:STRINGS[currentLang].lblFemaleLate;
-            els.valLate.innerText=lateYears; els.valDays.innerText=days.toLocaleString(); els.valPrayers.innerText=prayers.toLocaleString(); els.valFasts.innerText=fasts.toLocaleString();
-            els.valPrayerFidya.innerText=Math.round(prayerFidya).toLocaleString(); els.valFastFidya.innerText=Math.round(fastFidya).toLocaleString(); els.valTotalFidya.innerText=Math.round(total).toLocaleString();
-            const amtStr=els.amount.value;
-            if(amtStr && parseFloat(amtStr)>0) {
-                els.roundsGroup.style.display='block'; const amt=parseFloat(amtStr);
-                const pR=Math.ceil(prayerFidya/amt), fR=Math.ceil(fastFidya/amt);
-                els.valPrayerRounds.innerText=pR.toLocaleString(); els.valFastRounds.innerText=fR.toLocaleString(); els.valTotalRounds.innerText=(pR+fR).toLocaleString();
-            } else els.roundsGroup.style.display='none';
-        }
 
         function showResults() { if(els.calcSection.style.display!=='block') { els.calcSection.style.display='block'; els.calcSection.classList.remove('bounce-out'); els.calcSection.classList.add('bounce-in'); } }
         function hideResults() { if(els.calcSection.style.display==='block') { els.calcSection.classList.remove('bounce-in'); els.calcSection.classList.add('bounce-out'); setTimeout(()=>{els.calcSection.style.display='none'},400); } }
