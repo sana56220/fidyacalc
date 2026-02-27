@@ -1,4 +1,4 @@
-const CACHE_NAME = "fidya-cache-v1";
+const CACHE_NAME = "fidya-cache-v2";
 
 const urlsToCache = [
   "./",
