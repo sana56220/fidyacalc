@@ -282,6 +282,13 @@
 
         /* Fix for RTL mode typing */
         [dir="rtl"] input[type="text"] { font-family: var(--font-urdu) !important; direction: rtl !important; text-align: right; }
+        
+        /* --- اردو موڈ میں انگلش ٹائپنگ کو سیدھا کرنے کا جادوئی رول --- */
+[dir="rtl"] input[type="text"]:not(:placeholder-shown):not(.auto-urdu) {
+    direction: ltr !important;
+    text-align: left !important;
+    font-family: var(--font-main) !important;
+}
         input:focus { border-color: var(--accent-color); background-color: var(--panel-bg); box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1); }
         
         ::placeholder { 
@@ -487,9 +494,7 @@
         [dir="rtl"] { font-family: var(--font-urdu); }
         .icon-svg { width: 18px; height: 18px; fill: currentColor; }
 
-        /* -----------------------------------------------------------
-           URDU SPECIFIC REPORT RESIZING
-           ----------------------------------------------------------- */
+        
         [dir="rtl"] .report-header h2 {
             font-size: 1.2rem !important;
         }
@@ -526,7 +531,8 @@
 
         [dir="rtl"] .report-container div[style*="font-size:0.8rem"] {
              font-size: 0.7rem !important; 
-        }/* --- 1. بنیادی /* 1. اردو نستعلیق کا اطلاق (صرف ٹیکسٹ کے لیے) */
+        }
+        
 [dir="rtl"] label, 
 [dir="rtl"] .app-title, 
 [dir="rtl"] .res-label, 
@@ -542,21 +548,18 @@
     font-family: var(--font-urdu), serif !important;
 }
 
-/* 2. ان پٹ اور پلیس ہولڈرز */
 [dir="rtl"] input,
 [dir="rtl"] input::placeholder {
     font-family: var(--font-urdu), serif !important;
 }
 
-/* 3. نمبروں کو انگریزی فونٹ میں رکھنے کا جادوئی رول */
-/* یہ رول اردو کے درمیان آنے والے ہندسوں (0-9) کو انگلش فونٹ دے گا */
+
 @font-face {
     font-family: 'EnglishNumbers';
     src: local('Arial'), local('Segoe UI'), local('sans-serif');
-    unicode-range: U+0030-0039; /* یہ صرف 0 سے 9 تک کے نمبروں کو ٹارگٹ کرتا ہے */
+    unicode-range: U+0030-0039;
 }
 
-/* ان تمام جگہوں پر نمبرز کے لیے انگلش فونٹ اپلائی کریں */
 input[type="number"],
 .numeric-value,
 .total-amount,
@@ -567,27 +570,23 @@ input[type="number"],
 .res-label,
 .calculation-result,
 td:nth-child(2), 
-td:nth-child(3) {
+td:nth-child(3),
+td:nth-child(4) {
     font-family: 'EnglishNumbers', 'Segoe UI', sans-serif !important;
     direction: ltr !important;
 }
 
-/* 4. انگریزی موڈ (LTR) کے لیے ڈیفالٹ سیٹنگ */
 [dir="ltr"] * {
     font-family: var(--font-main), sans-serif;
 }
 
 
-/* 9 اور 12 جیسے نمبروں کے لیے ایک خاص رول */
 [dir="rtl"] .numeric-text {
     font-family: 'Segoe UI', Arial, sans-serif !important;
     font-weight: bold;
     margin: 0 2px;
 }
 
-/* --- حتمی اور صاف فونٹس کا نظام --- */
-
-/* 1. تمام اردو ٹیکسٹ پر نستعلیق کا اطلاق */
 [dir="rtl"] label, 
 [dir="rtl"] .app-title, 
 [dir="rtl"] .res-label, 
@@ -603,19 +602,16 @@ td:nth-child(3) {
     font-family: var(--font-urdu), serif !important;
 }
 
-/* 2. پلیس ہولڈرز کے لیے اردو فونٹ */
 [dir="rtl"] input::placeholder {
     font-family: var(--font-urdu) !important;
 }
 
-/* 3. نمبروں کو ہمیشہ انگریزی فونٹ میں رکھنا (0-9) */
 @font-face {
     font-family: 'EnglishNumbers';
     src: local('Segoe UI'), local('Arial'), sans-serif;
     unicode-range: U+0030-0039;
 }
 
-/* ان جگہوں پر نمبرز انگلش میں نظر آئیں گے */
 input, 
 .numeric-value, 
 .total-amount, 
@@ -626,22 +622,29 @@ input,
 .calculation-result,
 td:nth-child(2), 
 td:nth-child(3),
+td:nth-child(4),
 .numeric-text {
     font-family: 'EnglishNumbers', 'Segoe UI', sans-serif !important;
     direction: ltr !important;
     unicode-bidi: bidi-override;
 }
 
-/* 4. انگریزی موڈ (LTR) کے لیے ڈیفالٹ فونٹ */
 [dir="ltr"] * {
     font-family: var(--font-main), sans-serif;
 }
 
-/* 5. اردو موڈ میں ان پٹ کا خاص سائز (جو آپ کو پسند ہے) */
 [dir="rtl"] .bio-one-row input {
     font-size: 10px !important;
     text-indent: 0.5ch;
     padding-top: 5px;
+}
+    
+#age::placeholder, 
+input[type="number"]::placeholder {
+    font-size: 0.7rem !important;
+    font-family: 'EnglishNumbers', var(--font-urdu) !important;
+    color: var(--placeholder-color) !important;
+    opacity: 1 !important;
 }
 
     </style>
@@ -705,8 +708,9 @@ td:nth-child(3),
                 </div>
 
                 <div class="input-group">
-                    <label for="age"><span id="lblAge">Age</span><span class="required-star">*</span></label>
-                    <input type="number" id="age" inputmode="numeric" pattern="[0-9]*" placeholder="Select Gender first">
+                 <label for="age"><span id="lblAge">Age</span><span class="required-star">*</span>
+                 </label>
+                        <input type="tel" inputmode="tel" pattern="[0-9]*" id="age" autocomplete="off" placeholder="Age">
                     <div class="error-msg-label" id="errAge">Invalid Age</div>
                 </div>
             </div>
@@ -770,11 +774,11 @@ td:nth-child(3),
             <div class="report-grid" style="margin-top: 15px;">
                 <div class="report-row-full">
                     <span class="report-field-label" id="repLblAge">Total Age:</span>
-                    <span class="report-field-value numeric-value" id="repValAge">0</span>
+                    <span class="report-field-value" id="repValAge">0</span>
                 </div>
                 <div class="report-row-full">
                     <span class="report-field-label" id="repLblCalcAge">Calculated Age:</span>
-                    <span class="report-field-value numeric-value" id="repValCalcAge">0</span>
+                    <span class="report-field-value" id="repValCalcAge">0</span>
                 </div>
                 <div class="report-row-full">
                     <span class="report-field-label" id="repLblAmount">Available Amount:</span>
@@ -861,7 +865,7 @@ td:nth-child(3),
         </div>
     </div>
 
-    <script>
+      <script>
         const STRINGS = {
             en: {
                 appTitle: "Fidya Calculator",
@@ -879,8 +883,8 @@ td:nth-child(3),
                 male: "Late Male",
                 female: "Late Female",
                 phAgeGenderMissing: "Select Gender first",
-                phAgeMale: "Age greater than 12",
-                phAgeFemale: "Age greater than 9",
+                phAgeMale: "Age range 13 to 150",
+                phAgeFemale: "Age range 10 to 150",
                 phWheat: "Enter 40 KGs Wheat Price",
                 phAmount: "Available Amount (Optional)",
                 errAgeInvalid: "Invalid Age",
@@ -889,8 +893,8 @@ td:nth-child(3),
                 errAgeFirst: "Kindly provide age first.",
                 errGenderAgeFirst: "Kindly provide Gender and Age first",
                 errAllFirst: "Please fill all required fields first",
-                lblMaleLate: "Age-12Yrs less",
-                lblFemaleLate: "Age-9Yrs less",
+                lblMaleLate: "Age range <span class='numeric-text'>13</span> to <span class='numeric-text'>150</span>",
+lblFemaleLate: "Age range <span class='numeric-text'>10</span> to <span class='numeric-text'>150</span>",
                 lblDays: "Days",
                 lblPrayers: "Prayers",
                 lblFasts: "Fasts",
@@ -909,7 +913,7 @@ td:nth-child(3),
                 repLblAmount: "Available Amount: (for rounds)",
                 thType: "Type", thCount: "Count", thFidya: "Fidya Amount", thRounds: "Rounds",
                 tdPrayer: "Prayer", 
-                tdFast: "Fast", // Changed from "Fasts" to "Fast"
+                tdFast: "Fast",
                 tdTotal: "Total",
                 popupTitle: "Note",
                 lblDontShow: "Don't show again",
@@ -917,7 +921,7 @@ td:nth-child(3),
             },
             ur: {
                 appTitle: "فدیہ کیلکولیٹر",
-                gender: "جنس", // Changed from صنف
+                gender: "جنس",
                 age: "عمر :",
                 wheat: "گندم کی قیت: (ایک من)",
                 amount: " موجود رقم: (اختیاری) لوٹ پھیر کیلئے",
@@ -927,12 +931,12 @@ td:nth-child(3),
                 phName: "نام",
                 phFather: "ولدیت",
                 phCaste: "قوم",
-                selDefault: "جنس منتخب کریں", // Changed from انتخاب
+                selDefault: "جنس منتخب کریں",
                 male: "مرحوم",
                 female: "مرحومہ",
                 phAgeGenderMissing: "پہلے جنس منتخب کریں",
-                phAgeMale: "عمر 12 سال سے زیادہ",
-                phAgeFemale: "عمر 9 سال سے زیادہ",
+                phAgeMale: "درست عمر <span class='numeric-text'>13</span> سے <span class='numeric-text'>150</span>",
+                phAgeFemale: "درست عمر <span class='numeric-text'>10</span> سے <span class='numeric-text'>150</span>",
                 phWheat: "ایک من گندم کی قیمت درج کریں",
                 phAmount: "موجود رقم درج کریں اگر ہے",
                 errAgeInvalid: "عمر درست نہیں ہے",
@@ -941,8 +945,8 @@ td:nth-child(3),
                 errAgeFirst: "اس سے پہلے عمر درج کریں",
                 errGenderAgeFirst: "پہلے جنس اور عمر درج کریں",
                 errAllFirst: "براہ کرم پہلے تمام ضروری معلومات درج کریں",
-                lblMaleLate: "عمر سے 12 سال کم",
-                lblFemaleLate: "عمر سے 9 سال کم",
+                lblMaleLate: "عمر سے <span class='numeric-text'>12</span> سال کم",
+                lblFemaleLate: "عمر سے <span class='numeric-text'>9</span> سال کم",
                 lblDays: "دن",
                 lblPrayers: "نمازیں",
                 lblFasts: "روزے",
@@ -993,7 +997,7 @@ td:nth-child(3),
 
         let currentLang = 'en';
         let currentTheme = 'light';
-
+        
         const els = {
             html: document.documentElement,
             appTitle: document.getElementById('appTitle'),
@@ -1016,10 +1020,13 @@ td:nth-child(3),
             age: document.getElementById('age'),
             wheat: document.getElementById('wheatPrice'),
             amount: document.getElementById('availableAmount'),
+            
             lblGender: document.getElementById('lblGender'),
             lblAge: document.getElementById('lblAge'),
+            
             lblWheat: document.getElementById('lblWheat'),
             lblAmount: document.getElementById('lblAmount'),
+
             errGender: document.getElementById('errGender'),
             errAge: document.getElementById('errAge'),
             errWheat: document.getElementById('errWheat'),
@@ -1065,7 +1072,6 @@ td:nth-child(3),
         window.addEventListener('DOMContentLoaded', () => {
             loadSettings(); applyLanguage(); applyTheme(); updatePlaceholders();
             
-            // Check font on load in case of pre-filled data
             setDynamicFont(els.txtName);
             setDynamicFont(els.txtFather);
             setDynamicFont(els.txtCaste);
@@ -1078,7 +1084,6 @@ td:nth-child(3),
         els.popupThemeToggle.addEventListener('click', toggleThemeLogic);
 
         const toggleLangLogic = () => { 
-            // Removed Auto-Translation Logic
             currentLang = currentLang === 'en' ? 'ur' : 'en';
             applyLanguage(); 
             validateInput(els.age); 
@@ -1103,17 +1108,46 @@ td:nth-child(3),
         });
         document.addEventListener('click', (e) => { if (!els.customDropdown.contains(e.target)) els.customDropdown.classList.remove('open'); });
 
-        // Add Input Listeners for Auto-Font Detection
         [els.txtName, els.txtFather, els.txtCaste].forEach(input => {
             input.addEventListener('input', (e) => {
                 setDynamicFont(e.target);
             });
         });
+        
+      [els.age, els.wheat, els.amount].forEach(input => {
+            
+            if (input.id === 'age') {
+                input.addEventListener('keydown', (e) => {
+                    if (['.', ',', '-', 'e', 'E', '+'].includes(e.key)) {
+                        e.preventDefault();
+                    }
+                });
 
-        [els.age, els.wheat, els.amount].forEach(input => {
-            input.addEventListener('input', (e) => { checkDependency(e.target); validateInput(e.target); calculate(); });
+                input.addEventListener('beforeinput', (e) => {
+                    if (e.data && ['.', ',', '-', 'e', 'E', '+'].includes(e.data)) {
+                        e.preventDefault();
+                    }
+                });
+            }
+
+            input.addEventListener('input', (e) => { 
+                if (e.target.id === 'age') {
+                    let originalValue = e.target.value;
+                    let cleanValue = originalValue.replace(/[^0-9]/g, '');
+                    
+                    if (originalValue !== cleanValue) {
+                        e.target.value = cleanValue;
+                    }
+                }
+                
+                checkDependency(e.target); 
+                validateInput(e.target); 
+                calculate(); 
+            });
+            
             input.addEventListener('focus', (e) => { checkDependency(e.target, true); });
         });
+           
 
         els.infoBtn.addEventListener('click', openPopup);
         els.closePopup.addEventListener('click', closePopup);
@@ -1131,37 +1165,53 @@ td:nth-child(3),
             else { els.sunIcon.style.display = 'block'; els.moonIcon.style.display = 'none'; els.popupLangToggle.innerText = els.langToggle.innerText; els.popupThemeToggle.innerText = '☀'; }
         }
 
-        function applyLanguage() {
+     function applyLanguage() {
             const s = STRINGS[currentLang];
             els.html.setAttribute('dir', currentLang === 'ur' ? 'rtl' : 'ltr');
-            els.appTitle.innerText = s.appTitle; els.langToggle.innerText = currentLang === 'en' ? 'En' : 'Ur'; els.popupLangToggle.innerText = currentLang === 'en' ? 'En' : 'Ur';
-            els.lblGender.innerText = s.gender; els.lblAge.innerText = s.age; els.lblWheat.innerText = s.wheat; els.lblAmount.innerText = s.amount;
-            els.lblName.innerText = s.lblName; els.lblFather.innerText = s.lblFather; els.lblCaste.innerText = s.lblCaste;
+            els.appTitle.innerText = s.appTitle; 
+            els.langToggle.innerText = currentLang === 'en' ? 'En' : 'Ur'; 
+            els.popupLangToggle.innerText = currentLang === 'en' ? 'En' : 'Ur';
+            
+            els.lblGender.innerText = s.gender; 
+            els.lblAge.innerText = s.age; 
+             
+            els.lblWheat.innerText = s.wheat; 
+            els.lblAmount.innerText = s.amount;
+
+            els.lblName.innerText = s.lblName; 
+            els.lblFather.innerText = s.lblFather; 
+            els.lblCaste.innerText = s.lblCaste;
+            
             const items = document.querySelectorAll('.dropdown-item');
-            items[0].innerText = s.male; items[1].innerText = s.female;
+            items[0].innerText = s.male; 
+            items[1].innerText = s.female;
+            
             if(!els.genderInput.value) els.genderText.innerText = s.selDefault;
             else els.genderText.innerText = els.genderInput.value === 'male' ? s.male : s.female;
-            els.clDays.innerText = s.lblDays; els.clPrayers.innerText = s.lblPrayers; els.clFasts.innerText = s.lblFasts;
-            els.clPrayerFidya.innerText = s.lblPrayerFidya; els.clFastFidya.innerText = s.lblFastFidya; els.clTotalFidya.innerText = s.lblTotalFidya;
-            els.clPrayerRounds.innerText = s.lblPrayerRounds; els.clFastRounds.innerText = s.lblFastRounds; els.clTotalRounds.innerText = s.lblTotalRounds;
-            els.clLate.innerText = (els.genderInput.value === 'male') ? s.lblMaleLate : ((els.genderInput.value === 'female') ? s.lblFemaleLate : (currentLang === 'en' ? "Calculated Age" : "حساب شدہ عمر"));
-            els.popupTitle.innerText = s.popupTitle; els.lblDontShow.innerText = s.lblDontShow; 
             
-            // Set Static Text
+            els.clDays.innerText = s.lblDays; 
+            els.clPrayers.innerText = s.lblPrayers; 
+            els.clFasts.innerText = s.lblFasts;
+            els.clPrayerFidya.innerText = s.lblPrayerFidya; 
+            els.clFastFidya.innerText = s.lblFastFidya; 
+            els.clTotalFidya.innerText = s.lblTotalFidya;
+            els.clPrayerRounds.innerText = s.lblPrayerRounds; 
+            els.clFastRounds.innerText = s.lblFastRounds; 
+            els.clTotalRounds.innerText = s.lblTotalRounds;
+            els.clLate.innerHTML = (els.genderInput.value === 'male') ? s.lblMaleLate : ((els.genderInput.value === 'female') ? s.lblFemaleLate : (currentLang === 'en' ? "Calculated Age" : "حساب شدہ عمر"));
+            els.popupTitle.innerText = s.popupTitle; 
+            els.lblDontShow.innerText = s.lblDontShow; 
+            
             els.textDisplay.innerHTML = s.defaultPopupText;
 
             updatePlaceholders();
         }
 
-        // -------------------------------------------------------------
-        // DYNAMIC FONT DETECTION (Urdu/Arabic Range)
-        // -------------------------------------------------------------
         const urduRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
 
         function setDynamicFont(element) {
             if (!element) return;
             const text = element.value || "";
-            // If text contains Urdu/Arabic chars, add the class
             if (urduRegex.test(text)) {
                 element.classList.add('auto-urdu');
             } else {
@@ -1169,7 +1219,6 @@ td:nth-child(3),
             }
         }
 
-        // Helper to set font on Report Element based on content
         function setReportElementFont(elementId, textContent) {
             const el = document.getElementById(elementId);
             if (!el) return;
@@ -1182,11 +1231,22 @@ td:nth-child(3),
         }
 
         function updatePlaceholders() {
-            const s = STRINGS[currentLang], g = els.genderInput.value;
-            els.age.placeholder = !g ? s.phAgeGenderMissing : (g === 'male' ? s.phAgeMale : s.phAgeFemale);
-            els.wheat.placeholder = s.phWheat; els.amount.placeholder = s.phAmount;
-            els.txtName.placeholder = s.phName; els.txtFather.placeholder = s.phFather; els.txtCaste.placeholder = s.phCaste;
-        }
+    const s = STRINGS[currentLang], g = els.genderInput.value;
+    
+    // ----------------------------------------------------------------------
+    
+    if (currentLang === 'ur') {
+        els.age.placeholder = !g ? s.phAgeGenderMissing : (g === 'male' ? s.phAgeMale.replace(/<[^>]*>/g, '') : s.phAgeFemale.replace(/<[^>]*>/g, ''));
+    } else {
+        els.age.placeholder = !g ? s.phAgeGenderMissing : (g === 'male' ? s.phAgeMale : s.phAgeFemale);
+    }
+    
+    els.wheat.placeholder = s.phWheat; 
+    els.amount.placeholder = s.phAmount;
+    els.txtName.placeholder = s.phName; 
+    els.txtFather.placeholder = s.phFather; 
+    els.txtCaste.placeholder = s.phCaste;
+}
 
         function checkDependency(target, isFocus=false) {
             const s = STRINGS[currentLang], id = target.id, g = els.genderInput.value;
@@ -1196,7 +1256,7 @@ td:nth-child(3),
             else if (id === 'availableAmount') { if (!g || !els.age.value || !els.wheat.value) { msg = s.errAllFirst; missingEl = !g ? els.genderTrigger : (!els.age.value ? els.age : els.wheat); } }
             if (missingEl) {
                 missingEl.classList.add('missing-highlight'); if(missingEl.id==='genderTrigger') missingEl.style.borderColor='var(--error-color)';
-                setTimeout(() => { missingEl.classList.remove('missing-highlight'); if(missingEl.id==='genderTrigger') missingEl.style.borderColor='var(--input-border)'; }, 500);
+                        setTimeout(() => { missingEl.classList.remove('missing-highlight'); if(missingEl.id==='genderTrigger') missingEl.style.borderColor='var(--input-border)'; }, 500);
                 showToast(msg);
             }
         }
@@ -1222,31 +1282,23 @@ td:nth-child(3),
         function calculate() {
     const g = els.genderInput.value;
     
-    // 1. ان پٹ ویلیوز حاصل کریں
-    // parseFloat خالی اسٹرنگ پر NaN ریٹرن کرتا ہے، جسے ہم ہینڈل کریں گے
     let ageVal = parseFloat(els.age.value);
     let wheatVal = parseFloat(els.wheat.value);
     let amtVal = parseFloat(els.amount.value);
 
-    // اگر جنڈر نہیں ہے یا نمبر غلط ہیں تو صاف ستھرا باہر نکلیں
     if (!g || isNaN(ageVal) || isNaN(wheatVal)) { 
         hideResults(); 
         return; 
     }
 
-    // ان پٹ کو انٹیجر میں تبدیل (اعشاریہ ہٹانا - Floor)
-    // Math.floor صرف درست نمبروں پر کام کرتا ہے
     const age = Math.floor(ageVal);
     const wheat = Math.floor(wheatVal);
     
-    // ایمائونٹ کی سیفٹی چیک
-    // اگر ایمائونٹ خالی ہے، منفی ہے یا صفر ہے تو ہم اسے 0 مانتے ہیں
     let amountInt = 0;
     if (!isNaN(amtVal) && amtVal > 0) {
         amountInt = Math.floor(amtVal);
     }
 
-    // عمر کی حد چیک کریں
     const minAge = g === 'male' ? 13 : 10;
     if (age < minAge || age > 150) { 
         hideResults(); 
@@ -1255,18 +1307,14 @@ td:nth-child(3),
 
     showResults();
 
-    // بنیادی کیلکولیشن (ویسی ہی رہی)
     const lateYears = age - (g === 'male' ? 12 : 9);
     const days = lateYears * 355;
     const prayers = days * 6;
     const fasts = lateYears * 30;
 
-    // 2. Wheat / 40 والی منطق (آپ کی ہدایت کے مطابق)
     const base = wheat / 40;
     const raw = base * 1.92;
     
-    // اگر اعشاریہ آیا تو اوپر والا عدد لیں (Ceiling)، ورنہ ویسا ہی رکھیں
-    // Number.isInteger چیک کرتا ہے کہ کیا نمبر مکمل ہے
     let fidyaPerUnit;
     if (Number.isInteger(raw)) {
         fidyaPerUnit = raw;
@@ -1278,24 +1326,19 @@ td:nth-child(3),
     const fastFidya = fidyaPerUnit * fasts;
     const total = prayerFidya + fastFidya;
 
-    // UI اپڈیٹس
-    els.clLate.innerText = g === 'male' ? STRINGS[currentLang].lblMaleLate : STRINGS[currentLang].lblFemaleLate;
-    els.valLate.innerText = lateYears;
+    els.clLate.innerHTML = g === 'male' ? STRINGS[currentLang].lblMaleLate : STRINGS[currentLang].lblFemaleLate;
+    els.valLate.innerHTML = `<span class="numeric-value">${lateYears}</span>`;
     els.valDays.innerText = days.toLocaleString();
     els.valPrayers.innerText = prayers.toLocaleString();
     els.valFasts.innerText = fasts.toLocaleString();
     
-    // رقوم کی ڈسپلے (راؤنڈنگ کے ساتھ)
     els.valPrayerFidya.innerText = Math.round(prayerFidya).toLocaleString();
     els.valFastFidya.innerText = Math.round(fastFidya).toLocaleString();
     els.valTotalFidya.innerText = Math.round(total).toLocaleString();
 
-    // 3. Rounds کیلکولیشن (سیفٹی کے ساتھ)
     if (amountInt > 0) {
         els.roundsGroup.style.display = 'block';
         
-        // تقسیم سے پہلے یقینی بناتے ہیں کہ ڈینومینیٹر (amountInt) صفر نہ ہو
-        // آپ کی ہدایت: اگر فلونگ آئے تو اوپر والا عدد لیں
         const pR = Math.ceil(prayerFidya / amountInt);
         const fR = Math.ceil(fastFidya / amountInt);
         
@@ -1303,7 +1346,6 @@ td:nth-child(3),
         els.valFastRounds.innerText = fR.toLocaleString();
         els.valTotalRounds.innerText = (pR + fR).toLocaleString();
     } else {
-        // اگر ایمائونٹ نہیں ڈالا گیا یا صفر ہے تو راؤنڈز چھپا دیں
         els.roundsGroup.style.display = 'none';
     }
 }
@@ -1315,9 +1357,6 @@ td:nth-child(3),
         function closePopup() { els.popup.classList.remove('active'); }
 
         function openReport() {
-            // -------------------------------------------------------------
-            //  VALIDATION CHECK: Prevent report opening if data missing
-            // -------------------------------------------------------------
             if (!els.genderInput.value || !els.age.value || !els.wheat.value) {
                 showToast(STRINGS[currentLang].errAllFirst);
                 return;
@@ -1331,30 +1370,17 @@ td:nth-child(3),
             const genderVal = els.genderInput.value;
             const hasName = els.txtName.value && els.txtName.value.trim().length > 0;
             
-            // -------------------------------------------------------------
-            //  DYNAMIC LABEL LOGIC: Only show "Late Male/Female" if Name is present
-            // -------------------------------------------------------------
-            if (currentLang === 'ur') {
-                if (hasName) {
-                    // Name exists: show proper respectful label
-                    if (genderVal === 'male') {
-                        document.getElementById('repLblName').innerText = "نام مرحوم:";
-                    } else {
-                        document.getElementById('repLblName').innerText = "نام مرحومہ:";
-                    }
+           if (currentLang === 'ur') {
+                if (genderVal === 'male') {
+                    document.getElementById('repLblName').innerText = "نام مرحوم:";
                 } else {
-                    // Name is empty: just show generic "Name"
-                    document.getElementById('repLblName').innerText = "نام:";
+                    document.getElementById('repLblName').innerText = "نام مرحومہ:";
                 }
             } else {
-                if (hasName) {
-                    if (genderVal === 'male') {
-                        document.getElementById('repLblName').innerText = "Name (Late Male):";
-                    } else {
-                        document.getElementById('repLblName').innerText = "Name (Late Female):";
-                    }
+                if (genderVal === 'male') {
+                    document.getElementById('repLblName').innerText = "Name (Late Male):";
                 } else {
-                    document.getElementById('repLblName').innerText = "Name:";
+                    document.getElementById('repLblName').innerText = "Name (Late Female):";
                 }
             }
             
@@ -1362,20 +1388,31 @@ td:nth-child(3),
             document.getElementById('repLblFather').innerText = s.repLblFather;
             document.getElementById('repLblCaste').innerText = s.repLblCaste;
             document.getElementById('repLblAge').innerText = s.repLblAge;
-            document.getElementById('repLblCalcAge').innerText = els.clLate.innerText + ":";
+            document.getElementById('repLblCalcAge').innerHTML = els.clLate.innerHTML + ":";
             document.getElementById('repLblAmount').innerText = s.repLblAmount;
-            document.getElementById('thType').innerText = s.thType; document.getElementById('thCount').innerText = s.thCount; document.getElementById('thFidya').innerText = s.thFidya; document.getElementById('thRounds').innerText = s.thRounds;
+            document.getElementById('thType').innerText = s.thType; 
+            document.getElementById('thCount').innerText = s.thCount; 
+            document.getElementById('thFidya').innerText = s.thFidya; 
+            document.getElementById('thRounds').innerText = s.thRounds;
             document.getElementById('tdPrayer').innerText = s.tdPrayer; 
             document.getElementById('tdFast').innerText = s.tdFast;
             document.getElementById('tdTotal').innerText = s.tdTotal;
 
-            // Apply Dynamic Font Logic to Report Values
             setReportElementFont('repValName', els.txtName.value);
             setReportElementFont('repValFather', els.txtFather.value);
             setReportElementFont('repValCaste', els.txtCaste.value);
+            
+            const totalAge = parseInt(els.age.value, 10);
+            const calcAge = parseInt(els.valLate.innerText) || 0;
 
-            document.getElementById('repValAge').innerText = els.age.value;
-            document.getElementById('repValCalcAge').innerText = els.valLate.innerText;
+            if (currentLang === 'ur') {
+                document.getElementById('repValAge').innerHTML = `<span class="numeric-value">${totalAge}</span> سال`;
+                document.getElementById('repValCalcAge').innerHTML = `<span class="numeric-value">${calcAge}</span> سال`;
+            } else {
+                document.getElementById('repValAge').innerHTML = `<span class="numeric-value">${totalAge}</span> year${totalAge === 1 ? '' : 's'}`;
+                document.getElementById('repValCalcAge').innerHTML = `<span class="numeric-value">${calcAge}</span> year${calcAge === 1 ? '' : 's'}`;
+            }
+            
             document.getElementById('repValAmount').innerText = els.amount.value ? parseFloat(els.amount.value).toLocaleString() : "-";
             document.getElementById('tdValPCount').innerText = els.valPrayers.innerText;
             document.getElementById('tdValPFidya').innerText = els.valPrayerFidya.innerText;
@@ -1387,39 +1424,68 @@ td:nth-child(3),
                 document.getElementById('tdValFRounds').innerText = els.valFastRounds.innerText;
                 document.getElementById('tdValTotalRounds').innerText = els.valTotalRounds.innerText;
             } else {
-                document.getElementById('tdValPRounds').innerText = "-"; document.getElementById('tdValFRounds').innerText = "-"; document.getElementById('tdValTotalRounds').innerText = "-";
+                document.getElementById('tdValPRounds').innerText = "-"; 
+                document.getElementById('tdValFRounds').innerText = "-"; 
+                document.getElementById('tdValTotalRounds').innerText = "-";
             }
             els.reportOverlay.classList.add('active');
         }
 
         function closeReport() { els.reportOverlay.classList.remove('active'); }
+        
         function downloadAsImage() {
             const container = els.reportContentArea;
-            html2canvas(container, { scale: 2, useCORS: true, backgroundColor: window.getComputedStyle(container).backgroundColor }).then(canvas => {
-                const link = document.createElement('a'); link.download = 'Fidya-Report.png'; link.href = canvas.toDataURL('image/png'); link.click();
+            html2canvas(container, { 
+                scale: 2, 
+                useCORS: true, 
+                backgroundColor: '#ffffff',
+                onclone: (clonedDoc) => { 
+                    clonedDoc.documentElement.setAttribute('data-theme', 'light'); 
+                } 
+            }).then(canvas => {
+                const link = document.createElement('a'); 
+                link.download = 'Fidya-Report.png'; 
+                link.href = canvas.toDataURL('image/png'); 
+                link.click();
             });
         }
+
         function downloadAsPdf() {
-            const container = els.reportContentArea; const { jsPDF } = window.jspdf;
-            html2canvas(container, { scale: 2, useCORS: true, backgroundColor: window.getComputedStyle(container).backgroundColor }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png'); const pdf = new jsPDF('p', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth(); const imgProps = pdf.getImageProperties(imgData);
+            const container = els.reportContentArea; 
+            const { jsPDF } = window.jspdf;
+            html2canvas(container, { 
+                scale: 2, 
+                useCORS: true, 
+                backgroundColor: '#ffffff',
+                onclone: (clonedDoc) => { 
+                    clonedDoc.documentElement.setAttribute('data-theme', 'light'); 
+                }
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png'); 
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth(); 
+                const imgProps = pdf.getImageProperties(imgData);
                 const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
-                pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, imgHeight); pdf.save('Fidya-Report.pdf');
+                pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, imgHeight); 
+                pdf.save('Fidya-Report.pdf');
             });
         }
         
         async function shareReport() {
             const container = els.reportContentArea;
             try {
-                // 1. Capture report as canvas
-                const canvas = await html2canvas(container, { scale: 2, useCORS: true, backgroundColor: window.getComputedStyle(container).backgroundColor });
+                const canvas = await html2canvas(container, { 
+                    scale: 2, 
+                    useCORS: true, 
+                    backgroundColor: '#ffffff',
+                    onclone: (clonedDoc) => { 
+                        clonedDoc.documentElement.setAttribute('data-theme', 'light'); 
+                    }
+                });
                 
-                // 2. Convert to Blob
                 canvas.toBlob(async (blob) => {
                     const file = new File([blob], "fidya-report.png", { type: "image/png" });
                     
-                    // 3. Check for native share support
                     if (navigator.share) {
                         try {
                             await navigator.share({
@@ -1431,7 +1497,6 @@ td:nth-child(3),
                             console.error('Share failed:', err);
                         }
                     } else {
-                        // Fallback: Download if sharing isn't supported
                         showToast("Sharing not supported on this device/browser.");
                         const link = document.createElement('a');
                         link.download = 'Fidya-Report.png';
@@ -1456,7 +1521,7 @@ td:nth-child(3),
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./service-worker.js", {
-      scope: "./"  // ← یہ اہم ہے!
+      scope: "./"
     })
     .then(reg => console.log("✅ SW registered:", reg.scope))
     .catch(err => console.error("❌ SW failed:", err));
