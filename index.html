@@ -646,6 +646,88 @@ input[type="number"]::placeholder {
     color: var(--placeholder-color) !important;
     opacity: 1 !important;
 }
+/* Force report top numbers to match table style */
+[dir="rtl"] .report-field-value.numeric-value {
+    font-family: 'EnglishNumbers', 'Segoe UI', sans-serif !important;
+    font-size: 0.75rem !important;   /* same as table */
+    direction: ltr !important;
+    unicode-bidi: bidi-override;
+    font-weight: 600 !important;
+}
+.numeric-text {
+    direction: ltr;
+    unicode-bidi: isolate;
+    display: inline-block;
+}
+
+/* --- SAVED RECORDS ADVANCED STYLES --- */
+.record-strip {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: background-color 0.2s, border-color 0.2s;
+    user-select: none; /* موبائل پر ٹیکسٹ کاپی ہونے سے روکے */
+    -webkit-user-select: none;
+    gap: 10px;
+}
+.record-strip:hover { border-color: var(--accent-color); }
+.record-strip.selected { background-color: rgba(52, 152, 219, 0.15); border-color: var(--accent-color); }
+
+.strip-checkbox { display: none; width: 20px; height: 20px; pointer-events: none; }
+.selection-mode .strip-checkbox { display: block; }
+.selection-mode .drag-handle, .selection-mode .record-number { display: none; }
+
+.record-number {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: var(--placeholder-color);
+    min-width: 25px;
+    text-align: center;
+    font-family: 'EnglishNumbers', sans-serif !important;
+}
+
+.record-info { display: flex; flex-direction: column; gap: 3px; flex-grow: 1; overflow: hidden; }
+.record-name { font-size: 0.95rem; font-weight: bold; color: var(--accent-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.record-father { font-size: 0.75rem; color: var(--text-color); opacity: 0.8; }
+
+.drag-handle {
+    cursor: grab;
+    padding: 5px 10px;
+    font-size: 1.2rem;
+    color: var(--placeholder-color);
+    touch-action: none; /* موبائل سکرول روکے گا */
+}
+.drag-handle:active { cursor: grabbing; }
+
+/* Bottom Action Bar for Selection */
+.selection-bar {
+    position: absolute;
+    bottom: 0; left: 0; width: 100%;
+    background: var(--panel-bg);
+    padding: 15px 20px;
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 100;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+.selection-bar.active { transform: translateY(0); }
+.sel-count-text { font-weight: bold; font-size: 0.9rem; color: var(--accent-color); }
+.sel-actions { display: flex; gap: 10px; }
+.btn-sel { padding: 8px 15px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; font-size: 0.8rem;}
+.btn-cancel { background: var(--bg-color); color: var(--text-color); border: 1px solid var(--input-border); }
+.btn-delete { background: var(--error-color); color: white; }
 
     </style>
 </head>
@@ -655,6 +737,15 @@ input[type="number"]::placeholder {
     <header class="top-bar">
         <div class="app-title" id="appTitle">Fidya Calculator</div>
         <div class="header-controls">
+        	<!-- Save Button -->
+            <button class="icon-btn" id="saveRecordBtn" title="Save Record">
+                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+            </button>
+            <!-- View Records List Button -->
+            <button class="icon-btn" id="viewRecordsBtn" title="Saved Records">
+                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+            </button>
+            
             <button class="icon-btn" id="reportBtn" title="Generate Report">
                 <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 8h-1V3H6v5H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zM8 5h8v3H8V5zm8 12v2H8v-4h8v2zm2-2v-2H6v2H4v-4c0-.55.45-1 1-1h14c.55 0 1 .45 1 1v4h-2z"/><circle cx="18" cy="11.5" r="1"/></svg>
             </button>
@@ -707,13 +798,16 @@ input[type="number"]::placeholder {
                     <div class="error-msg-label" id="errGender">Select Gender</div>
                 </div>
 
-                <div class="input-group">
-                 <label for="age"><span id="lblAge">Age</span><span class="required-star">*</span>
-                 </label>
-                        <input type="tel" inputmode="tel" pattern="[0-9]*" id="age" autocomplete="off" placeholder="Age">
-                    <div class="error-msg-label" id="errAge">Invalid Age</div>
-                </div>
-            </div>
+            <div class="input-group">
+<label for="age"><span id="lblAge">Age</span><span class="required-star">*</span></label>
+<div style="position: relative; display: flex; align-items: center; width: 100%;">
+<input type="tel" inputmode="tel" pattern="[0-9]*" id="age" autocomplete="off" placeholder="Age" oninput="handleAgeInput(this)">
+<span id="ageUnitDisplay" style="position: absolute; pointer-events: none; color: #888; font-family: 'NotoNastaliq', serif; font-size: 12px; display: none; white-space: nowrap; line-height: 1;"></span>
+</div>
+<div class="error-msg-label" id="errAge">Invalid Age</div>
+</div> 
+</div> 
+
 
             <div class="input-group">
                 <label for="wheatPrice"><span id="lblWheat">Wheat Price: (40 KGs)</span><span class="required-star">*</span></label>
@@ -725,7 +819,7 @@ input[type="number"]::placeholder {
                 <label for="availableAmount"><span id="lblAmount">Available Amount: (Optional)</span></label>
                 <input type="number" id="availableAmount" inputmode="numeric" pattern="[0-9]*" placeholder="Available Amount (Optional)">
             </div>
-        </div>
+        
 
         <!-- Calculation Section -->
         <div id="calculationSection">
@@ -838,6 +932,29 @@ input[type="number"]::placeholder {
             </button>
         </div>
     </div>
+    
+    <!-- ADVANCED SAVED RECORDS OVERLAY -->
+    <div class="report-overlay" id="recordsOverlay">
+        <button class="btn-close-rep" id="closeRecordsBtn">✕</button>
+        <div class="report-container" style="position: relative; overflow: hidden; padding-bottom: 60px; min-height: 400px;">
+            <div class="report-header">
+                <h2 id="recordsPopupTitle">Saved Records</h2>
+            </div>
+            
+            <div id="recordsListContainer" style="margin-top: 15px; max-height: 55vh; overflow-y: auto; overflow-x: hidden; padding: 5px;">
+                <!-- پٹیاں یہاں بنیں گی -->
+            </div>
+
+            <!-- Selection Action Bar -->
+            <div class="selection-bar" id="selectionBar">
+                <span class="sel-count-text" id="selCountText">0 Selected</span>
+                <div class="sel-actions">
+                    <button class="btn-sel btn-cancel" id="btnCancelSel">Cancel</button>
+                    <button class="btn-sel btn-delete" id="btnDeleteSel">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Info Popup (FLOATING MODAL) - READ ONLY -->
     <div class="popup-overlay" id="infoPopup">
@@ -893,8 +1010,8 @@ input[type="number"]::placeholder {
                 errAgeFirst: "Kindly provide age first.",
                 errGenderAgeFirst: "Kindly provide Gender and Age first",
                 errAllFirst: "Please fill all required fields first",
-                lblMaleLate: "Age range <span class='numeric-text'>13</span> to <span class='numeric-text'>150</span>",
-lblFemaleLate: "Age range <span class='numeric-text'>10</span> to <span class='numeric-text'>150</span>",
+                lblMaleLate: "Age minus <span class='numeric-text'>12</span> years",
+lblFemaleLate: "Age minus <span class='numeric-text'>9</span> years",
                 lblDays: "Days",
                 lblPrayers: "Prayers",
                 lblFasts: "Fasts",
@@ -1205,6 +1322,13 @@ lblFemaleLate: "Age range <span class='numeric-text'>10</span> to <span class='n
             els.textDisplay.innerHTML = s.defaultPopupText;
 
             updatePlaceholders();
+            
+    const ageField = document.getElementById("age");
+    if (ageField) {
+        handleAgeInput(ageField);
+    }
+
+
         }
 
         const urduRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
@@ -1515,6 +1639,283 @@ lblFemaleLate: "Age range <span class='numeric-text'>10</span> to <span class='n
         function loadSettings() {
             const t=localStorage.getItem('fidyaTheme'); if(t)currentTheme=t;
             const l=localStorage.getItem('fidyaLang'); if(l)currentLang=l;
+        }
+        
+      // پیمانہ صرف ایک بار بنے گا تاکہ میموری کا مسئلہ نہ ہو
+      const textMeasurer = document.createElement("canvas").getContext("2d");
+
+function handleAgeInput(input) {
+    if (!input) return;
+    const unitDisplay = document.getElementById("ageUnitDisplay");
+    const val = input.value.trim();
+    const age = parseInt(val);
+    
+    // صرف تب دکھائے جب عمر 1 سے 120 کے درمیان ہو (تاکہ غلط نمبر پر نظر نہ آئے)
+    if (val !== "" && !isNaN(age) && age >= 1 && age <= 120) {
+        textMeasurer.font = window.getComputedStyle(input).font;
+        const textWidth = textMeasurer.measureText(val).width;
+        
+        const isUrdu = (currentLang === "ur");
+        unitDisplay.innerText = isUrdu ? " سال" : " years";
+
+        // پوزیشننگ: اردو میں دائیں سے، انگلش میں بائیں سے
+        if (isUrdu) {
+            unitDisplay.style.left = "auto";
+            unitDisplay.style.right = (textWidth + 18) + "px"; // نمبر کے بالکل ساتھ اردو میں
+        } else {
+            unitDisplay.style.right = "auto";
+            unitDisplay.style.left = (textWidth + 18) + "px"; // نمبر کے بالکل ساتھ انگلش میں
+        }
+        
+        unitDisplay.style.display = "block";
+    } else {
+        unitDisplay.style.display = "none";
+    }
+}
+
+
+// ==========================================
+        // SAVED RECORDS (WITH DRAG & LONG PRESS)
+        // ==========================================
+        
+        let isSelectionMode = false;
+        let selectedRecordIds = new Set();
+        let longPressTimer;
+        let draggedItem = null;
+
+        const recordsOverlay = document.getElementById('recordsOverlay');
+        const listContainer = document.getElementById('recordsListContainer');
+        const selectionBar = document.getElementById('selectionBar');
+        const selCountText = document.getElementById('selCountText');
+
+        // Events for Header Buttons
+        document.getElementById('saveRecordBtn').addEventListener('click', () => {
+            const name = els.txtName.value.trim();
+            if (!name) {
+                showToast(currentLang === 'ur' ? "نام درج کرنا ضروری ہے" : "Name is required");
+                return;
+            }
+            const record = {
+                id: Date.now().toString(),
+                name: name,
+                father: els.txtFather.value.trim(),
+                caste: els.txtCaste.value.trim(),
+                gender: els.genderInput.value,
+                age: els.age.value,
+                wheatPrice: els.wheat.value,
+                availableAmount: els.amount.value
+            };
+            let records = JSON.parse(localStorage.getItem('fidyaRecords') || '[]');
+            records.push(record); // نیا ریکارڈ آخر میں لگے گا
+            localStorage.setItem('fidyaRecords', JSON.stringify(records));
+            showToast(currentLang === 'ur' ? "محفوظ ہو گیا!" : "Saved successfully!");
+        });
+
+        document.getElementById('viewRecordsBtn').addEventListener('click', () => {
+            exitSelectionMode();
+            renderRecordsList();
+            recordsOverlay.classList.add('active');
+        });
+
+        document.getElementById('closeRecordsBtn').addEventListener('click', () => {
+            recordsOverlay.classList.remove('active');
+            exitSelectionMode();
+        });
+
+        // Selection Actions
+        document.getElementById('btnCancelSel').addEventListener('click', exitSelectionMode);
+        document.getElementById('btnDeleteSel').addEventListener('click', () => {
+            if(selectedRecordIds.size === 0) return;
+            let confirmMsg = currentLang === 'ur' ? `کیا آپ واقعی ${selectedRecordIds.size} ریکارڈ ڈیلیٹ کرنا چاہتے ہیں؟` : `Delete ${selectedRecordIds.size} selected records?`;
+            if (confirm(confirmMsg)) {
+                let records = JSON.parse(localStorage.getItem('fidyaRecords') || '[]');
+                records = records.filter(r => !selectedRecordIds.has(r.id));
+                localStorage.setItem('fidyaRecords', JSON.stringify(records));
+                exitSelectionMode();
+                renderRecordsList();
+            }
+        });
+
+        function enterSelectionMode(firstId) {
+            isSelectionMode = true;
+            listContainer.classList.add('selection-mode');
+            selectionBar.classList.add('active');
+            if(firstId) toggleSelection(firstId);
+            renderRecordsList(); // Re-render to show checkboxes
+        }
+
+        function exitSelectionMode() {
+            isSelectionMode = false;
+            selectedRecordIds.clear();
+            listContainer.classList.remove('selection-mode');
+            selectionBar.classList.remove('active');
+            renderRecordsList();
+        }
+
+        function toggleSelection(id) {
+            if (selectedRecordIds.has(id)) selectedRecordIds.delete(id);
+            else selectedRecordIds.add(id);
+            
+            selCountText.innerText = currentLang === 'ur' ? `${selectedRecordIds.size} سلیکٹڈ` : `${selectedRecordIds.size} Selected`;
+            renderRecordsList(); // Update UI
+        }
+
+        function renderRecordsList() {
+            let records = JSON.parse(localStorage.getItem('fidyaRecords') || '[]');
+            listContainer.innerHTML = '';
+
+            if (records.length === 0) {
+                listContainer.innerHTML = `<div style="text-align:center; opacity:0.6; margin-top:20px;">${currentLang === 'ur' ? "کوئی ریکارڈ موجود نہیں" : "No saved records found."}</div>`;
+                return;
+            }
+
+            records.forEach((record, index) => {
+                const strip = document.createElement('div');
+                strip.className = `record-strip ${selectedRecordIds.has(record.id) ? 'selected' : ''}`;
+                strip.dataset.id = record.id;
+                
+                const fatherText = record.father ? (currentLang === 'ur' ? `ولدیت: ${record.father}` : `S/O: ${record.father}`) : '';
+
+                strip.innerHTML = `
+                    <input type="checkbox" class="strip-checkbox" ${selectedRecordIds.has(record.id) ? 'checked' : ''}>
+                    <div class="record-number">${index + 1}</div>
+                    <div class="record-info">
+                        <div class="record-name auto-urdu">${record.name}</div>
+                        <div class="record-father auto-urdu">${fatherText}</div>
+                    </div>
+                    <div class="drag-handle">☰</div>
+                `;
+
+                // --- 1. Long Press Logic (دبا کر رکھنا) ---
+                const startPress = (e) => {
+                    if (e.target.classList.contains('drag-handle') || isSelectionMode) return;
+                    longPressTimer = setTimeout(() => {
+                        enterSelectionMode(record.id);
+                        navigator.vibrate && navigator.vibrate(50); // موبائل پر ہلکی سی وائبریشن
+                    }, 500); // آدھا سیکنڈ دبانے پر
+                };
+                const cancelPress = () => clearTimeout(longPressTimer);
+
+                strip.addEventListener('touchstart', startPress, {passive: true});
+                strip.addEventListener('touchend', cancelPress);
+                strip.addEventListener('touchmove', cancelPress);
+                strip.addEventListener('mousedown', startPress);
+                strip.addEventListener('mouseup', cancelPress);
+                strip.addEventListener('mouseleave', cancelPress);
+
+                // --- 2. Click Logic (نارمل کلک) ---
+                strip.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('drag-handle')) return;
+                    
+                    if (isSelectionMode) {
+                        toggleSelection(record.id);
+                    } else {
+                        // ڈیٹا لوڈ کریں
+                        els.txtName.value = record.name || '';
+                        els.txtFather.value = record.father || '';
+                        els.txtCaste.value = record.caste || '';
+                        if(record.gender) {
+                            els.genderInput.value = record.gender;
+                            els.genderText.innerText = record.gender === 'male' ? STRINGS[currentLang].male : STRINGS[currentLang].female;
+                            els.genderTrigger.classList.remove('placeholder');
+                        }
+                        els.age.value = record.age || '';
+                        els.wheat.value = record.wheatPrice || '';
+                        els.amount.value = record.availableAmount || '';
+                        
+                        setDynamicFont(els.txtName); setDynamicFont(els.txtFather); setDynamicFont(els.txtCaste);
+                        
+                        recordsOverlay.classList.remove('active');
+                        calculate();
+                        showToast(currentLang === 'ur' ? "ڈیٹا لوڈ ہو گیا" : "Record Loaded");
+                    }
+                });
+
+                // --- 3. Drag & Drop Logic (اوپر نیچے کھینچنا) ---
+                const handle = strip.querySelector('.drag-handle');
+                
+                // ٹچ سکرین (موبائل) کے لیے ڈریگ فنکشن
+                handle.addEventListener('touchstart', function(e) {
+                    if (isSelectionMode) return;
+                    draggedItem = strip;
+                    strip.style.opacity = '0.5';
+                    strip.style.boxShadow = '0 5px 15px rgba(0,0,0,0.2)';
+                }, {passive: true});
+
+                handle.addEventListener('touchmove', function(e) {
+                    if (!draggedItem) return;
+                    e.preventDefault(); // سکرین کو سکرول ہونے سے روکے
+                    const touch = e.touches[0];
+                    const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
+                    const targetStrip = targetEl ? targetEl.closest('.record-strip') : null;
+                    
+                    if (targetStrip && targetStrip !== draggedItem) {
+                        const rect = targetStrip.getBoundingClientRect();
+                        const next = (touch.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+                        listContainer.insertBefore(draggedItem, next ? targetStrip.nextSibling : targetStrip);
+                    }
+                }, {passive: false});
+
+                handle.addEventListener('touchend', function() {
+                    if (!draggedItem) return;
+                    draggedItem.style.opacity = '1';
+                    draggedItem.style.boxShadow = '';
+                    draggedItem = null;
+                    updateOrderAfterDrag();
+                });
+                
+                // ماؤس (کمپیوٹر) کے لیے ڈریگ
+                handle.addEventListener('mousedown', () => strip.draggable = true);
+                strip.addEventListener('dragstart', (e) => {
+                    draggedItem = strip;
+                    setTimeout(() => strip.style.opacity = '0.5', 0);
+                });
+                strip.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    const targetStrip = e.target.closest('.record-strip');
+                    if (targetStrip && targetStrip !== draggedItem) {
+                        const rect = targetStrip.getBoundingClientRect();
+                        const next = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+                        listContainer.insertBefore(draggedItem, next ? targetStrip.nextSibling : targetStrip);
+                    }
+                });
+
+
+
+
+
+
+
+
+strip.addEventListener('dragend', () => {
+                    strip.draggable = false;
+                    strip.style.opacity = '1';
+                    updateOrderAfterDrag();
+                });
+
+                // پٹی کو کنٹینر (سکرین) میں شامل کریں
+                listContainer.appendChild(strip);
+                
+            }); // records.forEach لوپ کا اختتام
+        } // renderRecordsList فنکشن کا اختتام
+
+        // --- 4. ڈریگ کے بعد نیا آرڈر لوکل سٹوریج میں محفوظ کرنے کا فنکشن ---
+        function updateOrderAfterDrag() {
+            // سکرین پر موجود تمام پٹیوں کی نئی ترتیب حاصل کریں
+            const currentStrips = Array.from(listContainer.querySelectorAll('.record-strip'));
+            const oldRecords = JSON.parse(localStorage.getItem('fidyaRecords') || '[]');
+            
+            // نئی ترتیب کے حساب سے آئی ڈیز (IDs) نکالیں
+            const newOrderIds = currentStrips.map(strip => strip.dataset.id);
+            
+            // پرانے ریکارڈز کو نئی ترتیب کے مطابق سیٹ کریں
+            const newRecords = newOrderIds.map(id => oldRecords.find(record => record.id === id));
+            
+            // نیا ڈیٹا لوکل سٹوریج میں محفوظ کریں
+            localStorage.setItem('fidyaRecords', JSON.stringify(newRecords));
+            
+            // سکرین پر نمبرز (1, 2, 3) کو اپ ڈیٹ کرنے کے لیے لسٹ کو دوبارہ رینڈر کریں
+            renderRecordsList();
         }
     </script>
  <script>
