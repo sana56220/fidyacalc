@@ -91,14 +91,34 @@
             color: var(--text-color);
             transition: background-color 0.3s, color 0.3s;
             overflow-x: hidden;
-            padding-top: 55px;
+            padding-top: 0;
             font-size: var(--base-font);
             line-height: 1.3;
             min-height: 100vh;
-            /* CENTER LAYOUT FOR LARGE SCREENS/DPI */
+            margin: 0;
+        }
+
+        /* ===== SCALE LOCK SYSTEM (darkhasthazri style) ===== */
+        #app-scale-wrapper {
+            width: 100%;
+            min-height: 100vh;
             display: flex;
-            flex-direction: column;
-            align-items: center; 
+            justify-content: center;
+            align-items: flex-start;
+            overflow: visible;
+            padding-top: 55px;
+            box-sizing: border-box;
+        }
+
+        #app-fixed-size {
+            width: 360px;
+            transform-origin: top center;
+            padding-bottom: 60px;
+        }
+
+        * {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
         }
 
         .numeric-value { font-family: 'Segoe UI', sans-serif; font-weight: 600; }
@@ -141,11 +161,263 @@
         [dir="rtl"] #infoBtn {
             font-family: serif !important; 
             line-height: 1 !important;
-            padding-top: 3px !important; 
+            padding: 0 !important; 
         }
         
         [dir="rtl"] #closePopup {
             font-family: sans-serif !important; 
+        }
+
+        /* ============================================================
+           TUTORIAL BUTTON & SLIDESHOW STYLES
+           ============================================================ */
+        #tutorialBtn {
+            background: none; border: none; cursor: pointer;
+            color: var(--text-color);
+            font-size: 1.1rem; padding: 4px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px;
+        }
+
+        .tutorial-overlay {
+            position: fixed; top: 0;
+            width: 360px; left: 50%;
+            transform: translateX(-50%);
+            transform-origin: top center;
+            height: 100vh;
+            background-color: rgba(0,0,0,0.75);
+            backdrop-filter: blur(4px);
+            z-index: 3500;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .tutorial-overlay.active { opacity: 1; visibility: visible; }
+
+        .tutorial-card {
+            width: 96%;
+            background-color: var(--panel-bg);
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.4);
+            overflow: hidden;
+            display: flex; flex-direction: column;
+            height: 88vh;
+            max-height: 620px;
+        }
+
+        .tutorial-top-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 15px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            flex-shrink: 0;
+        }
+        .tutorial-title {
+            font-size: 0.9rem; font-weight: 700;
+            color: var(--accent-color);
+        }
+        [dir="rtl"] .tutorial-title { font-family: var(--font-urdu) !important; font-size: 0.85rem; }
+
+        #closeTutorialBtn {
+            width: 26px; height: 26px;
+            border: 2px solid var(--text-color);
+            border-radius: 50%;
+            font-size: 0.85rem;
+            display: flex; align-items: center; justify-content: center;
+            background: none; color: var(--text-color);
+            cursor: pointer; font-family: sans-serif !important;
+            line-height: 1;
+        }
+
+        .tutorial-image-area {
+            flex-shrink: 0;
+            width: 100%;
+            height: 160px;
+            background: linear-gradient(135deg, #e8f4fd 0%, #dbeafe 100%);
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+        }
+        [data-theme="dark"] .tutorial-image-area {
+            background: linear-gradient(135deg, #1a2a3a 0%, #1e3a5f 100%);
+        }
+        .tutorial-image-area img {
+            width: 100%; height: 100%;
+            object-fit: contain;
+            padding: 10px;
+        }
+        .tutorial-img-placeholder {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 8px; opacity: 0.5;
+        }
+        .tutorial-img-placeholder svg { width: 60px; height: 60px; fill: var(--accent-color); opacity: 0.6; }
+        .tutorial-img-placeholder span { font-size: 0.7rem; color: var(--text-color); }
+
+        .tutorial-slide-num {
+            position: absolute; bottom: 8px; right: 10px;
+            font-size: 0.65rem; font-weight: 600;
+            background: rgba(0,0,0,0.3); color: #fff;
+            padding: 2px 7px; border-radius: 20px;
+            font-family: 'Segoe UI', sans-serif !important;
+        }
+
+        .tutorial-text-area {
+            flex-grow: 1;        /* fills all space between image and nav */
+            overflow-y: auto;    /* only this part scrolls if text is long */
+            -webkit-overflow-scrolling: touch;
+            padding: 14px 16px 6px;
+        }
+        .tutorial-slide-heading {
+            font-size: 0.95rem; font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 6px; line-height: 1.4;
+        }
+        [dir="rtl"] .tutorial-slide-heading {
+            font-family: var(--font-urdu) !important;
+            font-size: 0.9rem; line-height: 2;
+        }
+        [dir="rtl"] .tutorial-slide-body {
+            font-family: var(--font-urdu) !important;
+            font-size: 0.8rem; line-height: 2.1;
+        }
+        /* Digit spans — same style in both LTR and RTL */
+        .tut-num {
+            font-family: 'Segoe UI', Arial, sans-serif !important;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            direction: ltr;
+            unicode-bidi: isolate;
+            display: inline;
+            letter-spacing: 0.02em;
+        }
+        [dir="rtl"] .tutorial-slide-heading .tut-num,
+        [dir="rtl"] .tutorial-slide-body .tut-num {
+            font-family: 'Segoe UI', Arial, sans-serif !important;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+        .tutorial-slide-heading .tut-num {
+            font-size: 0.9rem;
+        }
+        /* Inline icon inside tutorial text */
+        .tut-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px; height: 22px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            vertical-align: middle;
+            margin: 0 3px;
+            flex-shrink: 0;
+        }
+        .tut-icon svg { width: 13px; height: 13px; fill: #fff; }
+        .tut-icon-plain {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px; height: 22px;
+            border: 1.5px solid var(--accent-color);
+            border-radius: 50%;
+            vertical-align: middle;
+            margin: 0 3px;
+            flex-shrink: 0;
+        }
+        .tut-icon-plain svg { width: 13px; height: 13px; fill: var(--accent-color); }
+        .tutorial-slide-body {
+            font-size: 0.82rem; line-height: 1.65;
+            color: var(--text-color);
+        }
+        [dir="rtl"] .tutorial-slide-body {
+            font-family: var(--font-urdu) !important;
+            font-size: 0.8rem; line-height: 2.1;
+        }
+
+        .tutorial-nav {
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 15px;
+            border-top: 1px solid rgba(0,0,0,0.08);
+            gap: 10px;
+            background: var(--panel-bg);
+        }
+        .tutorial-nav-btn {
+            background: var(--accent-color); color: #fff;
+            border: none; border-radius: 25px;
+            padding: 7px 18px; font-size: 0.8rem; font-weight: 600;
+            cursor: pointer; transition: background 0.2s, opacity 0.2s;
+            min-width: 70px;
+        }
+        [dir="rtl"] .tutorial-nav-btn { font-family: var(--font-urdu) !important; font-size: 0.75rem; }
+        .tutorial-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .tutorial-nav-btn:not(:disabled):hover { background: var(--accent-hover); }
+
+        .tutorial-dots {
+            display: flex; gap: 5px; align-items: center;
+        }
+        .tutorial-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--input-border);
+            transition: all 0.3s; cursor: pointer;
+        }
+        .tutorial-dot.active {
+            background: var(--accent-color);
+            width: 18px; border-radius: 4px;
+        }
+
+        /* AUTO-PLAY CONTROLS */
+        .tutorial-autoplay-row {
+            display: flex; align-items: center; justify-content: center;
+            gap: 6px;
+            padding: 6px 15px 12px;
+            flex-shrink: 0;
+            background: var(--panel-bg);
+        }
+        .tut-play-btn {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-color);
+            background: none;
+            color: var(--accent-color);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            flex-shrink: 0;
+        }
+        .tut-play-btn:hover, .tut-play-btn.playing {
+            background: var(--accent-color);
+            color: #fff;
+        }
+        .tut-play-btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+        .tut-speed-group {
+            display: flex; gap: 4px; align-items: center;
+        }
+        .tut-speed-btn {
+            background: none;
+            border: 1.5px solid var(--input-border);
+            color: var(--text-color);
+            border-radius: 20px;
+            padding: 3px 9px;
+            font-size: 0.68rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Segoe UI', sans-serif !important;
+            transition: all 0.2s;
+            line-height: 1.4;
+        }
+        .tut-speed-btn.active {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            background: rgba(52,152,219,0.08);
+        }
+        .tut-speed-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
+
+        .tut-speed-label {
+            font-size: 0.65rem; color: var(--text-color); opacity: 0.6;
+            font-family: 'Segoe UI', sans-serif !important;
+            white-space: nowrap;
         }
 
         [dir="rtl"] input {
@@ -169,18 +441,17 @@
 
         [dir="rtl"] label { line-height: 1.5; padding-right: 5px; overflow: visible; }
         
-        /* HEADER - FIXED WIDTH FOR CONSISTENCY */
+        /* HEADER - SCALE LOCK */
         .top-bar {
             position: fixed; top: 0; 
-            width: 100%; 
-            max-width: var(--app-max-width); /* Lock width */
+            width: 360px;
             height: 50px;
             background-color: var(--header-bg); box-shadow: var(--shadow);
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 15px; z-index: 1000;
-            /* Center the fixed header */
             left: 50%;
             transform: translateX(-50%);
+            transform-origin: top center;
         }
 
         .app-title { font-size: 0.85rem; font-weight: 700; color: var(--text-color); }
@@ -200,14 +471,13 @@
             font-family: serif; 
             font-weight: bold; font-style: italic;
             display: flex; align-items: center; justify-content: center;
-            padding-top: 3px; 
+            padding: 0;
             line-height: 1;
         }
 
         /* CONTAINER & INPUTS */
         .container { 
             width: 100%;
-            max-width: var(--app-max-width); /* Force mobile width on all screens */
             margin: 0 auto; 
             padding: 10px 15px;
         }
@@ -361,15 +631,21 @@
 
         /* Popup (READ ONLY) */
         .popup-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(3px); z-index: 2000; display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s;
+            position: fixed; top: 0;
+            width: 360px; left: 50%;
+            transform: translateX(-50%);
+            transform-origin: top center;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(3px); z-index: 2000;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s;
         }
         .popup-overlay.active { opacity: 1; visibility: visible; }
         .popup-card-container {
-            width: 90%; max-width: 450px; height: 85%; background-color: var(--bg-color); border-radius: 20px;
-            display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.3); overflow: hidden; transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 96%; height: 85%; background-color: var(--bg-color); border-radius: 20px;
+            display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.3); overflow: hidden;
         }
-        .popup-overlay.active .popup-card-container { transform: scale(1); }
         .popup-header { flex-shrink: 0; height: 50px; background-color: var(--panel-bg); box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom-left-radius: 20px; border-bottom-right-radius: 5px; z-index: 20; }
         [dir="rtl"] .popup-header { border-bottom-left-radius: 5px; border-bottom-right-radius: 20px; }
         .popup-title { font-weight: bold; font-size: 1rem; color: var(--text-color); }
@@ -414,11 +690,12 @@
             line-height: 1;
         }
 
-        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background-color: var(--text-color); color: var(--bg-color); padding: 8px 16px; border-radius: 30px; font-size: 0.8rem; z-index: 3000; opacity: 0; pointer-events: none; text-align: center; transition: 0.3s; }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background-color: var(--text-color); color: var(--bg-color); padding: 10px 20px; border-radius: 30px; font-size: 0.82rem; z-index: 99999; opacity: 0; pointer-events: none; text-align: center; transition: opacity 0.4s ease, transform 0.4s ease; }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
         /* Report Styles */
-        .report-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-color); z-index: 2500; opacity: 0; visibility: hidden; transition: 0.3s; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
+        .report-overlay { position: fixed; top: 0; width: 360px; left: 50%; transform: translateX(-50%); transform-origin: top center; height: 100vh; background-color: var(--bg-color); z-index: 2500; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
         .report-overlay.active { opacity: 1; visibility: visible; }
         .report-container { width: 100%; max-width: 600px; margin: 20px auto; background: var(--panel-bg); border: 1px solid var(--input-border); box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 20px; border-radius: 10px; color: var(--text-color); position: relative; }
         
@@ -659,76 +936,256 @@ input[type="number"]::placeholder {
     unicode-bidi: isolate;
     display: inline-block;
 }
+/* ============================================================
+   SAVE & HISTORY SYSTEM
+   ============================================================ */
 
-/* --- SAVED RECORDS ADVANCED STYLES --- */
-.record-strip {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--input-bg);
-    border: 1px solid var(--input-border);
-    padding: 10px;
-    margin-bottom: 8px;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    transition: background-color 0.2s, border-color 0.2s;
-    user-select: none; /* موبائل پر ٹیکسٹ کاپی ہونے سے روکے */
-    -webkit-user-select: none;
+/* Header save & history icon buttons */
+#saveRecordBtn, #historyBtn {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-color);
+    font-size: 1.1rem; padding: 4px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px;
+}
+#saveRecordBtn svg, #historyBtn svg { width: 18px; height: 18px; fill: currentColor; }
+
+/* History Overlay */
+.history-overlay {
+    position: fixed; top: 0;
+    width: 360px; left: 50%;
+    transform: translateX(-50%);
+    transform-origin: top center;
+    height: 100vh;
+    background: var(--bg-color);
+    z-index: 3000;
+    display: flex; flex-direction: column;
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+.history-overlay.active { opacity: 1; visibility: visible; }
+
+/* History Top Bar */
+.history-topbar {
+    flex-shrink: 0;
+    height: 50px;
+    background: var(--header-bg);
+    box-shadow: var(--shadow);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 15px;
+    gap: 8px;
+}
+.history-topbar-title {
+    font-size: 0.9rem; font-weight: 700;
+    color: var(--text-color); flex-grow: 1;
+}
+[dir="rtl"] .history-topbar-title { font-family: var(--font-urdu) !important; }
+
+#closeHistoryBtn {
+    width: 26px; height: 26px;
+    border: 2px solid var(--text-color);
+    border-radius: 50%;
+    font-size: 0.85rem;
+    display: flex; align-items: center; justify-content: center;
+    background: none; color: var(--text-color);
+    cursor: pointer; font-family: sans-serif !important; line-height: 1;
+}
+
+/* Selection action bar */
+.history-action-bar {
+    flex-shrink: 0;
+    display: none;
+    align-items: center; justify-content: space-between;
+    padding: 7px 15px;
+    background: rgba(231, 76, 60, 0.08);
+    border-bottom: 1px solid rgba(231,76,60,0.2);
     gap: 10px;
 }
-.record-strip:hover { border-color: var(--accent-color); }
-.record-strip.selected { background-color: rgba(52, 152, 219, 0.15); border-color: var(--accent-color); }
+.history-action-bar.visible { display: flex; }
+.hist-sel-count {
+    font-size: 0.8rem; font-weight: 600; color: var(--error-color);
+    font-family: 'Segoe UI', sans-serif !important;
+}
+[dir="rtl"] .hist-sel-count { font-family: var(--font-urdu) !important; }
+.hist-del-btn {
+    background: var(--error-color); color: #fff;
+    border: none; border-radius: 20px;
+    padding: 5px 14px; font-size: 0.78rem; font-weight: 600;
+    cursor: pointer;
+}
+[dir="rtl"] .hist-del-btn { font-family: var(--font-urdu) !important; }
+.hist-sel-all-btn {
+    background: none; color: var(--text-color);
+    border: 1.5px solid var(--input-border);
+    border-radius: 20px;
+    padding: 5px 12px; font-size: 0.75rem; font-weight: 600; cursor: pointer;
+}
+[dir="rtl"] .hist-sel-all-btn { font-family: var(--font-urdu) !important; }
 
-.strip-checkbox { display: none; width: 20px; height: 20px; pointer-events: none; }
-.selection-mode .strip-checkbox { display: block; }
-.selection-mode .drag-handle, .selection-mode .record-number { display: none; }
+/* List */
+.history-list {
+    flex-grow: 1; overflow-y: auto;
+    padding: 10px 12px;
+    -webkit-overflow-scrolling: touch;
+}
 
-.record-number {
+/* Empty state */
+.history-empty {
+    text-align: center; padding: 50px 20px;
+    color: var(--text-color); opacity: 0.4;
     font-size: 0.9rem;
-    font-weight: bold;
-    color: var(--placeholder-color);
-    min-width: 25px;
-    text-align: center;
-    font-family: 'EnglishNumbers', sans-serif !important;
+    display: none;
 }
+[dir="rtl"] .history-empty { font-family: var(--font-urdu) !important; line-height: 2; }
+.history-empty svg { width: 48px; height: 48px; fill: currentColor; margin-bottom: 10px; opacity: 0.5; }
+.history-empty.visible { display: block; }
 
-.record-info { display: flex; flex-direction: column; gap: 3px; flex-grow: 1; overflow: hidden; }
-.record-name { font-size: 0.95rem; font-weight: bold; color: var(--accent-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.record-father { font-size: 0.75rem; color: var(--text-color); opacity: 0.8; }
-
-.drag-handle {
-    cursor: grab;
-    padding: 5px 10px;
-    font-size: 1.2rem;
-    color: var(--placeholder-color);
-    touch-action: none; /* موبائل سکرول روکے گا */
-}
-.drag-handle:active { cursor: grabbing; }
-
-/* Bottom Action Bar for Selection */
-.selection-bar {
-    position: absolute;
-    bottom: 0; left: 0; width: 100%;
+/* Record Strip */
+.hist-strip {
+    display: flex; align-items: center;
     background: var(--panel-bg);
-    padding: 15px 20px;
-    box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transform: translateY(100%);
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    z-index: 100;
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    padding: 0;
+    box-shadow: var(--shadow);
+    transition: transform 0.15s, box-shadow 0.15s, background 0.2s;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
 }
-.selection-bar.active { transform: translateY(0); }
-.sel-count-text { font-weight: bold; font-size: 0.9rem; color: var(--accent-color); }
-.sel-actions { display: flex; gap: 10px; }
-.btn-sel { padding: 8px 15px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; font-size: 0.8rem;}
-.btn-cancel { background: var(--bg-color); color: var(--text-color); border: 1px solid var(--input-border); }
-.btn-delete { background: var(--error-color); color: white; }
+.hist-strip.selected {
+    background: rgba(52, 152, 219, 0.1);
+    border-color: var(--accent-color);
+}
+.hist-strip.dragging {
+    opacity: 0.5;
+    transform: scale(0.98);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+    z-index: 999;
+}
+.hist-strip.drag-over {
+    border-color: var(--accent-color);
+    border-style: dashed;
+}
 
+/* Number badge */
+.hist-num {
+    flex-shrink: 0;
+    width: 32px; height: 100%;
+    min-height: 52px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 700;
+    color: #fff;
+    background: var(--accent-color);
+    font-family: 'Segoe UI', sans-serif !important;
+    border-radius: 10px 0 0 10px;
+}
+[dir="rtl"] .hist-num { border-radius: 0 10px 10px 0; }
+
+/* Checkbox area */
+.hist-check-area {
+    flex-shrink: 0;
+    width: 32px;
+    display: flex; align-items: center; justify-content: center;
+}
+.hist-checkbox {
+    width: 16px; height: 16px;
+    border: 2px solid var(--input-border);
+    border-radius: 4px;
+    background: transparent;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+}
+.hist-strip.selected .hist-checkbox {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+}
+.hist-checkbox::after {
+    content: '';
+    width: 4px; height: 8px;
+    border: solid #fff; border-width: 0 2px 2px 0;
+    transform: rotate(45deg) translateY(-1px);
+    display: none;
+}
+.hist-strip.selected .hist-checkbox::after { display: block; }
+
+/* Text content */
+.hist-content {
+    flex-grow: 1;
+    padding: 10px 6px;
+    min-width: 0;
+}
+.hist-name {
+    font-size: 0.85rem; font-weight: 600;
+    color: var(--text-color);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+[dir="rtl"] .hist-name { font-family: var(--font-urdu) !important; font-size: 0.8rem; }
+.hist-father {
+    font-size: 0.7rem; color: var(--text-color); opacity: 0.6;
+    margin-top: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+[dir="rtl"] .hist-father { font-family: var(--font-urdu) !important; }
+.hist-meta {
+    font-size: 0.65rem; color: var(--accent-color); opacity: 0.8;
+    margin-top: 2px; font-family: 'Segoe UI', sans-serif !important;
+}
+
+/* Load button on strip */
+.hist-load-btn {
+    flex-shrink: 0;
+    background: none; border: none;
+    color: var(--accent-color);
+    padding: 8px 6px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+}
+.hist-load-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+/* Drag handle (3 lines) */
+.hist-drag-handle {
+    flex-shrink: 0;
+    width: 30px; height: 100%; min-height: 52px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px;
+    cursor: grab;
+    padding: 0 8px;
+    border-radius: 0 10px 10px 0;
+    touch-action: none;
+}
+[dir="rtl"] .hist-drag-handle { border-radius: 10px 0 0 10px; }
+.hist-drag-handle:active { cursor: grabbing; }
+.hist-drag-line {
+    width: 16px; height: 2px;
+    background: var(--input-border);
+    border-radius: 2px;
+    transition: background 0.2s;
+}
+.hist-drag-handle:hover .hist-drag-line { background: var(--accent-color); }
+
+/* Count badge in header */
+.hist-count-badge {
+    position: absolute;
+    top: -4px; right: -4px;
+    background: var(--error-color); color: #ffffff;
+    border-radius: 50%;
+    width: 16px; height: 16px;
+    font-size: 0.55rem; font-weight: 600;
+    display: none; align-items: center; justify-content: center;
+    font-family: 'Segoe UI', sans-serif !important;
+    pointer-events: none;
+    letter-spacing: 0;
+    border: 1.5px solid var(--header-bg);
+    opacity: 0.92;
+}
+.hist-count-badge.visible { display: flex; }
+
+#historyBtnWrap { position: relative; display: flex; }
     </style>
 </head>
 <body>
@@ -737,15 +1194,21 @@ input[type="number"]::placeholder {
     <header class="top-bar">
         <div class="app-title" id="appTitle">Fidya Calculator</div>
         <div class="header-controls">
-        	<!-- Save Button -->
+            <!-- Tutorial Button (first position) -->
+            <button class="icon-btn" id="tutorialBtn" title="How to Use">
+                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+            </button>
+            <!-- Save Record Button (second position) -->
             <button class="icon-btn" id="saveRecordBtn" title="Save Record">
-                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+                <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M17 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm2 16H5V5h11.17L19 7.83V19zm-7-7c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zM6 6h9v4H6z"/></svg>
             </button>
-            <!-- View Records List Button -->
-            <button class="icon-btn" id="viewRecordsBtn" title="Saved Records">
-                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
-            </button>
-            
+            <!-- History Button -->
+            <div id="historyBtnWrap">
+                <button class="icon-btn" id="historyBtn" title="Saved Records">
+                    <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+                </button>
+                <div class="hist-count-badge" id="histCountBadge">0</div>
+            </div>
             <button class="icon-btn" id="reportBtn" title="Generate Report">
                 <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 8h-1V3H6v5H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zM8 5h8v3H8V5zm8 12v2H8v-4h8v2zm2-2v-2H6v2H4v-4c0-.55.45-1 1-1h14c.55 0 1 .45 1 1v4h-2z"/><circle cx="18" cy="11.5" r="1"/></svg>
             </button>
@@ -758,6 +1221,8 @@ input[type="number"]::placeholder {
         </div>
     </header>
 
+    <div id="app-scale-wrapper">
+    <div id="app-fixed-size">
     <div class="container">
         <!-- Input Section -->
         <div class="input-section">
@@ -840,6 +1305,8 @@ input[type="number"]::placeholder {
             </div>
         </div>
     </div>
+    </div><!-- /app-fixed-size -->
+    </div><!-- /app-scale-wrapper -->
 
     <!-- Toast Notification -->
     <div id="toast" class="toast">Message</div>
@@ -932,29 +1399,6 @@ input[type="number"]::placeholder {
             </button>
         </div>
     </div>
-    
-    <!-- ADVANCED SAVED RECORDS OVERLAY -->
-    <div class="report-overlay" id="recordsOverlay">
-        <button class="btn-close-rep" id="closeRecordsBtn">✕</button>
-        <div class="report-container" style="position: relative; overflow: hidden; padding-bottom: 60px; min-height: 400px;">
-            <div class="report-header">
-                <h2 id="recordsPopupTitle">Saved Records</h2>
-            </div>
-            
-            <div id="recordsListContainer" style="margin-top: 15px; max-height: 55vh; overflow-y: auto; overflow-x: hidden; padding: 5px;">
-                <!-- پٹیاں یہاں بنیں گی -->
-            </div>
-
-            <!-- Selection Action Bar -->
-            <div class="selection-bar" id="selectionBar">
-                <span class="sel-count-text" id="selCountText">0 Selected</span>
-                <div class="sel-actions">
-                    <button class="btn-sel btn-cancel" id="btnCancelSel">Cancel</button>
-                    <button class="btn-sel btn-delete" id="btnDeleteSel">Delete</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Info Popup (FLOATING MODAL) - READ ONLY -->
     <div class="popup-overlay" id="infoPopup">
@@ -978,6 +1422,79 @@ input[type="number"]::placeholder {
                     <input type="checkbox" id="dontShowAgain">
                     <span class="checkmark"></span>
                 </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         TUTORIAL / HOW TO USE SLIDESHOW
+         ================================================================ -->
+    <div class="tutorial-overlay" id="tutorialOverlay">
+        <div class="tutorial-card">
+            <!-- Top Bar -->
+            <div class="tutorial-top-bar">
+                <span class="tutorial-title" id="tutTitleBar">How to Use</span>
+                <button id="closeTutorialBtn">✕</button>
+            </div>
+
+            <!-- Image Area -->
+            <div class="tutorial-image-area" id="tutImgArea">
+                <!-- Image or placeholder shown by JS -->
+            </div>
+
+            <!-- Text Area -->
+            <div class="tutorial-text-area">
+                <div class="tutorial-slide-heading" id="tutHeading"></div>
+                <div class="tutorial-slide-body" id="tutBody"></div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="tutorial-nav">
+                <button class="tutorial-nav-btn" id="tutPrevBtn">← Prev</button>
+                <div class="tutorial-dots" id="tutDots"></div>
+                <button class="tutorial-nav-btn" id="tutNextBtn">Next →</button>
+            </div>
+
+            <!-- Auto-play row -->
+            <div class="tutorial-autoplay-row">
+                <button class="tut-play-btn" id="tutPlayBtn" title="Auto Play">
+                    <svg id="tutPlayIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </button>
+                <span class="tut-speed-label" id="tutSpeedLabel">Speed:</span>
+                <div class="tut-speed-group">
+                    <button class="tut-speed-btn" data-sec="2">2s</button>
+                    <button class="tut-speed-btn active" data-sec="4">4s</button>
+                    <button class="tut-speed-btn" data-sec="6">6s</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         HISTORY / SAVED RECORDS OVERLAY
+         ================================================================ -->
+    <div class="history-overlay" id="historyOverlay">
+        <!-- Top Bar -->
+        <div class="history-topbar">
+            <button id="closeHistoryBtn">✕</button>
+            <span class="history-topbar-title" id="histTitle">Saved Records</span>
+            <button class="icon-btn" id="histClearSelBtn" style="display:none; font-size:0.7rem; font-weight:600; width:auto; padding:0 8px; border:1px solid var(--input-border); border-radius:20px;" id="histClearSelBtn">✕ Clear</button>
+        </div>
+
+        <!-- Action bar (shown when items are selected) -->
+        <div class="history-action-bar" id="histActionBar">
+            <span class="hist-sel-count" id="histSelCount">0 selected</span>
+            <div style="display:flex; gap:6px;">
+                <button class="hist-sel-all-btn" id="histSelAllBtn">Select All</button>
+                <button class="hist-del-btn" id="histDelSelBtn">🗑 Delete</button>
+            </div>
+        </div>
+
+        <!-- List -->
+        <div class="history-list" id="historyList">
+            <div class="history-empty" id="histEmptyMsg">
+                <svg viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.88.18-1.35C18 2.53 15.94.5 13.5.5c-1.23 0-2.33.5-3.16 1.3L9 3.12 7.66 1.8C6.83 1 5.73.5 4.5.5 2.06.5 0 2.53 0 4.65c0 .48.11.91.18 1.35H0v2h2L3 20c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2l1-12h2V6zM13.5 2.5c1.07 0 2 .93 2 2.15 0 .62-.26 1.18-.67 1.62L13 8.05l-1.82-1.78A2.16 2.16 0 0110.5 4.65c0-1.22.93-2.15 2-2.15zM5 20l-.99-12h15.98L19 20H5z"/></svg>
+                <div id="histEmptyText">No saved records yet.<br>Fill the form and press 💾 to save.</div>
             </div>
         </div>
     </div>
@@ -1206,7 +1723,10 @@ lblFemaleLate: "Age minus <span class='numeric-text'>9</span> years",
             validateInput(els.age); 
             validateInput(els.wheat); 
             calculate(); 
-            saveSettings(); 
+            saveSettings();
+            // refresh history if open
+            const ho = document.getElementById('historyOverlay');
+            if (ho && ho.classList.contains('active')) { updateHistLang(); renderHistoryList(); }
         };
         
         els.langToggle.addEventListener('click', toggleLangLogic);
@@ -1276,6 +1796,369 @@ lblFemaleLate: "Age minus <span class='numeric-text'>9</span> years",
         els.btnSavePdf.addEventListener('click', downloadAsPdf);
         els.btnShareRep.addEventListener('click', shareReport);
 
+        // ============================================================
+        // TUTORIAL / HOW TO USE SYSTEM
+        // ============================================================
+        // ---- Reusable inline icon HTML snippets ----
+        const IC = {
+            tutorial:  `<span class="tut-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></span>`,
+            save:      `<span class="tut-icon"><svg viewBox="0 0 24 24"><path d="M17 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm2 16H5V5h11.17L19 7.83V19zm-7-7c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zM6 6h9v4H6z"/></svg></span>`,
+            history:   `<span class="tut-icon"><svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg></span>`,
+            report:    `<span class="tut-icon"><svg viewBox="0 0 24 24"><path d="M19 8h-1V3H6v5H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zM8 5h8v3H8V5zm8 12v2H8v-4h8v2zm2-2v-2H6v2H4v-4c0-.55.45-1 1-1h14c.55 0 1 .45 1 1v4h-2z"/></svg></span>`,
+            theme:     `<span class="tut-icon"><svg viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1z"/></svg></span>`,
+            lang:      `<span class="tut-icon" style="font-size:0.6rem;font-weight:700;color:#fff;background:var(--accent-color);font-family:'Segoe UI',sans-serif;">En</span>`,
+            info:      `<span class="tut-icon" style="font-size:0.7rem;font-weight:bold;font-style:italic;color:#fff;font-family:serif;">i</span>`,
+            drag:      `<span class="tut-icon-plain"><svg viewBox="0 0 24 24"><path d="M3 15h18v-2H3v2zm0 4h18v-2H3v2zm0-8h18V9H3v2zm0-6v2h18V5H3z"/></svg></span>`,
+            load:      `<span class="tut-icon-plain"><svg viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/><path d="M12 16V4" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg></span>`,
+            del:       `<span class="tut-icon" style="background:var(--error-color);"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="#fff"/></svg></span>`,
+            imgBtn:    `<span class="tut-icon"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" fill="#fff"/></svg></span>`,
+            shareBtn:  `<span class="tut-icon" style="background:var(--share-color);"><svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" fill="#fff"/></svg></span>`,
+        };
+
+        const TUTORIAL_SLIDES = {
+            en: [
+                {
+                    img: "tutorial-en-1.png",
+                    heading: "Welcome to Fidya Calculator",
+                    body: `This app helps you calculate <b>Fidya</b> for missed prayers and fasts of a deceased person. It calculates based on wheat price and age.<br><br>Tap the ${IC.tutorial} button anytime to open this guide.`
+                },
+                {
+                    img: "tutorial-en-lang.png",
+                    heading: "Switch Language",
+                    body: `Tap the ${IC.lang} button in the top-right corner to switch between <b>English</b> and <b>Urdu</b>. The entire app — labels, placeholders, results and this guide — will instantly switch to the selected language.`
+                },
+                {
+                    img: "tutorial-en-2.png",
+                    heading: "Step 1: Enter Personal Details",
+                    body: "At the top, enter the <b>Name</b> of the deceased, their <b>Father's Name</b>, and <b>Caste</b>. These details will appear on the final report. All three fields are optional but recommended."
+                },
+                {
+                    img: "tutorial-en-3.png",
+                    heading: "Step 2: Select Gender",
+                    body: "Tap the <b>Gender</b> dropdown and select:<br>&bull; <b>Late Male</b> — for a deceased man<br>&bull; <b>Late Female</b> — for a deceased woman<br><br>This is required because the age calculation differs: 12 years deducted for males, 9 years for females."
+                },
+                {
+                    img: "tutorial-en-4.png",
+                    heading: "Step 3: Enter Age",
+                    body: "Enter the <b>total age</b> of the deceased in years. The app will automatically subtract the minimum puberty age (12 for male, 9 for female) to calculate the years for which Fidya is due."
+                },
+                {
+                    img: "tutorial-en-5.png",
+                    heading: "Step 4: Enter Wheat Price",
+                    body: "Enter the current price of <b>40 KGs of wheat</b> (one maund). This price is used to calculate the Fidya amount. Make sure to enter the correct local market price."
+                },
+                {
+                    img: "tutorial-en-6.png",
+                    heading: "Step 5: View Results",
+                    body: "The calculator will instantly show:<br>&bull; <b>Days, Prayers &amp; Fasts</b> count<br>&bull; <b>Prayer Fidya</b> amount<br>&bull; <b>Fast Fidya</b> amount<br>&bull; <b>Total Fidya</b> due<br><br>All values update automatically as you type."
+                },
+                {
+                    img: "tutorial-en-7.png",
+                    heading: "Step 6: Available Amount (Rounds)",
+                    body: "If the full Fidya amount is not available, enter the <b>available amount</b> in the optional field. The app will calculate how many <b>Rounds (Laut Phair)</b> are needed to complete the full Fidya."
+                },
+                {
+                    img: "tutorial-en-8.png",
+                    heading: "Step 7: Generate Report",
+                    body: `Tap the ${IC.report} <b>Report</b> button in the header to generate a complete Fidya report. From the report screen you can:<br>&bull; ${IC.imgBtn} Save as <b>Image</b><br>&bull; Save as <b>PDF</b><br>&bull; ${IC.shareBtn} <b>Share</b> directly`
+                },
+                {
+                    img: "tutorial-en-9.png",
+                    heading: "Step 8: Save a Record",
+                    body: `Tap the ${IC.save} <b>Save</b> button in the header to save the current form data. All details — name, father's name, age, wheat price and total Fidya — will be saved instantly. You can save <b>unlimited records</b>.`
+                },
+                {
+                    img: "tutorial-en-10.png",
+                    heading: "Step 9: View Saved Records",
+                    body: `Tap the ${IC.history} <b>History</b> button in the header to open saved records. A <b>red badge</b> on the icon shows how many records are saved. Each strip shows the name, father's name, age and Fidya amount.`
+                },
+                {
+                    img: "tutorial-en-11.png",
+                    heading: "Step 10: Reorder Records",
+                    body: `Hold and drag the ${IC.drag} <b>drag handle</b> on the right side of any strip to move it up or down. Numbers update automatically.`
+                },
+                {
+                    img: "tutorial-en-12.png",
+                    heading: "Step 11: Select & Delete",
+                    body: `Tap any strip to <b>select</b> it (turns blue). Select multiple strips and tap ${IC.del} <b>Delete</b> to remove them. Use <b>Select All</b> to select every record at once. Tap ${IC.load} to load a record back into the form.`
+                }
+            ],
+            ur: [
+                {
+                    img: "tutorial-ur-1.png",
+                    heading: "فدیہ کیلکولیٹر میں خوش آمدید",
+                    body: `یہ ایپ کسی مرحوم یا مرحومہ کی چھوٹی ہوئی نمازوں اور روزوں کا <b>فدیہ</b> حساب کرتی ہے۔ گندم کی قیمت اور عمر کی بنیاد پر حساب ہوتا ہے۔<br><br>${IC.tutorial} بٹن دبائیں تو یہ گائیڈ دوبارہ کھل جائے گی۔`
+                },
+                {
+                    img: "tutorial-ur-lang.png",
+                    heading: "زبان تبدیل کریں",
+                    body: `اوپر دائیں کونے میں ${IC.lang} بٹن دبائیں تاکہ <b>اردو</b> اور <b>انگریزی</b> کے درمیان سوئچ ہو سکے۔ یہ ایک ٹوگل بٹن ہے — ایک بار دبائیں تو اردو، دوبارہ دبائیں تو انگریزی۔ پوری ایپ کے تمام لیبل، نتائج اور یہ گائیڈ بھی فوری طور پر بدل جائیں گے۔`
+                },
+                {
+                    img: "tutorial-ur-2.png",
+                    heading: "مرحلہ 1: ذاتی معلومات درج کریں",
+                    body: "سب سے اوپر مرحوم/مرحومہ کا <b>نام</b>، <b>ولدیت</b> اور <b>قوم</b> درج کریں۔ یہ معلومات آخری رپورٹ میں شامل ہوں گی۔ یہ تینوں خانے اختیاری ہیں لیکن بہتر ہے کہ بھریں۔"
+                },
+                {
+                    img: "tutorial-ur-3.png",
+                    heading: "مرحلہ 2: جنس منتخب کریں",
+                    body: "<b>جنس</b> کا خانہ دبائیں اور منتخب کریں:<br>• <b>مرحوم</b> — مرد کے لیے<br>• <b>مرحومہ</b> — عورت کے لیے<br><br>یہ ضروری ہے کیونکہ مرد سے 12 سال اور عورت سے 9 سال کم کیے جاتے ہیں۔"
+                },
+                {
+                    img: "tutorial-ur-4.png",
+                    heading: "مرحلہ 3: عمر درج کریں",
+                    body: "مرحوم/مرحومہ کی <b>کل عمر</b> سالوں میں درج کریں۔ ایپ خود بخود بلوغت کی کم از کم عمر (مرد 12 سال، عورت 9 سال) کم کر کے فدیہ کے قابل سال نکال لے گی۔"
+                },
+                {
+                    img: "tutorial-ur-5.png",
+                    heading: "مرحلہ 4: گندم کی قیمت درج کریں",
+                    body: "ایک من (40 کلو) گندم کی موجودہ قیمت درج کریں۔ اس قیمت سے فدیہ کی رقم نکالی جاتی ہے۔ مقامی بازار کی درست قیمت ڈالیں۔"
+                },
+                {
+                    img: "tutorial-ur-6.png",
+                    heading: "مرحلہ 5: نتائج دیکھیں",
+                    body: "کیلکولیٹر فوری طور پر دکھائے گا:<br>• <b>دن، نمازیں اور روزے</b> کی تعداد<br>• <b>نماز فدیہ</b> کی رقم<br>• <b>روزہ فدیہ</b> کی رقم<br>• <b>کل فدیہ</b><br><br>تمام نتائج لکھتے ہی خود بخود اپڈیٹ ہوتے رہتے ہیں۔"
+                },
+                {
+                    img: "tutorial-ur-7.png",
+                    heading: "مرحلہ 6: موجود رقم (لوٹ پھیر)",
+                    body: "اگر پوری فدیہ رقم موجود نہیں تو <b>موجود رقم</b> اختیاری خانے میں درج کریں۔ ایپ بتائے گی کہ اس رقم سے کتنی <b>لوٹ پھیر</b> کی ضرورت ہے تاکہ پورا فدیہ مکمل ہو سکے۔"
+                },
+                {
+                    img: "tutorial-ur-8.png",
+                    heading: "مرحلہ 7: رپورٹ بنائیں",
+                    body: `ہیڈر میں ${IC.report} <b>رپورٹ</b> بٹن دبائیں تاکہ مکمل فدیہ رپورٹ بنے۔ رپورٹ اسکرین سے آپ:<br>• ${IC.imgBtn} <b>تصویر</b> کے طور پر محفوظ کریں<br>• <b>پی ڈی ایف</b> بنائیں<br>• ${IC.shareBtn} براہِ راست <b>شیئر</b> کریں`
+                },
+                {
+                    img: "tutorial-ur-9.png",
+                    heading: "مرحلہ 8: ریکارڈ محفوظ کریں",
+                    body: `ہیڈر میں ${IC.save} <b>سیو</b> بٹن دبائیں تاکہ موجودہ فارم کا ڈیٹا محفوظ ہو جائے۔ نام، ولدیت، عمر، گندم قیمت اور کل فدیہ — سب فوری سیو ہو گا۔ آپ <b>لامحدود ریکارڈز</b> محفوظ کر سکتے ہیں۔`
+                },
+                {
+                    img: "tutorial-ur-10.png",
+                    heading: "مرحلہ 9: محفوظ ریکارڈز دیکھیں",
+                    body: `ہیڈر میں ${IC.history} <b>ہسٹری</b> بٹن دبائیں تاکہ محفوظ ریکارڈز کھلیں۔ آئیکن پر <b>سرخ بیج</b> بتاتا ہے کتنے ریکارڈ محفوظ ہیں۔ ہر پٹی میں نام، ولدیت، عمر اور فدیہ کی رقم نظر آتی ہے۔`
+                },
+                {
+                    img: "tutorial-ur-11.png",
+                    heading: "مرحلہ 10: ریکارڈز کی ترتیب بدلیں",
+                    body: `کسی بھی پٹی کے دائیں طرف ${IC.drag} <b>ہینڈل</b> پکڑ کر اوپر یا نیچے کھینچیں۔ نمبر خود بخود بدل جاتے ہیں۔`
+                },
+                {
+                    img: "tutorial-ur-12.png",
+                    heading: "مرحلہ 11: منتخب کریں اور حذف کریں",
+                    body: `کسی پٹی پر ٹیپ کریں تو وہ <b>نیلی</b> ہو جائے گی (منتخب)۔ ایک یا کئی پٹیاں منتخب کر کے ${IC.del} <b>حذف کریں</b> دبائیں۔ <b>سب منتخب</b> سے ایک ہی بار میں سب منتخب ہوں۔ ${IC.load} دبائیں تو ریکارڈ واپس فارم میں لوڈ ہو۔`
+                }
+            ]
+        };
+
+        let tutCurrentSlide = 0;
+
+        function openTutorial() {
+            tutCurrentSlide = 0;
+            buildTutDots();
+            renderTutSlide();
+            document.getElementById('tutorialOverlay').classList.add('active');
+            history.pushState({ overlay: 'tutorial' }, '');
+        }
+
+        function closeTutorial() {
+            document.getElementById('tutorialOverlay').classList.remove('active');
+        }
+
+        function buildTutDots() {
+            const slides = TUTORIAL_SLIDES[currentLang];
+            const dotsEl = document.getElementById('tutDots');
+            dotsEl.innerHTML = '';
+            slides.forEach((_, i) => {
+                const dot = document.createElement('div');
+                dot.className = 'tutorial-dot' + (i === tutCurrentSlide ? ' active' : '');
+                dot.addEventListener('click', () => { tutCurrentSlide = i; renderTutSlide(); });
+                dotsEl.appendChild(dot);
+            });
+        }
+
+        // Walk only TEXT nodes and wrap digit runs in .tut-num spans
+        function wrapDigitsInTextNodes(el) {
+            const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
+                acceptNode: (node) => {
+                    // Skip text inside SVG elements
+                    let p = node.parentElement;
+                    while (p) {
+                        if (p.tagName && p.tagName.toLowerCase() === 'svg') return NodeFilter.FILTER_REJECT;
+                        if (p === el) break;
+                        p = p.parentElement;
+                    }
+                    return /\d/.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+                }
+            });
+            const nodes = [];
+            while (walker.nextNode()) nodes.push(walker.currentNode);
+            nodes.forEach(textNode => {
+                const frag = document.createDocumentFragment();
+                textNode.nodeValue.split(/(\d+)/).forEach((part, i) => {
+                    if (i % 2 === 1) {
+                        const span = document.createElement('span');
+                        span.className = 'tut-num';
+                        span.textContent = part;
+                        frag.appendChild(span);
+                    } else if (part) {
+                        frag.appendChild(document.createTextNode(part));
+                    }
+                });
+                textNode.parentNode.replaceChild(frag, textNode);
+            });
+        }
+
+        function renderTutSlide() {
+            const slides = TUTORIAL_SLIDES[currentLang];
+            const slide = slides[tutCurrentSlide];
+            const isUrdu = (currentLang === 'ur');
+            const total = slides.length;
+
+            // Title bar
+            document.getElementById('tutTitleBar').innerText = isUrdu ? 'استعمال کا طریقہ' : 'How to Use';
+
+            // Heading & body
+            document.getElementById('tutHeading').innerHTML = slide.heading;
+            document.getElementById('tutBody').innerHTML = slide.body;
+
+            // Wrap digit sequences in English-font spans (text nodes only, skip HTML/SVG)
+            if (isUrdu) {
+                ['tutHeading', 'tutBody'].forEach(id => {
+                    const el = document.getElementById(id);
+                    wrapDigitsInTextNodes(el);
+                });
+            }
+
+            // Image area
+            const imgArea = document.getElementById('tutImgArea');
+            imgArea.innerHTML = '';
+
+            const img = document.createElement('img');
+            img.alt = slide.heading;
+
+            const counter = document.createElement('div');
+            counter.className = 'tutorial-slide-num';
+            counter.textContent = (tutCurrentSlide + 1) + ' / ' + total;
+            imgArea.appendChild(counter);
+
+            img.onerror = function() {
+                this.style.display = 'none';
+                const ph = document.createElement('div');
+                ph.className = 'tutorial-img-placeholder';
+                ph.innerHTML = '<svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>' + (isUrdu ? ('اسلائیڈ ' + (tutCurrentSlide+1) + ' کی تصویر') : ('Slide ' + (tutCurrentSlide+1) + ' image')) + '</span>';
+                imgArea.insertBefore(ph, counter);
+            };
+            img.src = slide.img;
+            imgArea.insertBefore(img, counter);
+
+            // Nav buttons
+            const prevBtn = document.getElementById('tutPrevBtn');
+            const nextBtn = document.getElementById('tutNextBtn');
+            prevBtn.disabled = (tutCurrentSlide === 0);
+            nextBtn.disabled = (tutCurrentSlide === total - 1);
+
+            if (isUrdu) {
+                prevBtn.innerHTML = 'پچھلا ←';
+                nextBtn.innerHTML = '→ اگلا';
+            } else {
+                prevBtn.innerHTML = '← Prev';
+                nextBtn.innerHTML = 'Next →';
+            }
+
+            // Dots
+            document.querySelectorAll('.tutorial-dot').forEach((dot, i) => {
+                dot.classList.toggle('active', i === tutCurrentSlide);
+            });
+        }
+
+        document.getElementById('tutorialBtn').addEventListener('click', openTutorial);
+        document.getElementById('closeTutorialBtn').addEventListener('click', closeTutorial);
+        document.getElementById('tutorialOverlay').addEventListener('click', function(e) {
+            if (e.target === this) { tutStopAutoPlay(); closeTutorial(); }
+        });
+        document.getElementById('tutPrevBtn').addEventListener('click', () => {
+            if (tutCurrentSlide > 0) { tutCurrentSlide--; renderTutSlide(); }
+        });
+        document.getElementById('tutNextBtn').addEventListener('click', () => {
+            const slides = TUTORIAL_SLIDES[currentLang];
+            if (tutCurrentSlide < slides.length - 1) { tutCurrentSlide++; renderTutSlide(); }
+        });
+
+        // ---- TOUCH SWIPE ----
+        let tutTouchStartX = 0;
+        let tutTouchStartY = 0;
+        const tutCard = document.querySelector('.tutorial-card');
+        tutCard.addEventListener('touchstart', (e) => {
+            tutTouchStartX = e.touches[0].clientX;
+            tutTouchStartY = e.touches[0].clientY;
+        }, { passive: true });
+        tutCard.addEventListener('touchend', (e) => {
+            const dx = e.changedTouches[0].clientX - tutTouchStartX;
+            const dy = e.changedTouches[0].clientY - tutTouchStartY;
+            // Only swipe if horizontal movement is dominant
+            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+                const slides = TUTORIAL_SLIDES[currentLang];
+                const isRtl = (currentLang === 'ur');
+                // RTL: swipe right = next, swipe left = prev; LTR: reversed
+                if (dx < 0 && !isRtl || dx > 0 && isRtl) {
+                    // Next
+                    if (tutCurrentSlide < slides.length - 1) { tutCurrentSlide++; renderTutSlide(); }
+                } else {
+                    // Prev
+                    if (tutCurrentSlide > 0) { tutCurrentSlide--; renderTutSlide(); }
+                }
+            }
+        }, { passive: true });
+
+        // ---- AUTO-PLAY ----
+        let tutAutoInterval = null;
+        let tutAutoSpeed = 4000; // default 4s
+
+        function tutStartAutoPlay() {
+            tutStopAutoPlay();
+            const slides = TUTORIAL_SLIDES[currentLang];
+            tutAutoInterval = setInterval(() => {
+                if (tutCurrentSlide < slides.length - 1) {
+                    tutCurrentSlide++;
+                } else {
+                    tutCurrentSlide = 0; // loop back
+                }
+                renderTutSlide();
+            }, tutAutoSpeed);
+            // Update button to pause icon
+            document.getElementById('tutPlayIcon').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+            document.getElementById('tutPlayBtn').classList.add('playing');
+        }
+
+        function tutStopAutoPlay() {
+            if (tutAutoInterval) { clearInterval(tutAutoInterval); tutAutoInterval = null; }
+            document.getElementById('tutPlayIcon').innerHTML = '<path d="M8 5v14l11-7z"/>';
+            document.getElementById('tutPlayBtn').classList.remove('playing');
+        }
+
+        document.getElementById('tutPlayBtn').addEventListener('click', () => {
+            if (tutAutoInterval) { tutStopAutoPlay(); } else { tutStartAutoPlay(); }
+        });
+
+        // Speed buttons
+        document.querySelectorAll('.tut-speed-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tut-speed-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                tutAutoSpeed = parseInt(btn.dataset.sec) * 1000;
+                if (tutAutoInterval) { tutStartAutoPlay(); } // restart with new speed
+            });
+        });
+
+        // Stop autoplay when tutorial closes
+        const _origCloseTutorial = closeTutorial;
+        closeTutorial = function() {
+            tutStopAutoPlay();
+            _origCloseTutorial();
+        };
+
         function applyTheme() {
             els.html.setAttribute('data-theme', currentTheme);
             if(currentTheme === 'dark') { els.sunIcon.style.display = 'none'; els.moonIcon.style.display = 'block'; els.popupLangToggle.innerText = els.langToggle.innerText; els.popupThemeToggle.innerText = '🌙'; }
@@ -1322,6 +2205,13 @@ lblFemaleLate: "Age minus <span class='numeric-text'>9</span> years",
             els.textDisplay.innerHTML = s.defaultPopupText;
 
             updatePlaceholders();
+            
+            // Refresh tutorial if open
+            const tutOverlay = document.getElementById('tutorialOverlay');
+            if (tutOverlay && tutOverlay.classList.contains('active')) {
+                buildTutDots();
+                renderTutSlide();
+            }
             
     const ageField = document.getElementById("age");
     if (ageField) {
@@ -1477,7 +2367,7 @@ lblFemaleLate: "Age minus <span class='numeric-text'>9</span> years",
         function showResults() { if(els.calcSection.style.display!=='block') { els.calcSection.style.display='block'; els.calcSection.classList.remove('bounce-out'); els.calcSection.classList.add('bounce-in'); } }
         function hideResults() { if(els.calcSection.style.display==='block') { els.calcSection.classList.remove('bounce-in'); els.calcSection.classList.add('bounce-out'); setTimeout(()=>{els.calcSection.style.display='none'},400); } }
 
-        function openPopup() { els.popup.classList.add('active'); els.dontShowAgain.checked=localStorage.getItem('dontShowPopup')==='true'; }
+        function openPopup() { els.popup.classList.add('active'); els.dontShowAgain.checked=localStorage.getItem('dontShowPopup')==='true'; history.pushState({ overlay: 'info' }, ''); }
         function closePopup() { els.popup.classList.remove('active'); }
 
         function openReport() {
@@ -1553,6 +2443,7 @@ lblFemaleLate: "Age minus <span class='numeric-text'>9</span> years",
                 document.getElementById('tdValTotalRounds').innerText = "-";
             }
             els.reportOverlay.classList.add('active');
+            history.pushState({ overlay: 'report' }, '');
         }
 
         function closeReport() { els.reportOverlay.classList.remove('active'); }
@@ -1634,7 +2525,310 @@ lblFemaleLate: "Age minus <span class='numeric-text'>9</span> years",
             }
         }
 
-        function showToast(m) { els.toast.innerText=m; els.toast.classList.add('show'); setTimeout(()=>els.toast.classList.remove('show'),3000); }
+        function showToast(m) { els.toast.innerText=m; els.toast.classList.add('show'); setTimeout(()=>els.toast.classList.remove('show'),2500); }
+
+        // ============================================================
+        // SAVE & HISTORY SYSTEM
+        // ============================================================
+        const HIST_KEY = 'fidyaRecords';
+
+        function histLoad() {
+            try { return JSON.parse(localStorage.getItem(HIST_KEY)) || []; }
+            catch(e) { return []; }
+        }
+
+        function histSave(arr) {
+            localStorage.setItem(HIST_KEY, JSON.stringify(arr));
+            updateHistBadge();
+        }
+
+        function updateHistBadge() {
+            const records = histLoad();
+            const badge = document.getElementById('histCountBadge');
+            if (records.length > 0) {
+                badge.textContent = records.length > 99 ? '99+' : records.length;
+                badge.classList.add('visible');
+            } else {
+                badge.classList.remove('visible');
+            }
+        }
+
+        function getCurrentFormData() {
+            const isUrdu = (currentLang === 'ur');
+            const name = document.getElementById('txtName').value.trim();
+            const father = document.getElementById('txtFather').value.trim();
+            const caste = document.getElementById('txtCaste').value.trim();
+            const gender = document.getElementById('gender').value;
+            const age = document.getElementById('age').value;
+            const wheat = document.getElementById('wheatPrice').value;
+            const amount = document.getElementById('availableAmount').value;
+            const totalFidya = document.getElementById('valTotalFidya').innerText;
+            const calcSection = document.getElementById('calculationSection');
+            const hasResult = calcSection.style.display !== 'none';
+
+            return {
+                id: Date.now(),
+                lang: currentLang,
+                name: name || (isUrdu ? 'بے نام' : 'Unnamed'),
+                father: father || '',
+                caste: caste || '',
+                gender: gender,
+                age: age,
+                wheat: wheat,
+                amount: amount,
+                totalFidya: hasResult ? totalFidya : '-',
+                savedAt: new Date().toLocaleDateString()
+            };
+        }
+
+        function saveCurrentRecord() {
+            const data = getCurrentFormData();
+            // Must have at least a name or age
+            if (!data.age && !data.name && data.name === (currentLang === 'ur' ? 'بے نام' : 'Unnamed')) {
+                showToast(currentLang === 'ur' ? 'پہلے کچھ معلومات درج کریں' : 'Please fill in some details first');
+                return;
+            }
+            const records = histLoad();
+            records.unshift(data); // add at top
+            histSave(records);
+            showToast(currentLang === 'ur' ? 'ریکارڈ محفوظ ہو گیا ✓' : 'Record saved ✓');
+        }
+
+        // ---- History Overlay ----
+        let histSelectedIds = new Set();
+        let histDragSrcIndex = null;
+
+        function openHistory() {
+            histSelectedIds.clear();
+            renderHistoryList();
+            document.getElementById('historyOverlay').classList.add('active');
+            updateHistLang();
+            history.pushState({ overlay: 'history' }, '');
+        }
+
+        function closeHistory() {
+            histSelectedIds.clear();
+            document.getElementById('historyOverlay').classList.remove('active');
+            document.getElementById('histActionBar').classList.remove('visible');
+        }
+
+        function updateHistLang() {
+            const isUrdu = (currentLang === 'ur');
+            document.getElementById('histTitle').innerText = isUrdu ? 'محفوظ ریکارڈز' : 'Saved Records';
+            document.getElementById('histEmptyText').innerHTML = isUrdu
+                ? 'ابھی کوئی ریکارڈ نہیں۔<br>فارم بھر کر 💾 دبائیں۔'
+                : 'No saved records yet.<br>Fill the form and press 💾 to save.';
+            document.getElementById('histDelSelBtn').innerHTML = isUrdu ? '🗑 حذف کریں' : '🗑 Delete';
+            document.getElementById('histSelAllBtn').innerText = isUrdu ? 'سب منتخب' : 'Select All';
+        }
+
+        function renderHistoryList() {
+            const records = histLoad();
+            const list = document.getElementById('historyList');
+            const emptyMsg = document.getElementById('histEmptyMsg');
+            const isUrdu = (currentLang === 'ur');
+
+            // Remove old strips (keep empty msg)
+            list.querySelectorAll('.hist-strip').forEach(el => el.remove());
+
+            if (records.length === 0) {
+                emptyMsg.classList.add('visible');
+                updateSelectionUI();
+                return;
+            }
+            emptyMsg.classList.remove('visible');
+
+            records.forEach((rec, idx) => {
+                const strip = document.createElement('div');
+                strip.className = 'hist-strip' + (histSelectedIds.has(rec.id) ? ' selected' : '');
+                strip.dataset.id = rec.id;
+                strip.dataset.idx = idx;
+                strip.setAttribute('draggable', 'true');
+
+                const nameLabel = rec.name || (isUrdu ? 'بے نام' : 'Unnamed');
+                const fatherLabel = rec.father ? (isUrdu ? 'و/ ' : 'S/O ') + rec.father : '';
+                const metaLabel = rec.age ? `Years ${rec.age}` : '';
+
+                strip.innerHTML = `
+                    <div class="hist-num">${idx + 1}</div>
+                    <div class="hist-check-area">
+                        <div class="hist-checkbox"></div>
+                    </div>
+                    <div class="hist-content">
+                        <div class="hist-name">${nameLabel}</div>
+                        ${fatherLabel ? `<div class="hist-father">${fatherLabel}</div>` : ''}
+                        <div class="hist-meta">${metaLabel}${metaLabel && rec.totalFidya !== '-' ? '  Rs ' : ''}${rec.totalFidya !== '-' ? rec.totalFidya : ''}</div>
+                    </div>
+                    <button class="hist-load-btn" title="${isUrdu ? 'لوڈ کریں' : 'Load'}">
+                        <svg viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/><path d="M12 16V4" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                    </button>
+                    <div class="hist-drag-handle" title="${isUrdu ? 'کھینچیں' : 'Drag to reorder'}">
+                        <div class="hist-drag-line"></div>
+                        <div class="hist-drag-line"></div>
+                        <div class="hist-drag-line"></div>
+                    </div>`;
+
+                // Tap on strip = toggle selection
+                strip.addEventListener('click', (e) => {
+                    if (e.target.closest('.hist-drag-handle')) return;
+                    if (e.target.closest('.hist-load-btn')) return;
+                    const id = parseInt(strip.dataset.id);
+                    if (histSelectedIds.has(id)) { histSelectedIds.delete(id); }
+                    else { histSelectedIds.add(id); }
+                    strip.classList.toggle('selected');
+                    updateSelectionUI();
+                });
+
+                // Load button
+                strip.querySelector('.hist-load-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    loadRecordIntoForm(rec);
+                    closeHistory();
+                    showToast(currentLang === 'ur' ? 'ریکارڈ لوڈ ہو گیا' : 'Record loaded');
+                });
+
+                // Desktop drag
+                strip.addEventListener('dragstart', (e) => {
+                    histDragSrcIndex = parseInt(strip.dataset.idx);
+                    strip.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+                strip.addEventListener('dragend', () => strip.classList.remove('dragging'));
+                strip.addEventListener('dragover', (e) => { e.preventDefault(); strip.classList.add('drag-over'); });
+                strip.addEventListener('dragleave', () => strip.classList.remove('drag-over'));
+                strip.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    strip.classList.remove('drag-over');
+                    const targetIdx = parseInt(strip.dataset.idx);
+                    if (histDragSrcIndex !== null && histDragSrcIndex !== targetIdx) {
+                        const recs = histLoad();
+                        const moved = recs.splice(histDragSrcIndex, 1)[0];
+                        recs.splice(targetIdx, 0, moved);
+                        histSave(recs);
+                        renderHistoryList();
+                    }
+                    histDragSrcIndex = null;
+                });
+
+                // Touch drag
+                let touchStartY = 0, touchStartIdx = 0, touchClone = null;
+                const dragHandle = strip.querySelector('.hist-drag-handle');
+
+                dragHandle.addEventListener('touchstart', (e) => {
+                    touchStartY = e.touches[0].clientY;
+                    touchStartIdx = parseInt(strip.dataset.idx);
+                    strip.classList.add('dragging');
+                    e.stopPropagation();
+                }, { passive: true });
+
+                dragHandle.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const y = e.touches[0].clientY;
+                    const listEl = document.getElementById('historyList');
+                    const strips = listEl.querySelectorAll('.hist-strip');
+                    let targetIdx = touchStartIdx;
+                    strips.forEach((s, i) => {
+                        const rect = s.getBoundingClientRect();
+                        const mid = rect.top + rect.height / 2;
+                        if (y > mid) targetIdx = i;
+                    });
+                    strips.forEach(s => s.classList.remove('drag-over'));
+                    if (strips[targetIdx]) strips[targetIdx].classList.add('drag-over');
+                    strip._touchTargetIdx = targetIdx;
+                }, { passive: false });
+
+                dragHandle.addEventListener('touchend', () => {
+                    strip.classList.remove('dragging');
+                    document.querySelectorAll('.hist-strip').forEach(s => s.classList.remove('drag-over'));
+                    const targetIdx = strip._touchTargetIdx;
+                    if (targetIdx !== undefined && targetIdx !== touchStartIdx) {
+                        const recs = histLoad();
+                        const moved = recs.splice(touchStartIdx, 1)[0];
+                        recs.splice(targetIdx, 0, moved);
+                        histSave(recs);
+                        renderHistoryList();
+                    }
+                });
+
+                list.appendChild(strip);
+            });
+
+            updateSelectionUI();
+        }
+
+        function updateSelectionUI() {
+            const bar = document.getElementById('histActionBar');
+            const countEl = document.getElementById('histSelCount');
+            const isUrdu = (currentLang === 'ur');
+            const n = histSelectedIds.size;
+            if (n > 0) {
+                bar.classList.add('visible');
+                countEl.textContent = isUrdu ? n + " منتخب" : n + ' selected';
+            } else {
+                bar.classList.remove('visible');
+            }
+        }
+
+        function loadRecordIntoForm(rec) {
+            document.getElementById('txtName').value = rec.name !== (rec.lang === 'ur' ? 'بے نام' : 'Unnamed') ? rec.name : '';
+            document.getElementById('txtFather').value = rec.father || '';
+            document.getElementById('txtCaste').value = rec.caste || '';
+            document.getElementById('wheatPrice').value = rec.wheat || '';
+            document.getElementById('availableAmount').value = rec.amount || '';
+
+            // Set gender
+            const genderInput = document.getElementById('gender');
+            const genderText = document.getElementById('genderText');
+            const genderTrigger = document.getElementById('genderTrigger');
+            if (rec.gender) {
+                genderInput.value = rec.gender;
+                const s = STRINGS[currentLang];
+                genderText.innerText = rec.gender === 'male' ? s.male : s.female;
+                genderTrigger.classList.remove('placeholder');
+            }
+
+            // Set age
+            document.getElementById('age').value = rec.age || '';
+
+            // Trigger recalculation
+            setDynamicFont(document.getElementById('txtName'));
+            setDynamicFont(document.getElementById('txtFather'));
+            setDynamicFont(document.getElementById('txtCaste'));
+            updatePlaceholders();
+            calculate();
+            handleAgeInput(document.getElementById('age'));
+        }
+
+        // Delete selected
+        document.getElementById('histDelSelBtn').addEventListener('click', () => {
+            if (histSelectedIds.size === 0) return;
+            const records = histLoad().filter(r => !histSelectedIds.has(r.id));
+            histSave(records);
+            histSelectedIds.clear();
+            renderHistoryList();
+            showToast(currentLang === 'ur' ? 'ریکارڈز حذف ہو گئے' : 'Records deleted');
+        });
+
+        // Select All
+        document.getElementById('histSelAllBtn').addEventListener('click', () => {
+            const records = histLoad();
+            const allSelected = histSelectedIds.size === records.length;
+            if (allSelected) {
+                histSelectedIds.clear();
+            } else {
+                records.forEach(r => histSelectedIds.add(r.id));
+            }
+            renderHistoryList();
+        });
+
+        // Open/close
+        document.getElementById('saveRecordBtn').addEventListener('click', saveCurrentRecord);
+        document.getElementById('historyBtn').addEventListener('click', openHistory);
+        document.getElementById('closeHistoryBtn').addEventListener('click', closeHistory);
+
+        // Update badge on load
+        updateHistBadge();
+
         function saveSettings() { localStorage.setItem('fidyaTheme',currentTheme); localStorage.setItem('fidyaLang',currentLang); }
         function loadSettings() {
             const t=localStorage.getItem('fidyaTheme'); if(t)currentTheme=t;
@@ -1673,251 +2867,53 @@ function handleAgeInput(input) {
     }
 }
 
-
-// ==========================================
-        // SAVED RECORDS (WITH DRAG & LONG PRESS)
-        // ==========================================
-        
-        let isSelectionMode = false;
-        let selectedRecordIds = new Set();
-        let longPressTimer;
-        let draggedItem = null;
-
-        const recordsOverlay = document.getElementById('recordsOverlay');
-        const listContainer = document.getElementById('recordsListContainer');
-        const selectionBar = document.getElementById('selectionBar');
-        const selCountText = document.getElementById('selCountText');
-
-        // Events for Header Buttons
-        document.getElementById('saveRecordBtn').addEventListener('click', () => {
-            const name = els.txtName.value.trim();
-            if (!name) {
-                showToast(currentLang === 'ur' ? "نام درج کرنا ضروری ہے" : "Name is required");
-                return;
-            }
-            const record = {
-                id: Date.now().toString(),
-                name: name,
-                father: els.txtFather.value.trim(),
-                caste: els.txtCaste.value.trim(),
-                gender: els.genderInput.value,
-                age: els.age.value,
-                wheatPrice: els.wheat.value,
-                availableAmount: els.amount.value
-            };
-            let records = JSON.parse(localStorage.getItem('fidyaRecords') || '[]');
-            records.push(record); // نیا ریکارڈ آخر میں لگے گا
-            localStorage.setItem('fidyaRecords', JSON.stringify(records));
-            showToast(currentLang === 'ur' ? "محفوظ ہو گیا!" : "Saved successfully!");
-        });
-
-        document.getElementById('viewRecordsBtn').addEventListener('click', () => {
-            exitSelectionMode();
-            renderRecordsList();
-            recordsOverlay.classList.add('active');
-        });
-
-        document.getElementById('closeRecordsBtn').addEventListener('click', () => {
-            recordsOverlay.classList.remove('active');
-            exitSelectionMode();
-        });
-
-        // Selection Actions
-        document.getElementById('btnCancelSel').addEventListener('click', exitSelectionMode);
-        document.getElementById('btnDeleteSel').addEventListener('click', () => {
-            if(selectedRecordIds.size === 0) return;
-            let confirmMsg = currentLang === 'ur' ? `کیا آپ واقعی ${selectedRecordIds.size} ریکارڈ ڈیلیٹ کرنا چاہتے ہیں؟` : `Delete ${selectedRecordIds.size} selected records?`;
-            if (confirm(confirmMsg)) {
-                let records = JSON.parse(localStorage.getItem('fidyaRecords') || '[]');
-                records = records.filter(r => !selectedRecordIds.has(r.id));
-                localStorage.setItem('fidyaRecords', JSON.stringify(records));
-                exitSelectionMode();
-                renderRecordsList();
-            }
-        });
-
-        function enterSelectionMode(firstId) {
-            isSelectionMode = true;
-            listContainer.classList.add('selection-mode');
-            selectionBar.classList.add('active');
-            if(firstId) toggleSelection(firstId);
-            renderRecordsList(); // Re-render to show checkboxes
-        }
-
-        function exitSelectionMode() {
-            isSelectionMode = false;
-            selectedRecordIds.clear();
-            listContainer.classList.remove('selection-mode');
-            selectionBar.classList.remove('active');
-            renderRecordsList();
-        }
-
-        function toggleSelection(id) {
-            if (selectedRecordIds.has(id)) selectedRecordIds.delete(id);
-            else selectedRecordIds.add(id);
-            
-            selCountText.innerText = currentLang === 'ur' ? `${selectedRecordIds.size} سلیکٹڈ` : `${selectedRecordIds.size} Selected`;
-            renderRecordsList(); // Update UI
-        }
-
-        function renderRecordsList() {
-            let records = JSON.parse(localStorage.getItem('fidyaRecords') || '[]');
-            listContainer.innerHTML = '';
-
-            if (records.length === 0) {
-                listContainer.innerHTML = `<div style="text-align:center; opacity:0.6; margin-top:20px;">${currentLang === 'ur' ? "کوئی ریکارڈ موجود نہیں" : "No saved records found."}</div>`;
-                return;
-            }
-
-            records.forEach((record, index) => {
-                const strip = document.createElement('div');
-                strip.className = `record-strip ${selectedRecordIds.has(record.id) ? 'selected' : ''}`;
-                strip.dataset.id = record.id;
-                
-                const fatherText = record.father ? (currentLang === 'ur' ? `ولدیت: ${record.father}` : `S/O: ${record.father}`) : '';
-
-                strip.innerHTML = `
-                    <input type="checkbox" class="strip-checkbox" ${selectedRecordIds.has(record.id) ? 'checked' : ''}>
-                    <div class="record-number">${index + 1}</div>
-                    <div class="record-info">
-                        <div class="record-name auto-urdu">${record.name}</div>
-                        <div class="record-father auto-urdu">${fatherText}</div>
-                    </div>
-                    <div class="drag-handle">☰</div>
-                `;
-
-                // --- 1. Long Press Logic (دبا کر رکھنا) ---
-                const startPress = (e) => {
-                    if (e.target.classList.contains('drag-handle') || isSelectionMode) return;
-                    longPressTimer = setTimeout(() => {
-                        enterSelectionMode(record.id);
-                        navigator.vibrate && navigator.vibrate(50); // موبائل پر ہلکی سی وائبریشن
-                    }, 500); // آدھا سیکنڈ دبانے پر
-                };
-                const cancelPress = () => clearTimeout(longPressTimer);
-
-                strip.addEventListener('touchstart', startPress, {passive: true});
-                strip.addEventListener('touchend', cancelPress);
-                strip.addEventListener('touchmove', cancelPress);
-                strip.addEventListener('mousedown', startPress);
-                strip.addEventListener('mouseup', cancelPress);
-                strip.addEventListener('mouseleave', cancelPress);
-
-                // --- 2. Click Logic (نارمل کلک) ---
-                strip.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('drag-handle')) return;
-                    
-                    if (isSelectionMode) {
-                        toggleSelection(record.id);
-                    } else {
-                        // ڈیٹا لوڈ کریں
-                        els.txtName.value = record.name || '';
-                        els.txtFather.value = record.father || '';
-                        els.txtCaste.value = record.caste || '';
-                        if(record.gender) {
-                            els.genderInput.value = record.gender;
-                            els.genderText.innerText = record.gender === 'male' ? STRINGS[currentLang].male : STRINGS[currentLang].female;
-                            els.genderTrigger.classList.remove('placeholder');
-                        }
-                        els.age.value = record.age || '';
-                        els.wheat.value = record.wheatPrice || '';
-                        els.amount.value = record.availableAmount || '';
-                        
-                        setDynamicFont(els.txtName); setDynamicFont(els.txtFather); setDynamicFont(els.txtCaste);
-                        
-                        recordsOverlay.classList.remove('active');
-                        calculate();
-                        showToast(currentLang === 'ur' ? "ڈیٹا لوڈ ہو گیا" : "Record Loaded");
-                    }
-                });
-
-                // --- 3. Drag & Drop Logic (اوپر نیچے کھینچنا) ---
-                const handle = strip.querySelector('.drag-handle');
-                
-                // ٹچ سکرین (موبائل) کے لیے ڈریگ فنکشن
-                handle.addEventListener('touchstart', function(e) {
-                    if (isSelectionMode) return;
-                    draggedItem = strip;
-                    strip.style.opacity = '0.5';
-                    strip.style.boxShadow = '0 5px 15px rgba(0,0,0,0.2)';
-                }, {passive: true});
-
-                handle.addEventListener('touchmove', function(e) {
-                    if (!draggedItem) return;
-                    e.preventDefault(); // سکرین کو سکرول ہونے سے روکے
-                    const touch = e.touches[0];
-                    const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
-                    const targetStrip = targetEl ? targetEl.closest('.record-strip') : null;
-                    
-                    if (targetStrip && targetStrip !== draggedItem) {
-                        const rect = targetStrip.getBoundingClientRect();
-                        const next = (touch.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
-                        listContainer.insertBefore(draggedItem, next ? targetStrip.nextSibling : targetStrip);
-                    }
-                }, {passive: false});
-
-                handle.addEventListener('touchend', function() {
-                    if (!draggedItem) return;
-                    draggedItem.style.opacity = '1';
-                    draggedItem.style.boxShadow = '';
-                    draggedItem = null;
-                    updateOrderAfterDrag();
-                });
-                
-                // ماؤس (کمپیوٹر) کے لیے ڈریگ
-                handle.addEventListener('mousedown', () => strip.draggable = true);
-                strip.addEventListener('dragstart', (e) => {
-                    draggedItem = strip;
-                    setTimeout(() => strip.style.opacity = '0.5', 0);
-                });
-                strip.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    const targetStrip = e.target.closest('.record-strip');
-                    if (targetStrip && targetStrip !== draggedItem) {
-                        const rect = targetStrip.getBoundingClientRect();
-                        const next = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
-                        listContainer.insertBefore(draggedItem, next ? targetStrip.nextSibling : targetStrip);
-                    }
-                });
-
-
-
-
-
-
-
-
-strip.addEventListener('dragend', () => {
-                    strip.draggable = false;
-                    strip.style.opacity = '1';
-                    updateOrderAfterDrag();
-                });
-
-                // پٹی کو کنٹینر (سکرین) میں شامل کریں
-                listContainer.appendChild(strip);
-                
-            }); // records.forEach لوپ کا اختتام
-        } // renderRecordsList فنکشن کا اختتام
-
-        // --- 4. ڈریگ کے بعد نیا آرڈر لوکل سٹوریج میں محفوظ کرنے کا فنکشن ---
-        function updateOrderAfterDrag() {
-            // سکرین پر موجود تمام پٹیوں کی نئی ترتیب حاصل کریں
-            const currentStrips = Array.from(listContainer.querySelectorAll('.record-strip'));
-            const oldRecords = JSON.parse(localStorage.getItem('fidyaRecords') || '[]');
-            
-            // نئی ترتیب کے حساب سے آئی ڈیز (IDs) نکالیں
-            const newOrderIds = currentStrips.map(strip => strip.dataset.id);
-            
-            // پرانے ریکارڈز کو نئی ترتیب کے مطابق سیٹ کریں
-            const newRecords = newOrderIds.map(id => oldRecords.find(record => record.id === id));
-            
-            // نیا ڈیٹا لوکل سٹوریج میں محفوظ کریں
-            localStorage.setItem('fidyaRecords', JSON.stringify(newRecords));
-            
-            // سکرین پر نمبرز (1, 2, 3) کو اپ ڈیٹ کرنے کے لیے لسٹ کو دوبارہ رینڈر کریں
-            renderRecordsList();
-        }
     </script>
+
+ <script>
+        // ===== BACK BUTTON HANDLER =====
+
+        // صفحہ لوڈ ہوتے وقت ایک base history entry بنائیں
+        // تاکہ پہلا بیک ہمیشہ ہمارے پاس آئے
+        history.pushState({ page: 'main' }, '');
+
+        window.addEventListener('popstate', function(e) {
+            // Tutorial
+            const tut = document.getElementById('tutorialOverlay');
+            if (tut && tut.classList.contains('active')) { closeTutorial(); history.pushState({ page: 'main' }, ''); return; }
+            // Info popup
+            const info = document.getElementById('infoPopup');
+            if (info && info.classList.contains('active')) { closePopup(); history.pushState({ page: 'main' }, ''); return; }
+            // Report
+            const rep = document.getElementById('reportOverlay');
+            if (rep && rep.classList.contains('active')) { closeReport(); history.pushState({ page: 'main' }, ''); return; }
+            // History
+            const hist = document.getElementById('historyOverlay');
+            if (hist && hist.classList.contains('active')) { closeHistory(); history.pushState({ page: 'main' }, ''); return; }
+
+            // مین اسکرین پر ہیں — exit confirm دکھائیں
+            showExitConfirm();
+        });
+
+        // === EXIT CONFIRM POPUP ===
+        function showExitConfirm() {
+            // واپس ایک state آگے دھکیلیں تاکہ ایپ یہیں رہے
+            history.pushState({ page: 'main' }, '');
+            document.getElementById('exitConfirmOverlay').classList.add('active');
+        }
+        function hideExitConfirm() {
+            document.getElementById('exitConfirmOverlay').classList.remove('active');
+        }
+
+        document.getElementById('exitConfirmYes').addEventListener('click', function() {
+            hideExitConfirm();
+            // دو بار back کریں: ایک ہمارا pushState ہٹائیں، دوسرا اصل back
+            history.go(-2);
+        });
+        document.getElementById('exitConfirmNo').addEventListener('click', hideExitConfirm);
+        document.getElementById('exitConfirmOverlay').addEventListener('click', function(e) {
+            if (e.target === this) hideExitConfirm();
+        });
+        </script>
  <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -1929,6 +2925,99 @@ if ("serviceWorker" in navigator) {
   });
 }
 </script>
+
+<script>
+// ===== SCALE LOCK SYSTEM =====
+(function () {
+    const BASE_WIDTH = 360;
+    const HEADER_HEIGHT = 50;
+
+    function scaleApp() {
+        const vw = window.innerWidth;
+        const scale = vw / BASE_WIDTH;
+        const tx = "translateX(-50%)";
+        const scaled = tx + " scale(" + scale + ")";
+
+        // --- Main content ---
+        const fixedEl   = document.getElementById("app-fixed-size");
+        const wrapperEl = document.getElementById("app-scale-wrapper");
+        if (fixedEl && wrapperEl) {
+            fixedEl.style.transformOrigin = "top center";
+            fixedEl.style.transform = "scale(" + scale + ")";
+            const scaledHeight = fixedEl.scrollHeight * scale;
+            wrapperEl.style.height = scaledHeight + "px";
+            wrapperEl.style.paddingTop = (HEADER_HEIGHT * scale) + "px";
+        }
+
+        // --- Header ---
+        const headerEl = document.querySelector(".top-bar");
+        if (headerEl) {
+            headerEl.style.transformOrigin = "top center";
+            headerEl.style.transform = scaled;
+        }
+
+        // --- All full-screen overlays ---
+        const overlays = [
+            document.querySelector(".tutorial-overlay"),
+            document.querySelector(".popup-overlay"),
+            document.querySelector(".report-overlay"),
+            document.querySelector(".history-overlay"),
+        ];
+        overlays.forEach(function(el) {
+            if (!el) return;
+            el.style.transformOrigin = "top center";
+            el.style.transform = scaled;
+            el.style.height = (100 / scale) + "vh";
+        });
+    }
+
+    window.addEventListener("resize", scaleApp);
+    window.addEventListener("orientationchange", scaleApp);
+    window.addEventListener("load", scaleApp);
+    document.addEventListener("DOMContentLoaded", scaleApp);
+    scaleApp();
+})();
+</script>
+
+
+    <!-- ===== EXIT CONFIRM POPUP ===== -->
+    <div id="exitConfirmOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;justify-content:center;align-items:center;">
+        <div class="exit-card">
+            <div class="exit-card-title" id="exitTitle">ایپ سے باہر</div>
+            <div class="exit-card-body" id="exitBody">کیا آپ واقعی ایپ سے باہر جانا چاہتے ہیں؟</div>
+            <div class="exit-card-btns">
+                <button id="exitConfirmNo">نہیں</button>
+                <button id="exitConfirmYes">ہاں</button>
+            </div>
+        </div>
+    </div>
+    <style>
+        #exitConfirmOverlay { display:flex; opacity:0; visibility:hidden; transition:opacity 0.25s, visibility 0.25s; }
+        #exitConfirmOverlay.active { opacity:1; visibility:visible; }
+        .exit-card {
+            width: 280px; background: var(--panel-bg); border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.35); overflow: hidden;
+        }
+        .exit-card-title {
+            background: var(--accent-color); color: #fff; text-align: center;
+            padding: 14px 16px; font-size: 1rem; font-weight: bold;
+            font-family: var(--font-urdu), serif; line-height: 2.2;
+        }
+        .exit-card-body {
+            padding: 18px 16px; text-align: center; font-size: 0.88rem;
+            line-height: 2.4; color: var(--text-color);
+            font-family: var(--font-urdu), serif;
+        }
+        .exit-card-btns { display:flex; border-top:1px solid var(--glass-border); }
+        .exit-card-btns button {
+            flex:1; padding:14px 0; border:none; font-size:0.95rem;
+            font-family: var(--font-urdu), serif; font-weight:bold; cursor:pointer; transition:background 0.2s; line-height:2.2;
+        }
+        #exitConfirmYes { background:#e74c3c; color:#fff; border-right:1px solid rgba(0,0,0,0.1); }
+        #exitConfirmYes:active { background:#c0392b; }
+        #exitConfirmNo { background:#2ecc71; color:#fff; }
+        #exitConfirmNo:active { background:#27ae60; }
+    </style>
 
 </body>
 </html>
