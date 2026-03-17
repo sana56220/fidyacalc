@@ -95,7 +95,6 @@
             font-size: var(--base-font);
             line-height: 1.3;
             min-height: 100vh;
-            margin: 0;
         }
 
         /* ===== SCALE LOCK SYSTEM (darkhasthazri style) ===== */
@@ -111,7 +110,7 @@
         }
 
         #app-fixed-size {
-            width: 360px;
+            width: 320px;
             transform-origin: top center;
             padding-bottom: 60px;
         }
@@ -169,26 +168,122 @@
         }
 
         /* ============================================================
-           TUTORIAL BUTTON & SLIDESHOW STYLES
+           TUTORIAL ACTION ICONS — CLICKABLE STYLES
            ============================================================ */
-        #tutorialBtn {
-            background: none; border: none; cursor: pointer;
-            color: var(--text-color);
-            font-size: 1.1rem; padding: 4px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            width: 28px; height: 28px;
+        .tut-icon-btn {
+            cursor: pointer !important;
+            transition: transform 0.15s, filter 0.15s;
+            display: inline-flex !important;
+        }
+        .tut-icon-btn:hover  { transform: scale(1.22) !important; filter: brightness(1.15); }
+        .tut-icon-btn:active { transform: scale(0.92) !important; }
+
+        /* ---- Header button blink when tutorial points to it ---- */
+        @keyframes tut-hdr-blink {
+            0%,100%{ box-shadow:0 0 0 4px rgba(255,200,0,1),0 0 14px rgba(255,200,0,0.8); background:rgba(255,210,0,0.25); transform:scale(1.25);}
+            50%    { box-shadow:none; background:transparent; transform:scale(1); }
+        }
+        .tut-hdr-blink {
+            animation: tut-hdr-blink 0.65s ease-in-out 2 forwards !important;
+            border-radius: 50% !important;
+            position: relative !important;
+            z-index: 99999 !important;
         }
 
+        /* ---- Live preview ring overlay on captured image ---- */
+        @keyframes tut-ring-pulse {
+            0%,100%{ box-shadow:0 0 0 3px rgba(255,200,0,1),0 0 10px rgba(255,200,0,0.9); }
+            50%    { box-shadow:0 0 0 7px rgba(255,200,0,0.25),0 0 22px rgba(255,200,0,0.5); }
+        }
+        .tut-ring {
+            position: absolute;
+            pointer-events: none;
+            z-index: 5;
+            animation: tut-ring-pulse 0.9s ease-in-out infinite;
+        }
+
+        /* Spinner in preview area while capturing */
+        @keyframes tut-spin { to{ transform:rotate(360deg); } }
+        .tut-cap-loader {
+            position: absolute; inset:0; display:flex;
+            align-items:center; justify-content:center;
+            color:var(--accent-color); opacity:0.55; z-index:4;
+        }
+        .tut-cap-loader svg { animation:tut-spin 1s linear infinite; width:26px;height:26px; }
+
+        /* ---- پری ویو سکرول انیمیشن ---- */
+        @keyframes tut-scroll-anim {
+            0%   { transform: translateY(0); }
+            15%  { transform: translateY(0); }
+            85%  { transform: translateY(var(--tut-sd)); }
+            100% { transform: translateY(var(--tut-sd)); }
+        }
+
+        /* ---- ہسٹری drag انیمیشن ---- */
+        @keyframes tut-drag-down {
+            0%   { transform:translateY(0) scale(1.02);   box-shadow:0 2px 8px rgba(0,0,0,0.12); }
+            30%  { transform:translateY(var(--tut-dy))    scale(1.04); box-shadow:0 8px 20px rgba(0,0,0,0.22); background:rgba(255,200,0,0.18); }
+            70%  { transform:translateY(var(--tut-dy))    scale(1.04); box-shadow:0 8px 20px rgba(0,0,0,0.22); background:rgba(255,200,0,0.18); }
+            100% { transform:translateY(0) scale(1.02);   box-shadow:0 2px 8px rgba(0,0,0,0.12); }
+        }
+
+        /* ---- ڈیلیٹ غائب ہونے کی animation ---- */
+        @keyframes tut-fade-del {
+            0%  { opacity:1; max-height:60px; transform:scaleY(1); }
+            40% { opacity:0; max-height:60px; transform:scaleY(0.8); }
+            100%{ opacity:0; max-height:0;    transform:scaleY(0);   }
+        }
+        .tut-del-anim { animation:tut-fade-del 0.6s ease forwards; overflow:hidden; }
+
+        /* ---- پیلی مستطیل رکٹ ---- */
+        @keyframes tut-yell-pulse {
+            0%,100%{ box-shadow:0 0 0 2px rgba(255,200,0,1),0 0 8px rgba(255,200,0,0.7); }
+            50%    { box-shadow:0 0 0 5px rgba(255,200,0,0.3),0 0 16px rgba(255,200,0,0.4); }
+        }
+        .tut-yellow-rect {
+            position:absolute; pointer-events:none; z-index:5;
+            border:2px solid rgba(255,200,0,1);
+            border-radius:6px;
+            animation:tut-yell-pulse 1.1s ease-in-out infinite;
+        }
+
+        /* ---- مرحلہ 7 — انگلی ٹیپ + رپورٹ transition ---- */
+        @keyframes tut-finger-tap {
+            0%   { transform: translate(-50%,-50%) scale(1)   rotate(-10deg); opacity:1; }
+            35%  { transform: translate(-50%,-50%) scale(0.78) rotate(-10deg); opacity:1; }
+            55%  { transform: translate(-50%,-50%) scale(1.05) rotate(-10deg); opacity:1; }
+            100% { transform: translate(-50%,-50%) scale(1)   rotate(-10deg); opacity:0; }
+        }
+        @keyframes tut-phase-fadein {
+            from { opacity:0; }
+            to   { opacity:1; }
+        }
+        .tut-finger {
+            position:absolute; pointer-events:none; z-index:9;
+            font-size:1.8rem; line-height:1;
+            transform-origin: center center;
+            transform: translate(-50%,-50%) scale(1) rotate(-10deg);
+        }
+        .tut-btn-ring-pulse {
+            position:absolute; pointer-events:none; z-index:8;
+            border-radius:50%;
+            border: 3px solid rgba(255,200,0,1);
+            animation: tut-ring-pulse 0.7s ease-in-out infinite;
+        }
+
+        /* ============================================================
+           TUTORIAL BUTTON & SLIDESHOW STYLES
+           ============================================================ */
         .tutorial-overlay {
             position: fixed; top: 0;
-            width: 360px; left: 50%;
+            width: 320px; left: 50%;
             transform: translateX(-50%);
             transform-origin: top center;
             height: 100vh;
             background-color: rgba(0,0,0,0.75);
             backdrop-filter: blur(4px);
             z-index: 3500;
-            display: flex; justify-content: center; align-items: center;
+            display: flex; justify-content: center; align-items: center; padding: 10px 0;
             opacity: 0; visibility: hidden;
             transition: opacity 0.3s, visibility 0.3s;
         }
@@ -217,7 +312,7 @@
         }
         [dir="rtl"] .tutorial-title { font-family: var(--font-urdu) !important; font-size: 0.85rem; }
 
-        #closeTutorialBtn {
+        #closeTutorialBtn, #closeHistoryBtn {
             width: 26px; height: 26px;
             border: 2px solid var(--text-color);
             border-radius: 50%;
@@ -240,9 +335,12 @@
             background: linear-gradient(135deg, #1a2a3a 0%, #1e3a5f 100%);
         }
         .tutorial-image-area img {
-            width: 100%; height: 100%;
-            object-fit: contain;
-            padding: 10px;
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            padding: 0;
+            margin: 0;
+            display: block;
         }
         .tutorial-img-placeholder {
             display: flex; flex-direction: column;
@@ -275,10 +373,6 @@
             font-family: var(--font-urdu) !important;
             font-size: 0.9rem; line-height: 2;
         }
-        [dir="rtl"] .tutorial-slide-body {
-            font-family: var(--font-urdu) !important;
-            font-size: 0.8rem; line-height: 2.1;
-        }
         /* Digit spans — same style in both LTR and RTL */
         .tut-num {
             font-family: 'Segoe UI', Arial, sans-serif !important;
@@ -290,40 +384,21 @@
             display: inline;
             letter-spacing: 0.02em;
         }
-        [dir="rtl"] .tutorial-slide-heading .tut-num,
-        [dir="rtl"] .tutorial-slide-body .tut-num {
-            font-family: 'Segoe UI', Arial, sans-serif !important;
-            font-size: 0.82rem;
-            font-weight: 700;
-            color: var(--accent-color);
-        }
-        .tutorial-slide-heading .tut-num {
-            font-size: 0.9rem;
-        }
+        .tutorial-slide-heading .tut-num { font-size: 0.9rem; }
         /* Inline icon inside tutorial text */
-        .tut-icon {
+        .tut-icon, .tut-icon-plain {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             width: 22px; height: 22px;
-            background: var(--accent-color);
             border-radius: 50%;
             vertical-align: middle;
             margin: 0 3px;
             flex-shrink: 0;
         }
+        .tut-icon { background: var(--accent-color); }
         .tut-icon svg { width: 13px; height: 13px; fill: #fff; }
-        .tut-icon-plain {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 22px; height: 22px;
-            border: 1.5px solid var(--accent-color);
-            border-radius: 50%;
-            vertical-align: middle;
-            margin: 0 3px;
-            flex-shrink: 0;
-        }
+        .tut-icon-plain { border: 1.5px solid var(--accent-color); }
         .tut-icon-plain svg { width: 13px; height: 13px; fill: var(--accent-color); }
         .tutorial-slide-body {
             font-size: 0.82rem; line-height: 1.65;
@@ -337,33 +412,36 @@
         .tutorial-nav {
             flex-shrink: 0;
             display: flex; align-items: center; justify-content: space-between;
-            padding: 10px 15px;
+            padding: 7px 10px;
             border-top: 1px solid rgba(0,0,0,0.08);
-            gap: 10px;
+            gap: 6px;
             background: var(--panel-bg);
         }
         .tutorial-nav-btn {
             background: var(--accent-color); color: #fff;
-            border: none; border-radius: 25px;
-            padding: 7px 18px; font-size: 0.8rem; font-weight: 600;
+            border: none; border-radius: 20px;
+            padding: 5px 12px; font-size: 0.72rem; font-weight: 600;
             cursor: pointer; transition: background 0.2s, opacity 0.2s;
-            min-width: 70px;
+            min-width: 56px; flex-shrink: 0;
+            white-space: nowrap;
         }
-        [dir="rtl"] .tutorial-nav-btn { font-family: var(--font-urdu) !important; font-size: 0.75rem; }
+        [dir="rtl"] .tutorial-nav-btn { font-family: var(--font-urdu) !important; font-size: 0.68rem; }
         .tutorial-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
         .tutorial-nav-btn:not(:disabled):hover { background: var(--accent-hover); }
 
         .tutorial-dots {
-            display: flex; gap: 5px; align-items: center;
+            display: flex; gap: 4px; align-items: center; flex-wrap: wrap;
+            justify-content: center; flex: 1;
         }
         .tutorial-dot {
-            width: 7px; height: 7px; border-radius: 50%;
+            width: 5px; height: 5px; border-radius: 50%;
             background: var(--input-border);
             transition: all 0.3s; cursor: pointer;
+            flex-shrink: 0;
         }
         .tutorial-dot.active {
             background: var(--accent-color);
-            width: 18px; border-radius: 4px;
+            width: 14px; border-radius: 3px;
         }
 
         /* AUTO-PLAY CONTROLS */
@@ -444,35 +522,39 @@
         /* HEADER - SCALE LOCK */
         .top-bar {
             position: fixed; top: 0; 
-            width: 360px;
-            height: 50px;
+            width: 320px;
+            height: 44px;
             background-color: var(--header-bg); box-shadow: var(--shadow);
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 15px; z-index: 1000;
+            padding: 0 8px; z-index: 1000;
             left: 50%;
             transform: translateX(-50%);
             transform-origin: top center;
+            box-sizing: border-box;
+            overflow: hidden;
         }
 
-        .app-title { font-size: 0.85rem; font-weight: 700; color: var(--text-color); }
+        .app-title { font-size: 0.78rem; font-weight: 700; color: var(--text-color); flex-shrink: 0; }
 
-        .header-controls { display: flex; gap: 10px; align-items: center; }
+        .header-controls { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
 
         .icon-btn {
             background: none; border: none; cursor: pointer; color: var(--text-color);
-            font-size: 1.1rem; padding: 4px; border-radius: 50%; display: flex;
-            align-items: center; justify-content: center; width: 28px; height: 28px;
+            font-size: 1rem; padding: 2px; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; width: 26px; height: 26px;
+            flex-shrink: 0;
         }
 
         #infoBtn {
             background: var(--info-btn-bg); color: var(--info-btn-text);
-            border: 1.5px solid var(--info-btn-border); width: 24px; height: 24px;
-            font-size: 0.85rem; border-radius: 50%; 
+            border: 1.5px solid var(--info-btn-border); width: 22px; height: 22px;
+            font-size: 0.8rem; border-radius: 50%; 
             font-family: serif; 
             font-weight: bold; font-style: italic;
             display: flex; align-items: center; justify-content: center;
             padding: 0;
             line-height: 1;
+            flex-shrink: 0;
         }
 
         /* CONTAINER & INPUTS */
@@ -632,7 +714,7 @@
         /* Popup (READ ONLY) */
         .popup-overlay {
             position: fixed; top: 0;
-            width: 360px; left: 50%;
+            width: 320px; left: 50%;
             transform: translateX(-50%);
             transform-origin: top center;
             height: 100vh;
@@ -643,7 +725,7 @@
         }
         .popup-overlay.active { opacity: 1; visibility: visible; }
         .popup-card-container {
-            width: 96%; height: 85%; background-color: var(--bg-color); border-radius: 20px;
+            width: 96%; height: 94%; background-color: var(--bg-color); border-radius: 14px;
             display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.3); overflow: hidden;
         }
         .popup-header { flex-shrink: 0; height: 50px; background-color: var(--panel-bg); box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom-left-radius: 20px; border-bottom-right-radius: 5px; z-index: 20; }
@@ -690,12 +772,32 @@
             line-height: 1;
         }
 
-        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background-color: var(--text-color); color: var(--bg-color); padding: 10px 20px; border-radius: 30px; font-size: 0.82rem; z-index: 99999; opacity: 0; pointer-events: none; text-align: center; transition: opacity 0.4s ease, transform 0.4s ease; }
-        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            width: 320px;
+            left: 50%;
+            transform-origin: bottom center;
+            background-color: transparent;
+            padding: 0;
+            z-index: 99999;
+            opacity: 0;
+            pointer-events: none;
+            text-align: center;
+            transition: opacity 0.4s ease, bottom 0.4s ease;
+        }
+        .toast-inner {
+            background-color: var(--text-color);
+            color: var(--bg-color);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 0.82rem;
+            display: inline-block;
+        }
+        .toast.show { opacity: 1; }
 
         /* Report Styles */
-        .report-overlay { position: fixed; top: 0; width: 360px; left: 50%; transform: translateX(-50%); transform-origin: top center; height: 100vh; background-color: var(--bg-color); z-index: 2500; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
+        .report-overlay { position: fixed; top: 0; width: 320px; left: 50%; transform: translateX(-50%); transform-origin: top center; height: 100vh; background-color: var(--bg-color); z-index: 2500; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
         .report-overlay.active { opacity: 1; visibility: visible; }
         .report-container { width: 100%; max-width: 600px; margin: 20px auto; background: var(--panel-bg); border: 1px solid var(--input-border); box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 20px; border-radius: 10px; color: var(--text-color); position: relative; }
         
@@ -810,6 +912,7 @@
              font-size: 0.7rem !important; 
         }
         
+/* Urdu mode: font for labels/UI */
 [dir="rtl"] label, 
 [dir="rtl"] .app-title, 
 [dir="rtl"] .res-label, 
@@ -830,59 +933,13 @@
     font-family: var(--font-urdu), serif !important;
 }
 
-
-@font-face {
-    font-family: 'EnglishNumbers';
-    src: local('Arial'), local('Segoe UI'), local('sans-serif');
-    unicode-range: U+0030-0039;
-}
-
-input[type="number"],
-.numeric-value,
-.total-amount,
-.summary-number,
-#displayAge, 
-#displayWheatPrice,
-#totalFidya,
-.res-label,
-.calculation-result,
-td:nth-child(2), 
-td:nth-child(3),
-td:nth-child(4) {
-    font-family: 'EnglishNumbers', 'Segoe UI', sans-serif !important;
-    direction: ltr !important;
-}
-
-[dir="ltr"] * {
-    font-family: var(--font-main), sans-serif;
-}
-
-
 [dir="rtl"] .numeric-text {
     font-family: 'Segoe UI', Arial, sans-serif !important;
     font-weight: bold;
     margin: 0 2px;
 }
 
-[dir="rtl"] label, 
-[dir="rtl"] .app-title, 
-[dir="rtl"] .res-label, 
-[dir="rtl"] #genderText, 
-[dir="rtl"] .dropdown-item, 
-[dir="rtl"] .report-field-label,
-[dir="rtl"] .report-title,
-[dir="rtl"] .summary-item,
-[dir="rtl"] .summary-text,
-[dir="rtl"] .report-footer,
-[dir="rtl"] th, 
-[dir="rtl"] td {
-    font-family: var(--font-urdu), serif !important;
-}
-
-[dir="rtl"] input::placeholder {
-    font-family: var(--font-urdu) !important;
-}
-
+/* English numbers always render in Latin font */
 @font-face {
     font-family: 'EnglishNumbers';
     src: local('Segoe UI'), local('Arial'), sans-serif;
@@ -906,16 +963,8 @@ td:nth-child(4),
     unicode-bidi: bidi-override;
 }
 
-[dir="ltr"] * {
-    font-family: var(--font-main), sans-serif;
-}
+[dir="ltr"] * { font-family: var(--font-main), sans-serif; }
 
-[dir="rtl"] .bio-one-row input {
-    font-size: 10px !important;
-    text-indent: 0.5ch;
-    padding-top: 5px;
-}
-    
 #age::placeholder, 
 input[type="number"]::placeholder {
     font-size: 0.7rem !important;
@@ -940,20 +989,20 @@ input[type="number"]::placeholder {
    SAVE & HISTORY SYSTEM
    ============================================================ */
 
-/* Header save & history icon buttons */
-#saveRecordBtn, #historyBtn {
+/* Header icon buttons (tutorial, save, history) */
+#tutorialBtn, #saveRecordBtn, #historyBtn {
     background: none; border: none; cursor: pointer;
     color: var(--text-color);
     font-size: 1.1rem; padding: 4px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     width: 28px; height: 28px;
 }
-#saveRecordBtn svg, #historyBtn svg { width: 18px; height: 18px; fill: currentColor; }
+#saveRecordBtn svg, #historyBtn svg { width: 16px; height: 16px; fill: currentColor; }
 
 /* History Overlay */
 .history-overlay {
     position: fixed; top: 0;
-    width: 360px; left: 50%;
+    width: 320px; left: 50%;
     transform: translateX(-50%);
     transform-origin: top center;
     height: 100vh;
@@ -980,16 +1029,6 @@ input[type="number"]::placeholder {
     color: var(--text-color); flex-grow: 1;
 }
 [dir="rtl"] .history-topbar-title { font-family: var(--font-urdu) !important; }
-
-#closeHistoryBtn {
-    width: 26px; height: 26px;
-    border: 2px solid var(--text-color);
-    border-radius: 50%;
-    font-size: 0.85rem;
-    display: flex; align-items: center; justify-content: center;
-    background: none; color: var(--text-color);
-    cursor: pointer; font-family: sans-serif !important; line-height: 1;
-}
 
 /* Selection action bar */
 .history-action-bar {
@@ -1115,24 +1154,25 @@ input[type="number"]::placeholder {
 /* Text content */
 .hist-content {
     flex-grow: 1;
-    padding: 10px 6px;
+    padding: 8px 6px 10px 6px;
     min-width: 0;
 }
 .hist-name {
     font-size: 0.85rem; font-weight: 600;
     color: var(--text-color);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-bottom: 4px;
 }
-[dir="rtl"] .hist-name { font-family: var(--font-urdu) !important; font-size: 0.8rem; }
+[dir="rtl"] .hist-name { font-family: var(--font-urdu) !important; font-size: 0.8rem; line-height: 1.8; }
 .hist-father {
-    font-size: 0.7rem; color: var(--text-color); opacity: 0.6;
-    margin-top: 2px;
+    font-size: 0.7rem; color: var(--text-color); opacity: 0.65;
+    margin-top: 4px; margin-bottom: 4px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-[dir="rtl"] .hist-father { font-family: var(--font-urdu) !important; }
+[dir="rtl"] .hist-father { font-family: var(--font-urdu) !important; line-height: 1.8; }
 .hist-meta {
-    font-size: 0.65rem; color: var(--accent-color); opacity: 0.8;
-    margin-top: 2px; font-family: 'Segoe UI', sans-serif !important;
+    font-size: 0.65rem; color: var(--accent-color); opacity: 0.85;
+    margin-top: 4px; font-family: 'Segoe UI', sans-serif !important;
 }
 
 /* Load button on strip */
@@ -1216,7 +1256,7 @@ input[type="number"]::placeholder {
                 <svg class="icon-svg sun-icon" viewBox="0 0 24 24" style="display: block;"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.93c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.42 1.42c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.42-1.42zm13.44 14.14c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.42 1.42c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.42-1.42zm-14.86 1.42l1.42 1.42c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.42-1.42c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41zm14.14-14.14l1.42 1.42c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.42-1.42c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41z"></path></svg>
                 <svg class="icon-svg moon-icon" viewBox="0 0 24 24" style="display: none;"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-3.03 0-5.5-2.47-5.5-5.5 0-1.82.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"></path></svg>
             </button>
-            <button class="icon-btn" id="langToggle" style="font-size: 0.8rem; font-weight: bold; width: auto; padding: 0 5px;">En</button>
+            <button class="icon-btn" id="langToggle" style="font-size: 0.72rem; font-weight: bold; width: auto; padding: 0 4px; min-width:24px;">En</button>
             <button class="icon-btn" id="infoBtn">i</button>
         </div>
     </header>
@@ -1309,7 +1349,7 @@ input[type="number"]::placeholder {
     </div><!-- /app-scale-wrapper -->
 
     <!-- Toast Notification -->
-    <div id="toast" class="toast">Message</div>
+    <div id="toast" class="toast"><div class="toast-inner" id="toastInner">Message</div></div>
 
     <!-- REPORT POPUP (FULL SCREEN) -->
     <div class="report-overlay" id="reportOverlay">
@@ -1478,7 +1518,7 @@ input[type="number"]::placeholder {
         <div class="history-topbar">
             <button id="closeHistoryBtn">✕</button>
             <span class="history-topbar-title" id="histTitle">Saved Records</span>
-            <button class="icon-btn" id="histClearSelBtn" style="display:none; font-size:0.7rem; font-weight:600; width:auto; padding:0 8px; border:1px solid var(--input-border); border-radius:20px;" id="histClearSelBtn">✕ Clear</button>
+            <button class="icon-btn" id="histClearSelBtn" style="display:none; font-size:0.7rem; font-weight:600; width:auto; padding:0 8px; border:1px solid var(--input-border); border-radius:20px;">✕ Clear</button>
         </div>
 
         <!-- Action bar (shown when items are selected) -->
@@ -1551,7 +1591,49 @@ lblFemaleLate: "Age minus <span class='numeric-text'>9</span> years",
                 tdTotal: "Total",
                 popupTitle: "Note",
                 lblDontShow: "Don't show again",
-                defaultPopupText: "Welcome to the Fidya Calculator. Use this tool to calculate fidya based on wheat price.",
+                defaultPopupText: `<b style="font-size:1.05em;">📿 Fidya Calculator — Purpose & Guide</b>
+<br><br>
+<b>What is Fidya (Isqat)?</b><br>
+When a Muslim passes away with missed prayers (<i>Salah</i>) and fasts (<i>Sawm</i>) due to illness or inability, their heirs may fulfil a religious duty on their behalf by paying <b>Fidya</b> — an expiation (atonement) for each missed prayer and fast. This act of charity is performed with sincere hope that Allah ﷻ, in His mercy, overlooks the shortcomings of the deceased and grants them forgiveness.<br>
+This process is commonly known as <b>Hila-e-Isqat</b> or <b>Isqat-e-Salah wa Sawm</b>.
+<br><br>
+<b>How Age is Calculated:</b><br>
+• The <b>total age</b> of the deceased is entered in years.<br>
+• The <b>minimum age of puberty</b> is then deducted:<br>
+&nbsp;&nbsp;— <b>12 years</b> for males<br>
+&nbsp;&nbsp;— <b>9 years</b> for females<br>
+• The remaining years are the <b>calculated age</b> — the period for which Fidya is due.
+<br><br>
+<b>Prayer &amp; Fast Fidya:</b><br>
+Each day has <b>6 prayers</b> (Fajr, Zuhr, Asr, Maghrib, Isha, Witr) and <b>1 fast</b> (in Ramadan).<br>
+• A <b>lunar year</b> = 355 days is used.<br>
+• Each missed prayer/fast = <b>½ Saa' of wheat</b> = approx. <b>1 Kg 633g</b> (in today's weight).<br>
+• The app calculates:<br>
+&nbsp;&nbsp;— Total prayers = calculated years × 355 × 6<br>
+&nbsp;&nbsp;— Total fasts = calculated years × 30<br>
+&nbsp;&nbsp;— Fidya amount = quantity × price of 40Kg wheat ÷ 40
+<br><br>
+<b>Wheat Price &amp; Rounding:</b><br>
+Enter the current market price of <b>40 Kg wheat</b>. The app will compute the Fidya in <b>Pakistani Rupees (Rs)</b>.<br>
+⚠️ If the calculated result has a decimal (e.g., Rs 5,321.75), the app <b>rounds UP</b> to the next whole rupee (Rs 5,322). This is intentional — it ensures the deceased's rights are <b>fully honoured</b>. Even a single rupee short could mean a prayer is left unaccounted for.
+<br><br>
+<b>Available Amount &amp; Loot Pher (Rounds):</b><br>
+If the heirs cannot afford the full Fidya amount, they may perform <b>Hila-e-Loot Pher</b> (the reverting method):<br>
+• Give a sum of money to a deserving poor person (<i>Faqeer</i>) as Fidya.<br>
+• The Faqeer gifts it back as <i>Hibah</i> (donation).<br>
+• Repeat this cycle — each round counts as one complete payment.<br>
+• The app calculates how many <b>rounds</b> are needed based on the available amount.<br>
+Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no single prayer/fast is left incomplete.
+<br><br>
+<b>How to Use This App:</b><br>
+1️⃣ Select <b>Gender</b> of the deceased (Late Male / Late Female).<br>
+2️⃣ Enter the <b>Total Age</b> in years (no decimals allowed).<br>
+3️⃣ Enter the <b>40 Kg Wheat Price</b> in Rupees.<br>
+4️⃣ Optionally, enter <b>Available Amount</b> to see the number of rounds.<br>
+5️⃣ Tap the <b>Report 🖨</b> button to generate a full Fidya Report.<br>
+6️⃣ Save, share, or print the report as needed.
+<br><br>
+<i>May Allah ﷻ accept this act of charity and grant peace and forgiveness to our beloved departed. Ameen.</i>`,
             },
             ur: {
                 appTitle: "فدیہ کیلکولیٹر",
@@ -1799,20 +1881,21 @@ lblFemaleLate: "Age minus <span class='numeric-text'>9</span> years",
         // ============================================================
         // TUTORIAL / HOW TO USE SYSTEM
         // ============================================================
-        // ---- Reusable inline icon HTML snippets ----
+        // ---- Reusable inline icon HTML snippets (CLICKABLE) ----
         const IC = {
-            tutorial:  `<span class="tut-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></span>`,
-            save:      `<span class="tut-icon"><svg viewBox="0 0 24 24"><path d="M17 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm2 16H5V5h11.17L19 7.83V19zm-7-7c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zM6 6h9v4H6z"/></svg></span>`,
-            history:   `<span class="tut-icon"><svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg></span>`,
-            report:    `<span class="tut-icon"><svg viewBox="0 0 24 24"><path d="M19 8h-1V3H6v5H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zM8 5h8v3H8V5zm8 12v2H8v-4h8v2zm2-2v-2H6v2H4v-4c0-.55.45-1 1-1h14c.55 0 1 .45 1 1v4h-2z"/></svg></span>`,
-            theme:     `<span class="tut-icon"><svg viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1z"/></svg></span>`,
-            lang:      `<span class="tut-icon" style="font-size:0.6rem;font-weight:700;color:#fff;background:var(--accent-color);font-family:'Segoe UI',sans-serif;">En</span>`,
-            info:      `<span class="tut-icon" style="font-size:0.7rem;font-weight:bold;font-style:italic;color:#fff;font-family:serif;">i</span>`,
-            drag:      `<span class="tut-icon-plain"><svg viewBox="0 0 24 24"><path d="M3 15h18v-2H3v2zm0 4h18v-2H3v2zm0-8h18V9H3v2zm0-6v2h18V5H3z"/></svg></span>`,
-            load:      `<span class="tut-icon-plain"><svg viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/><path d="M12 16V4" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg></span>`,
-            del:       `<span class="tut-icon" style="background:var(--error-color);"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="#fff"/></svg></span>`,
-            imgBtn:    `<span class="tut-icon"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" fill="#fff"/></svg></span>`,
-            shareBtn:  `<span class="tut-icon" style="background:var(--share-color);"><svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" fill="#fff"/></svg></span>`,
+            tutorial: `<span class="tut-icon tut-icon-btn" data-tut-action="tutorial"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></span>`,
+            save:     `<span class="tut-icon tut-icon-btn" data-tut-action="save"><svg viewBox="0 0 24 24"><path d="M17 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm2 16H5V5h11.17L19 7.83V19zm-7-7c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zM6 6h9v4H6z"/></svg></span>`,
+            history:  `<span class="tut-icon tut-icon-btn" data-tut-action="history"><svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg></span>`,
+            report:   `<span class="tut-icon tut-icon-btn" data-tut-action="report"><svg viewBox="0 0 24 24"><path d="M19 8h-1V3H6v5H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zM8 5h8v3H8V5zm8 12v2H8v-4h8v2zm2-2v-2H6v2H4v-4c0-.55.45-1 1-1h14c.55 0 1 .45 1 1v4h-2z"/></svg></span>`,
+            theme:    `<span class="tut-icon tut-icon-btn" data-tut-action="theme"><svg viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1z"/></svg></span>`,
+            lang:     `<span class="tut-icon tut-icon-btn" data-tut-action="lang" style="font-size:0.6rem;font-weight:700;color:#fff;background:var(--accent-color);font-family:'Segoe UI',sans-serif;">En</span>`,
+            info:     `<span class="tut-icon tut-icon-btn" data-tut-action="info" style="font-size:0.7rem;font-weight:bold;font-style:italic;color:#fff;font-family:serif;">i</span>`,
+            drag:     `<span class="tut-icon-plain tut-icon-btn" data-tut-action="drag"><svg viewBox="0 0 24 24"><path d="M3 15h18v-2H3v2zm0 4h18v-2H3v2zm0-8h18V9H3v2zm0-6v2h18V5H3z"/></svg></span>`,
+            load:     `<span class="tut-icon-plain tut-icon-btn" data-tut-action="load"><svg viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/><path d="M12 16V4" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg></span>`,
+            del:      `<span class="tut-icon tut-icon-btn" data-tut-action="del" style="background:var(--error-color);"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="#fff"/></svg></span>`,
+            imgBtn:   `<span class="tut-icon tut-icon-btn" data-tut-action="imgBtn"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" fill="#fff"/></svg></span>`,
+            pdfBtn:   `<span class="tut-icon tut-icon-btn" data-tut-action="pdfBtn" style="background:var(--error-color);"><svg viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v2.5zm2.5 3.5h-1.5V7h1.5v6zm4.5 0h-3V7H20v1.5h-2v1h2V11h-2v2zm2 6H4c-1.1 0-2-.9-2-2V6h2v14h16v2z" fill="#fff"/></svg></span>`,
+            shareBtn: `<span class="tut-icon tut-icon-btn" data-tut-action="shareBtn" style="background:var(--share-color);"><svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" fill="#fff"/></svg></span>`,
         };
 
         const TUTORIAL_SLIDES = {
@@ -1860,7 +1943,7 @@ lblFemaleLate: "Age minus <span class='numeric-text'>9</span> years",
                 {
                     img: "tutorial-en-8.png",
                     heading: "Step 7: Generate Report",
-                    body: `Tap the ${IC.report} <b>Report</b> button in the header to generate a complete Fidya report. From the report screen you can:<br>&bull; ${IC.imgBtn} Save as <b>Image</b><br>&bull; Save as <b>PDF</b><br>&bull; ${IC.shareBtn} <b>Share</b> directly`
+                    body: `Tap the ${IC.report} <b>Report</b> button in the header to generate a complete Fidya report. From the report screen you can:<br>&bull; ${IC.imgBtn} Save as <b>Image</b><br>&bull; ${IC.pdfBtn} Save as <b>PDF</b><br>&bull; ${IC.shareBtn} <b>Share</b> directly`
                 },
                 {
                     img: "tutorial-en-9.png",
@@ -1927,7 +2010,7 @@ lblFemaleLate: "Age minus <span class='numeric-text'>9</span> years",
                 {
                     img: "tutorial-ur-8.png",
                     heading: "مرحلہ 7: رپورٹ بنائیں",
-                    body: `ہیڈر میں ${IC.report} <b>رپورٹ</b> بٹن دبائیں تاکہ مکمل فدیہ رپورٹ بنے۔ رپورٹ اسکرین سے آپ:<br>• ${IC.imgBtn} <b>تصویر</b> کے طور پر محفوظ کریں<br>• <b>پی ڈی ایف</b> بنائیں<br>• ${IC.shareBtn} براہِ راست <b>شیئر</b> کریں`
+                    body: `ہیڈر میں ${IC.report} <b>رپورٹ</b> بٹن دبائیں تاکہ مکمل فدیہ رپورٹ بنے۔ رپورٹ اسکرین سے آپ:<br>• ${IC.imgBtn} <b>تصویر</b> کے طور پر محفوظ کریں<br>• ${IC.pdfBtn} <b>پی ڈی ایف</b> بنائیں<br>• ${IC.shareBtn} براہِ راست <b>شیئر</b> کریں`
                 },
                 {
                     img: "tutorial-ur-9.png",
@@ -1960,7 +2043,25 @@ lblFemaleLate: "Age minus <span class='numeric-text'>9</span> years",
             renderTutSlide();
             document.getElementById('tutorialOverlay').classList.add('active');
             history.pushState({ overlay: 'tutorial' }, '');
+            preloadAdjacentImages(tutCurrentSlide);
         }
+
+        // یہ ایک الگ فنکشن ہے
+function preloadAdjacentImages(currentIndex) {
+    const slides = TUTORIAL_SLIDES[currentLang];
+    
+    // اگلی تصویر پری لوڈ کریں
+    if (currentIndex < slides.length - 1) {
+        const imgNext = new Image();
+        imgNext.src = slides[currentIndex + 1].img;
+    }
+    
+    // پچھلی تصویر پری لوڈ کریں
+    if (currentIndex > 0) {
+        const imgPrev = new Image();
+        imgPrev.src = slides[currentIndex - 1].img;
+    }
+}
 
         function closeTutorial() {
             document.getElementById('tutorialOverlay').classList.remove('active');
@@ -2031,27 +2132,14 @@ lblFemaleLate: "Age minus <span class='numeric-text'>9</span> years",
                 });
             }
 
-            // Image area
+            // Image area — live preview
             const imgArea = document.getElementById('tutImgArea');
             imgArea.innerHTML = '';
-
-            const img = document.createElement('img');
-            img.alt = slide.heading;
-
             const counter = document.createElement('div');
             counter.className = 'tutorial-slide-num';
             counter.textContent = (tutCurrentSlide + 1) + ' / ' + total;
             imgArea.appendChild(counter);
-
-            img.onerror = function() {
-                this.style.display = 'none';
-                const ph = document.createElement('div');
-                ph.className = 'tutorial-img-placeholder';
-                ph.innerHTML = '<svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>' + (isUrdu ? ('اسلائیڈ ' + (tutCurrentSlide+1) + ' کی تصویر') : ('Slide ' + (tutCurrentSlide+1) + ' image')) + '</span>';
-                imgArea.insertBefore(ph, counter);
-            };
-            img.src = slide.img;
-            imgArea.insertBefore(img, counter);
+            tutCaptureLivePreview(tutCurrentSlide);   // async, non-blocking
 
             // Nav buttons
             const prevBtn = document.getElementById('tutPrevBtn');
@@ -2071,12 +2159,668 @@ lblFemaleLate: "Age minus <span class='numeric-text'>9</span> years",
             document.querySelectorAll('.tutorial-dot').forEach((dot, i) => {
                 dot.classList.toggle('active', i === tutCurrentSlide);
             });
+            preloadAdjacentImages(tutCurrentSlide);
+
+            // فعّال بٹنوں کو listeners لگائیں
+            tutAttachIconListeners();
+        }
+
+
+        // ================================================================
+        // TUTORIAL ICON ACTION SYSTEM
+        // ================================================================
+        const TUT_ACTION_MAP = {
+            tutorial:  { btnId:'tutorialBtn',       overlay:null             },
+            save:      { btnId:'saveRecordBtn',      overlay:null             },
+            history:   { btnId:'historyBtn',         overlay:'historyOverlay' },
+            report:    { btnId:'reportBtn',          overlay:null             },
+            theme:     { btnId:'themeToggle',        overlay:null             },
+            lang:      { btnId:'langToggle',         overlay:null             },
+            info:      { btnId:'infoBtn',            overlay:null             },
+            imgBtn:    { btnId:'btnSaveImg',         overlay:'reportOverlay'  },
+            pdfBtn:    { btnId:'btnSavePdf',         overlay:'reportOverlay'  },
+            shareBtn:  { btnId:'btnShareRep',        overlay:'reportOverlay'  },
+            drag:      { btnSel:'.hist-drag-handle', overlay:'historyOverlay' },
+            del:       { btnId:'histDelSelBtn',      overlay:'historyOverlay' },
+            load:      { btnSel:'.hist-strip',       overlay:'historyOverlay' },
+        };
+        let _tutBusy = false;
+
+        function tutAttachIconListeners() {
+            ['tutBody','tutHeading'].forEach(cId => {
+                const c = document.getElementById(cId);
+                if (!c) return;
+                c.querySelectorAll('[data-tut-action]').forEach(el => {
+                    const fresh = el.cloneNode(true);
+                    el.replaceWith(fresh);
+                    fresh.addEventListener('click', e => {
+                        e.stopPropagation();
+                        if (_tutBusy) return;
+                        tutRunAction(fresh.dataset.tutAction);
+                    });
+                });
+            });
+        }
+
+        function tutRunAction(action) {
+            const cfg = TUT_ACTION_MAP[action];
+            if (!cfg) return;
+            _tutBusy = true;
+            const tutOv = document.getElementById('tutorialOverlay');
+            tutOv.style.transition    = 'opacity 0.35s';
+            tutOv.style.opacity       = '0';
+            tutOv.style.pointerEvents = 'none';
+            setTimeout(() => {
+                let openedOv = null;
+                if (cfg.overlay) {
+                    const ov = document.getElementById(cfg.overlay);
+                    if (ov) {
+                        ov.style.transition = 'none';
+                        ov.style.opacity    = '1';
+                        ov.style.visibility = 'visible';
+                        ov.classList.add('active');
+                        openedOv = ov;
+                    }
+                }
+                const btn = cfg.btnId ? document.getElementById(cfg.btnId) : document.querySelector(cfg.btnSel);
+                const finish = () => {
+                    if (openedOv) {
+                        openedOv.style.transition  = '';
+                        openedOv.style.opacity     = '';
+                        openedOv.style.visibility  = '';
+                        openedOv.classList.remove('active');
+                    }
+                    tutOv.style.transition = 'opacity 0.35s';
+                    tutOv.style.opacity    = '1';
+                    const done = () => {
+                        tutOv.style.transition    = '';
+                        tutOv.style.opacity       = '';
+                        tutOv.style.pointerEvents = '';
+                        _tutBusy = false;
+                    };
+                    tutOv.addEventListener('transitionend', function d() { tutOv.removeEventListener('transitionend', d); done(); });
+                    setTimeout(done, 500);
+                };
+                if (btn) {
+                    btn.classList.add('tut-hdr-blink');
+                    const onEnd = () => {
+                        btn.removeEventListener('animationend', onEnd);
+                        btn.classList.remove('tut-hdr-blink');
+                        finish();
+                    };
+                    btn.addEventListener('animationend', onEnd);
+                    setTimeout(onEnd, 1600);
+                } else { finish(); }
+            }, 370);
+        }
+
+        // ================================================================
+        // فرضی ڈیٹا + history strips
+        // ================================================================
+        const TUT_DUMMY = {
+            ur: { name:'عبدالقادر', father:'عبدالشکور', caste:'سہجانی' },
+            en: { name:'Abdul Qadir', father:'Abdul Shakoor', caste:'Sajani' },
+        };
+        let _tutSaved = null;
+
+        function _tutFill() {
+            _tutSaved = {
+                name:   els.txtName.value,
+                father: els.txtFather.value,
+                caste:  els.txtCaste.value,
+                gender: els.genderInput.value,
+                gTxt:   els.genderText.innerText,
+                gPH:    els.genderTrigger.classList.contains('placeholder'),
+                age:    els.age.value,
+                wheat:  els.wheat.value,
+                amt:    els.amount.value,
+            };
+            const d = TUT_DUMMY[currentLang];
+            els.txtName.value   = d.name;
+            els.txtFather.value = d.father;
+            els.txtCaste.value  = d.caste;
+            if (typeof setDynamicFont === 'function') {
+                setDynamicFont(els.txtName);
+                setDynamicFont(els.txtFather);
+                setDynamicFont(els.txtCaste);
+            }
+            els.genderInput.value    = 'male';
+            els.genderText.innerText = (currentLang === 'ur') ? 'مرحوم' : 'Late (Male)';
+            els.genderTrigger.classList.remove('placeholder');
+            els.age.value    = '13';
+            els.wheat.value  = '5000';
+            els.amount.value = '50000';
+            if (typeof calculate === 'function') calculate();
+            // calculation section force show کرو — animation bypass
+            if (els.calcSection) {
+                els.calcSection.classList.remove('bounce-out','bounce-in');
+                els.calcSection.style.display = 'block';
+                els.calcSection.style.animation = 'none';
+            }
+        }
+
+        function _tutClear() {
+            if (!_tutSaved) return;
+            const s = _tutSaved; _tutSaved = null;
+            els.txtName.value   = s.name;
+            els.txtFather.value = s.father;
+            els.txtCaste.value  = s.caste;
+            if (typeof setDynamicFont === 'function') {
+                setDynamicFont(els.txtName);
+                setDynamicFont(els.txtFather);
+                setDynamicFont(els.txtCaste);
+            }
+            els.genderInput.value    = s.gender;
+            els.genderText.innerText = s.gTxt;
+            if (s.gPH) els.genderTrigger.classList.add('placeholder');
+            else       els.genderTrigger.classList.remove('placeholder');
+            els.age.value    = s.age;
+            els.wheat.value  = s.wheat;
+            els.amount.value = s.amt;
+            if (s.gender && s.age && s.wheat && typeof calculate === 'function') calculate();
+            else if (typeof hideResults === 'function') hideResults();
+            // animation واپس
+            if (els.calcSection) els.calcSection.style.animation = '';
+        }
+
+        function _tutMakeStrips(scene) {
+            const histList = document.getElementById('historyList');
+            if (!histList) return;
+            const isUr = (currentLang === 'ur');
+            const emptyEl = document.getElementById('histEmptyMsg');
+            if (emptyEl) emptyEl.classList.remove('visible');
+            const rows = isUr
+                ? [
+                    {n:'عبدالقادر',   f:'عبدالشکور',  a:'مرحوم',   age:'13', v:'24,000'},
+                    {n:'محمد علی',    f:'محمد اکبر',   a:'مرحوم',   age:'70', v:'19,820,000'},
+                    {n:'فاطمہ بی بی', f:'محمد یوسف',  a:'مرحومہ',  age:'65', v:'16,800,000'}
+                  ]
+                : [
+                    {n:'Abdul Qadir',   f:'Abdul Shakoor',  a:'Late Male',   age:'13', v:'24,000'},
+                    {n:'Muhammad Ali',  f:'Muhammad Akbar', a:'Late Male',   age:'70', v:'19,820,000'},
+                    {n:'Fatima Bibi',   f:'Muhammad Yousuf',a:'Late Female', age:'65', v:'16,800,000'}
+                  ];
+            rows.forEach((r, i) => {
+                const isSel  = (scene === 'histDel')  && i < 2;
+                const isDrag = (scene === 'histDrag') && i === 0;
+                const strip  = document.createElement('div');
+                strip.className = `hist-strip tut-fake-strip${isSel ? ' selected' : ''}`;
+                if (isDrag) {
+                    strip.style.cssText = '--tut-dy:124px;animation:tut-drag-down 3.4s ease-in-out 0.6s infinite;';
+                }
+                strip.innerHTML = `
+                    <div class="hist-num">${isDrag ? '⇩3' : (i + 1)}</div>
+                    <div class="hist-check-area"><div class="hist-checkbox${isSel ? ' checked' : ''}"></div></div>
+                    <div class="hist-content">
+                        <div class="hist-name">${r.n}</div>
+                        <div class="hist-father">${r.f}</div>
+                        <div style="font-size:0.67rem;color:var(--accent-color);font-weight:600;font-family:'Segoe UI',sans-serif;margin-top:2px;">
+                            ${r.a} • ${r.age} ${isUr ? 'سال' : 'yrs'} — <span style="color:var(--success-color);">Rs. ${r.v}</span>
+                        </div>
+                    </div>
+                    <div class="hist-drag-handle" style="padding:0 10px;display:flex;flex-direction:column;gap:3px;align-items:center;justify-content:center;cursor:grab;${isDrag ? 'color:rgba(255,180,0,1);' : ''}">
+                        <div class="hist-drag-line"></div>
+                        <div class="hist-drag-line"></div>
+                        <div class="hist-drag-line"></div>
+                    </div>`;
+                histList.insertBefore(strip, emptyEl || null);
+            });
+            if (scene === 'histDel') {
+                const ab = document.getElementById('histActionBar');
+                if (ab) ab.classList.add('visible');
+                const sc2 = document.getElementById('histSelCount');
+                if (sc2) sc2.innerText = isUr ? '۲ منتخب' : '2 selected';
+                // 1.8s بعد delete animation
+                setTimeout(() => {
+                    histList.querySelectorAll('.tut-fake-strip.selected').forEach(s => {
+                        s.classList.add('tut-del-anim');
+                    });
+                }, 1800);
+            }
+        }
+
+        function _tutClearStrips() {
+            document.querySelectorAll('.tut-fake-strip').forEach(e => e.remove());
+            const emptyEl = document.getElementById('histEmptyMsg');
+            if (emptyEl) emptyEl.classList.add('visible');
+            const ab = document.getElementById('histActionBar');
+            if (ab) ab.classList.remove('visible');
+        }
+
+        // ================================================================
+        // LIVE PREVIEW — html2canvas
+        // ================================================================
+        // captH: پکسل میں اونچائی (لمبا captH = سکرول انیمیشن)
+        // scrollAnim: true = اوپر سے نیچے سکرول
+        // hl: پیلی ring (element ID)
+        // yellows: پیلے مستطیل IDs
+        // multiHl: یکے بعد دیگرے blink IDs
+        // histScene: 'histDrag' | 'histDel' | null
+        const TUT_PREVIEW_CFG = [
+            // 0: خوش آمدید — پوری اسکرین، خالی فیلڈز، اوپر سے نیچے سکرول
+            { fill:false, scene:'main',    scrollY:0,   captH:520, scrollAnim:true,  hl:null,              yellows:null,                              multiHl:null,                                    histScene:null      },
+            // 1: زبان — header دکھاؤ + langToggle، رکی رہے
+            { fill:false, scene:'main',    scrollY:0,   captH:520, scrollAnim:false, hl:'langToggle',      yellows:null,                              multiHl:null,                                    histScene:null      },
+            // 2: ذاتی معلومات — نام بھرا + پیلے خانے، پوری اسکرین
+            { fill:true,  scene:'main',    scrollY:0,   captH:520, scrollAnim:false, hl:null,              yellows:['txtName','txtFather','txtCaste'], multiHl:null,                                    histScene:null      },
+            // 3: جنس
+            { fill:true,  scene:'main',    scrollY:112, captH:100, scrollAnim:false, hl:'genderTrigger',   yellows:null,                              multiHl:null,                                    histScene:null      },
+            // 4: عمر
+            { fill:true,  scene:'main',    scrollY:148, captH:90,  scrollAnim:false, hl:'age',             yellows:null,                              multiHl:null,                                    histScene:null      },
+            // 5: گندم
+            { fill:true,  scene:'main',    scrollY:198, captH:90,  scrollAnim:false, hl:'wheatPrice',      yellows:null,                              multiHl:null,                                    histScene:null      },
+            // 6: نتائج — پورا سکرول
+            { fill:true,  scene:'main',    scrollY:0,   captH:620, scrollAnim:true,  hl:null,              yellows:null,                              multiHl:null,                                    histScene:null      },
+            // 7: موجود رقم
+            { fill:true,  scene:'main',    scrollY:238, captH:90,  scrollAnim:false, hl:'availableAmount', yellows:null,                              multiHl:null,                                    histScene:null      },
+            // 8: رپورٹ — مین اسکرین → انگلی ٹیپ → رپورٹ سکرول + 3 بٹن بلنک
+            { fill:true,  scene:'report',  scrollY:0,   captH:720, scrollAnim:true,  hl:null, yellows:null, multiHl:['btnSaveImg','btnSavePdf','btnShareRep'], histScene:null, twoPhase:true },
+            // 9: ریکارڈ سیو
+            { fill:true,  scene:'main',    scrollY:0,   captH:68,  scrollAnim:false, hl:'saveRecordBtn',   yellows:null,                              multiHl:null,                                    histScene:null      },
+            // 10: ہسٹری بٹن
+            { fill:false, scene:'main',    scrollY:0,   captH:68,  scrollAnim:false, hl:'historyBtn',      yellows:null,                              multiHl:null,                                    histScene:null      },
+            // 11: ریکارڈ drag
+            { fill:false, scene:'history', scrollY:0,   captH:400, scrollAnim:true,  hl:null,              yellows:null,                              multiHl:null,                                    histScene:'histDrag' },
+            // 12: منتخب + حذف
+            { fill:false, scene:'history', scrollY:0,   captH:320, scrollAnim:false, hl:'histDelSelBtn',   yellows:null,                              multiHl:null,                                    histScene:'histDel'  },
+        ];
+
+        let _capturing = false;
+        let _captureTimer = null;
+
+        function _captureRelease() {
+            _capturing = false;
+            if (_captureTimer) { clearTimeout(_captureTimer); _captureTimer = null; }
+        }
+
+        async function tutCaptureLivePreview(idx) {
+            if (typeof html2canvas !== 'function') { _showPreviewPlaceholder(idx); return; }
+            if (_capturing) return;
+            _capturing = true;
+            _captureTimer = setTimeout(() => { _captureRelease(); }, 16000);
+
+            const cfg     = TUT_PREVIEW_CFG[Math.min(idx, TUT_PREVIEW_CFG.length - 1)];
+            const imgArea = document.getElementById('tutImgArea');
+            const counter = imgArea.querySelector('.tutorial-slide-num');
+            const dispW   = imgArea.clientWidth  || 307;
+            const dispH   = imgArea.clientHeight || 160;
+
+            imgArea.querySelectorAll('.tlv-img,.tlv-ring,.tlv-yell,.tlv-load,.tutorial-img-placeholder,.tut-finger,.tut-btn-ring-pulse').forEach(e => e.remove());
+            if (imgArea._blinkIv)  { clearInterval(imgArea._blinkIv);  delete imgArea._blinkIv; }
+            if (imgArea._phaseIv)  { clearInterval(imgArea._phaseIv);  delete imgArea._phaseIv; }
+
+            const spin = document.createElement('div');
+            spin.className = 'tlv-load tut-cap-loader';
+            spin.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9" stroke-dasharray="28.3" stroke-dashoffset="14" opacity="0.25"/><path d="M12 3a9 9 0 0 1 9 9" stroke-linecap="round"/></svg>';
+            imgArea.insertBefore(spin, counter);
+
+            const tutOv    = document.getElementById('tutorialOverlay');
+            const histOv   = document.getElementById('historyOverlay');
+            const repOv    = document.getElementById('reportOverlay');
+            const prevHist = histOv.classList.contains('active');
+            const prevRep  = repOv.classList.contains('active');
+            let openedHist = false, openedRep = false;
+            let hlRects = [], mRects = [];
+
+            // ================================================================
+            // دو مرحلہ capture (مرحلہ 7 — reportBtn ٹیپ → رپورٹ)
+            // ================================================================
+            if (cfg.twoPhase) {
+                // فرضی ڈیٹا بھرو
+                _tutFill();
+
+                tutOv.style.opacity = '0'; tutOv.style.visibility = 'hidden'; tutOv.style.pointerEvents = 'none';
+                await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(r))));
+
+                const vw2     = window.innerWidth;
+                const capSc2  = dispW / vw2;
+                const capH2   = Math.round(520 * (vw2 / 320));
+                const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-color').trim() || '#f4f7f6';
+                const cloneFix = (cloneDoc) => {
+                    const tu = cloneDoc.getElementById('tutorialOverlay'); if (tu) tu.style.display = 'none';
+                    const hdr = cloneDoc.querySelector('.top-bar');
+                    if (hdr) { hdr.style.overflow='visible'; hdr.style.width=vw2+'px'; hdr.style.left='0'; hdr.style.transform='none'; }
+                    const hc = cloneDoc.querySelector('.header-controls');
+                    if (hc) { hc.style.overflow='visible'; hc.style.flexShrink='0'; }
+                    const fw = cloneDoc.getElementById('app-fixed-size'); if (fw) { fw.style.transform='none'; fw.style.width=vw2+'px'; }
+                };
+
+                // Phase 1: مین اسکرین + reportBtn position
+                let urlMain = null, btnRect = null;
+                try {
+                    const cvs1 = await html2canvas(document.body, { x:0, y:0, width:vw2, height:capH2, scale:capSc2, useCORS:true, allowTaint:true, backgroundColor:bgColor, logging:false, onclone:cloneFix });
+                    urlMain = cvs1.toDataURL('image/jpeg', 0.9);
+                    const rBtn = document.getElementById('reportBtn');
+                    if (rBtn) {
+                        const r = rBtn.getBoundingClientRect();
+                        btnRect = { x:r.left*capSc2, y:r.top*capSc2, w:r.width*capSc2, h:r.height*capSc2 };
+                    }
+                } catch(e) { console.warn('phase1 err', e); }
+
+                // Phase 2: رپورٹ اسکرین
+                if (els.calcSection) els.calcSection.style.display = 'block';
+                try { openReport(); } catch(ex) {}
+                repOv.style.transition = 'none'; repOv.style.opacity = '1'; repOv.style.visibility = 'visible'; repOv.classList.add('active');
+                await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+                const capH2r = Math.round(cfg.captH * (vw2 / 320));
+                let urlReport = null, rMRects = [];
+                try {
+                    const cvs2 = await html2canvas(document.body, {
+                        x:0, y:0, width:vw2, height:capH2r, scale:capSc2,
+                        useCORS:true, allowTaint:true, backgroundColor:bgColor, logging:false,
+                        onclone: (cloneDoc) => {
+                            cloneFix(cloneDoc);
+                            const SELS = ['.report-overlay','.report-actions'];
+                            SELS.forEach(sel => { cloneDoc.querySelectorAll(sel).forEach(el => { el.style.position='absolute'; el.style.left='0'; el.style.right='auto'; el.style.transform='none'; el.style.width=vw2+'px'; }); });
+                        }
+                    });
+                    urlReport = cvs2.toDataURL('image/jpeg', 0.9);
+                    if (cfg.multiHl) cfg.multiHl.forEach(id => {
+                        const el = document.getElementById(id); if (!el) return;
+                        const r = el.getBoundingClientRect();
+                        rMRects.push({ x:r.left*capSc2, y:r.top*capSc2, w:r.width*capSc2, h:r.height*capSc2 });
+                    });
+                } catch(e) { console.warn('phase2 err', e); }
+
+                // cleanup
+                repOv.style.transition=''; repOv.style.opacity=''; repOv.style.visibility=''; repOv.classList.remove('active');
+                _tutClear();
+                tutOv.style.opacity=''; tutOv.style.visibility=''; tutOv.style.pointerEvents='';
+
+                spin.remove();
+                _captureRelease();
+                if (idx !== tutCurrentSlide) return;
+
+                if (!urlMain && !urlReport) { _showPreviewPlaceholder(idx); return; }
+
+                // ===== Display: Phase 1 پہلے، پھر Phase 2 =====
+                const phWrap = document.createElement('div');
+                phWrap.className = 'tlv-img';
+                phWrap.style.cssText = 'position:absolute;inset:0;overflow:hidden;';
+                imgArea.insertBefore(phWrap, counter);
+
+                // Phase 1 image
+                const img1 = document.createElement('img');
+                img1.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:auto;z-index:2;';
+                img1.src = urlMain || '';
+                phWrap.appendChild(img1);
+
+                // reportBtn پر پیلا گول دائرہ
+                if (btnRect) {
+                    const ring = document.createElement('div');
+                    ring.className = 'tut-btn-ring-pulse';
+                    ring.style.cssText = `left:${btnRect.x}px;top:${btnRect.y}px;width:${btnRect.w}px;height:${btnRect.h}px;z-index:3;`;
+                    phWrap.appendChild(ring);
+
+                    // انگلی emoji
+                    const finger = document.createElement('div');
+                    finger.className = 'tut-finger';
+                    finger.textContent = '☝️';
+                    finger.style.cssText = `left:${btnRect.x + btnRect.w/2}px;top:${btnRect.y + btnRect.h*1.6}px;z-index:4;`;
+                    phWrap.appendChild(finger);
+                }
+
+                // Phase 2 image (نیچے چھپا ہوا)
+                const capH2r_px = capH2r * capSc2;
+                const img2 = document.createElement('img');
+                img2.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:auto;z-index:1;opacity:0;';
+                img2.src = urlReport || '';
+                phWrap.appendChild(img2);
+
+                // tap sound AudioContext سے
+                const playTap = () => {
+                    try {
+                        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.08, ctx.sampleRate);
+                        const data = buf.getChannelData(0);
+                        for (let i = 0; i < data.length; i++) data[i] = (Math.random()*2-1) * Math.pow(1 - i/data.length, 4) * 0.6;
+                        const src = ctx.createBufferSource();
+                        src.buffer = buf;
+                        const gain = ctx.createGain();
+                        gain.gain.setValueAtTime(1, ctx.currentTime);
+                        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.08);
+                        src.connect(gain); gain.connect(ctx.destination);
+                        src.start();
+                    } catch(e) {}
+                };
+
+                // Phase cycle: Phase1 → انگلی ٹیپ → آواز → Phase2 → sکرول → loop
+                let _phase = 1;
+                const fingerEl  = phWrap.querySelector('.tut-finger');
+                const scrollH2  = Math.max(0, capH2r_px - dispH);
+                const scrollDur = Math.max(4, 2 + Math.ceil(scrollH2 / 60));
+
+                const runCycle = () => {
+                    if (!phWrap.isConnected) return;
+                    if (_phase === 1) {
+                        // انگلی ٹیپ animation
+                        if (fingerEl) {
+                            fingerEl.style.animation = 'none';
+                            fingerEl.offsetHeight; // reflow
+                            fingerEl.style.animation = 'tut-finger-tap 0.55s ease forwards';
+                            fingerEl.addEventListener('animationend', () => {
+                                if (!phWrap.isConnected) return;
+                                playTap();
+                                // Phase 2 میں جاؤ
+                                img2.style.opacity = '0';
+                                img2.style.animation = 'tut-phase-fadein 0.5s ease forwards';
+                                img1.style.zIndex = '1';
+                                img2.style.zIndex = '3';
+                                // scroll اگر لمبا ہے
+                                if (scrollH2 > 30) {
+                                    img2.style.transform = 'translateY(0)';
+                                    img2.style.transition = `transform ${scrollDur}s ease-in-out 0.8s`;
+                                    requestAnimationFrame(() => { img2.style.transform = `translateY(-${scrollH2}px)`; });
+                                }
+                                // multiHl blink
+                                if (rMRects.length && phWrap.isConnected) {
+                                    let bi2 = 0;
+                                    const doB2 = () => {
+                                        if (!phWrap.isConnected) return;
+                                        phWrap.querySelectorAll('.tlv-mring2').forEach(e => e.remove());
+                                        const r = rMRects[bi2 % rMRects.length]; bi2++;
+                                        const el = document.createElement('div');
+                                        el.className = 'tlv-ring tlv-mring2 tut-ring';
+                                        el.style.cssText = `left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px;z-index:4;border-radius:${(r.w<55&&r.h<55)?'50%':'8px'};`;
+                                        phWrap.appendChild(el);
+                                    };
+                                    doB2();
+                                    imgArea._blinkIv = setInterval(doB2, 1800);
+                                }
+                                _phase = 2;
+                                setTimeout(() => {
+                                    // واپس Phase 1
+                                    if (!phWrap.isConnected) return;
+                                    phWrap.querySelectorAll('.tlv-mring2').forEach(e => e.remove());
+                                    if (imgArea._blinkIv) { clearInterval(imgArea._blinkIv); delete imgArea._blinkIv; }
+                                    img1.style.zIndex = '2'; img2.style.zIndex = '1';
+                                    img2.style.animation = 'none'; img2.style.opacity = '0';
+                                    img2.style.transition = 'none'; img2.style.transform = 'translateY(0)';
+                                    if (fingerEl) { fingerEl.style.animation = 'none'; fingerEl.style.opacity = '1'; }
+                                    _phase = 1;
+                                    setTimeout(runCycle, 1200); // Phase 1 پر رکو
+                                }, (scrollDur + 2.5) * 1000);
+                            }, { once: true });
+                        }
+                    }
+                };
+                setTimeout(runCycle, 1500); // پہلی بار 1.5s بعد شروع ہو
+                return; // normal flow یہاں ختم
+            }
+            // ================================================================
+            // (end two-phase section)
+
+            const tutOv2    = document.getElementById('tutorialOverlay');
+            const histOv2   = document.getElementById('historyOverlay');
+            const repOv2    = document.getElementById('reportOverlay');
+            const prevHist2 = histOv2.classList.contains('active');
+            const prevRep2  = repOv2.classList.contains('active');
+            let openedHist2 = false, openedRep2 = false;
+            let hlRects2 = [], mRects2 = [];
+
+            // فرضی ڈیٹا بھرو
+            if (cfg.fill) _tutFill();
+
+            // history overlay کھولو
+            if (cfg.scene === 'history' && !prevHist2) {
+                histOv2.style.transition = 'none';
+                histOv2.style.opacity    = '1';
+                histOv2.style.visibility = 'visible';
+                histOv2.classList.add('active');
+                if (cfg.histScene) _tutMakeStrips(cfg.histScene);
+                openedHist2 = true;
+            }
+
+            // report overlay کھولو
+            if (cfg.scene === 'report') {
+                if (els.calcSection) els.calcSection.style.display = 'block';
+                try { openReport(); } catch(ex) {}
+                repOv2.style.transition = 'none';
+                repOv2.style.opacity    = '1';
+                repOv2.style.visibility = 'visible';
+                repOv2.classList.add('active');
+                openedRep2 = true;
+            }
+
+            // tutorial عارضی طور پر چھپاؤ
+            tutOv2.style.opacity       = '0';
+            tutOv2.style.visibility    = 'hidden';
+            tutOv2.style.pointerEvents = 'none';
+
+            // 3 frames انتظار
+            await new Promise(r => requestAnimationFrame(() =>
+                requestAnimationFrame(() =>
+                    requestAnimationFrame(r))));
+
+            const vw       = window.innerWidth;
+            const appScale = vw / 320;
+            const CAPH     = cfg.captH || 166;
+            const sY       = (cfg.scrollY || 0) * appScale;
+            const capH_vp  = CAPH * appScale;
+            const capSc    = dispW / vw;
+
+            let dataUrl   = null;
+
+            try {
+                const bgColor = getComputedStyle(document.documentElement)
+                    .getPropertyValue('--bg-color').trim() || '#f4f7f6';
+
+                const cvs = await html2canvas(document.body, {
+                    x: 0, y: sY,
+                    width: vw, height: capH_vp,
+                    scale: capSc,
+                    useCORS: true, allowTaint: true,
+                    backgroundColor: bgColor, logging: false,
+                    onclone: (cloneDoc) => {
+                        const tu = cloneDoc.getElementById('tutorialOverlay');
+                        if (tu) tu.style.display = 'none';
+                        const hdr = cloneDoc.querySelector('.top-bar');
+                        if (hdr) { hdr.style.overflow='visible'; hdr.style.width=vw+'px'; hdr.style.left='0'; hdr.style.transform='none'; }
+                        const hc = cloneDoc.querySelector('.header-controls');
+                        if (hc) { hc.style.overflow='visible'; hc.style.flexWrap='nowrap'; hc.style.flexShrink='0'; }
+                        const fw = cloneDoc.getElementById('app-fixed-size');
+                        if (fw) { fw.style.transform='none'; fw.style.width=vw+'px'; }
+                        const sw = cloneDoc.getElementById('app-scale-wrapper');
+                        if (sw) { sw.style.width=vw+'px'; }
+                    }
+                });
+                dataUrl = cvs.toDataURL('image/jpeg', 0.9);
+
+                const getRS = (id) => {
+                    const el = document.getElementById(id);
+                    if (!el) return null;
+                    const r = el.getBoundingClientRect();
+                    return { x:r.left*capSc, y:(r.top-sY)*capSc, w:r.width*capSc, h:r.height*capSc };
+                };
+                if (cfg.yellows) cfg.yellows.forEach(id => { const r=getRS(id); if(r) hlRects2.push({...r,yellow:true}); });
+                if (cfg.hl)      { const r=getRS(cfg.hl); if(r) hlRects2.push({...r,yellow:false}); }
+                if (cfg.multiHl) cfg.multiHl.forEach(id => { const r=getRS(id); if(r) mRects2.push(r); });
+
+            } catch(e) { console.warn('capture err:', e); }
+
+            // tutorial واپس
+            tutOv2.style.opacity       = '';
+            tutOv2.style.visibility    = '';
+            tutOv2.style.pointerEvents = '';
+
+            if (openedHist2) {
+                _tutClearStrips();
+                histOv2.style.transition = '';
+                histOv2.style.opacity    = '';
+                histOv2.style.visibility = '';
+                histOv2.classList.remove('active');
+            }
+            if (openedRep2) {
+                repOv2.style.transition = '';
+                repOv2.style.opacity    = '';
+                repOv2.style.visibility = '';
+                repOv2.classList.remove('active');
+            }
+            if (cfg.fill) _tutClear();
+
+            spin.remove();
+            _captureRelease();
+            if (idx !== tutCurrentSlide) return;
+
+            if (dataUrl) {
+                const captH_px = capH_vp * capSc;
+                const img = document.createElement('img');
+
+                if (cfg.scrollAnim && captH_px > dispH + 30) {
+                    const scrollDist = Math.round(captH_px - dispH);
+                    const dur = Math.max(4, 2 + Math.ceil(scrollDist / 60));
+                    img.className = 'tlv-img';
+                    img.style.cssText = `position:absolute;top:0;left:0;width:100%;height:auto;animation:tut-scroll-anim ${dur}s ease-in-out 0.6s infinite;--tut-sd:-${scrollDist}px;`;
+                } else {
+                    img.className = 'tlv-img';
+                    img.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:auto;';
+                }
+                img.src = dataUrl;
+                imgArea.insertBefore(img, counter);
+
+                hlRects2.forEach(r => {
+                    if (r.y < dispH + 50) {
+                        const el = document.createElement('div');
+                        el.className = r.yellow ? 'tlv-yell tut-yellow-rect' : 'tlv-ring tut-ring';
+                        el.style.cssText = `left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px;border-radius:${(r.w<55&&r.h<55)?'50%':'6px'};`;
+                        imgArea.insertBefore(el, counter);
+                    }
+                });
+
+                if (mRects2.length) {
+                    let bi = 0;
+                    const doB = () => {
+                        if (!imgArea.isConnected) return;
+                        imgArea.querySelectorAll('.tlv-mring').forEach(e => e.remove());
+                        const r = mRects2[bi % mRects2.length]; bi++;
+                        const el = document.createElement('div');
+                        el.className = 'tlv-ring tlv-mring tut-ring';
+                        el.style.cssText = `left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px;border-radius:${(r.w<55&&r.h<55)?'50%':'8px'};`;
+                        imgArea.insertBefore(el, counter);
+                    };
+                    doB();
+                    imgArea._blinkIv = setInterval(doB, 1800);
+                }
+            } else {
+                _showPreviewPlaceholder(idx);
+            }
+        }
+
+        function _showPreviewPlaceholder(idx) {
+            const imgArea = document.getElementById('tutImgArea');
+            const counter = imgArea.querySelector('.tutorial-slide-num');
+            const ph = document.createElement('div');
+            ph.className = 'tutorial-img-placeholder';
+            const isUrdu = (currentLang === 'ur');
+            ph.innerHTML = `<svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>${isUrdu ? 'اسلائیڈ '+(idx+1) : 'Slide '+(idx+1)}</span>`;
+            imgArea.insertBefore(ph, counter);
         }
 
         document.getElementById('tutorialBtn').addEventListener('click', openTutorial);
         document.getElementById('closeTutorialBtn').addEventListener('click', closeTutorial);
         document.getElementById('tutorialOverlay').addEventListener('click', function(e) {
-            if (e.target === this) { tutStopAutoPlay(); closeTutorial(); }
+            if (e.target === this) { if(typeof tutStopAutoPlay==='function') tutStopAutoPlay(); closeTutorial(); }
         });
         document.getElementById('tutPrevBtn').addEventListener('click', () => {
             if (tutCurrentSlide > 0) { tutCurrentSlide--; renderTutSlide(); }
@@ -2161,8 +2905,11 @@ lblFemaleLate: "Age minus <span class='numeric-text'>9</span> years",
 
         function applyTheme() {
             els.html.setAttribute('data-theme', currentTheme);
-            if(currentTheme === 'dark') { els.sunIcon.style.display = 'none'; els.moonIcon.style.display = 'block'; els.popupLangToggle.innerText = els.langToggle.innerText; els.popupThemeToggle.innerText = '🌙'; }
-            else { els.sunIcon.style.display = 'block'; els.moonIcon.style.display = 'none'; els.popupLangToggle.innerText = els.langToggle.innerText; els.popupThemeToggle.innerText = '☀'; }
+            const isDark = currentTheme === 'dark';
+            els.sunIcon.style.display = isDark ? 'none' : 'block';
+            els.moonIcon.style.display = isDark ? 'block' : 'none';
+            els.popupLangToggle.innerText = els.langToggle.innerText;
+            els.popupThemeToggle.innerText = isDark ? '🌙' : '☀';
         }
 
      function applyLanguage() {
@@ -2370,147 +3117,120 @@ lblFemaleLate: "Age minus <span class='numeric-text'>9</span> years",
         function openPopup() { els.popup.classList.add('active'); els.dontShowAgain.checked=localStorage.getItem('dontShowPopup')==='true'; history.pushState({ overlay: 'info' }, ''); }
         function closePopup() { els.popup.classList.remove('active'); }
 
+        // Helper to set text on report elements
+        function setRepText(id, text) { document.getElementById(id).innerText = text; }
+        function setRepHTML(id, html) { document.getElementById(id).innerHTML = html; }
+
         function openReport() {
+            const isUrdu = (currentLang === 'ur');
             if (!els.genderInput.value || !els.age.value || !els.wheat.value) {
                 showToast(STRINGS[currentLang].errAllFirst);
                 return;
             }
+            if (!isAgeValid()) {
+                showToast(isUrdu ? 'عمر درست نہیں ہے، پہلے درست عمر درج کریں' : 'Invalid age. Please enter a valid age first.');
+                return;
+            }
             if (els.calcSection.style.display === 'none') {
-                 showToast(STRINGS[currentLang].errAllFirst);
-                 return;
+                showToast(STRINGS[currentLang].errAllFirst);
+                return;
             }
 
             const s = STRINGS[currentLang];
             const genderVal = els.genderInput.value;
-            const hasName = els.txtName.value && els.txtName.value.trim().length > 0;
-            
-           if (currentLang === 'ur') {
-                if (genderVal === 'male') {
-                    document.getElementById('repLblName').innerText = "نام مرحوم:";
-                } else {
-                    document.getElementById('repLblName').innerText = "نام مرحومہ:";
-                }
+
+            if (isUrdu) {
+                setRepText('repLblName', genderVal === 'male' ? "نام مرحوم:" : "نام مرحومہ:");
             } else {
-                if (genderVal === 'male') {
-                    document.getElementById('repLblName').innerText = "Name (Late Male):";
-                } else {
-                    document.getElementById('repLblName').innerText = "Name (Late Female):";
-                }
+                setRepText('repLblName', genderVal === 'male' ? "Name (Late Male):" : "Name (Late Female):");
             }
-            
-            document.getElementById('repTitle').innerText = s.repTitle;
-            document.getElementById('repLblFather').innerText = s.repLblFather;
-            document.getElementById('repLblCaste').innerText = s.repLblCaste;
-            document.getElementById('repLblAge').innerText = s.repLblAge;
-            document.getElementById('repLblCalcAge').innerHTML = els.clLate.innerHTML + ":";
-            document.getElementById('repLblAmount').innerText = s.repLblAmount;
-            document.getElementById('thType').innerText = s.thType; 
-            document.getElementById('thCount').innerText = s.thCount; 
-            document.getElementById('thFidya').innerText = s.thFidya; 
-            document.getElementById('thRounds').innerText = s.thRounds;
-            document.getElementById('tdPrayer').innerText = s.tdPrayer; 
-            document.getElementById('tdFast').innerText = s.tdFast;
-            document.getElementById('tdTotal').innerText = s.tdTotal;
+
+            setRepText('repTitle', s.repTitle);
+            setRepText('repLblFather', s.repLblFather);
+            setRepText('repLblCaste', s.repLblCaste);
+            setRepText('repLblAge', s.repLblAge);
+            setRepHTML('repLblCalcAge', els.clLate.innerHTML + ":");
+            setRepText('repLblAmount', s.repLblAmount);
+            setRepText('thType', s.thType);
+            setRepText('thCount', s.thCount);
+            setRepText('thFidya', s.thFidya);
+            setRepText('thRounds', s.thRounds);
+            setRepText('tdPrayer', s.tdPrayer);
+            setRepText('tdFast', s.tdFast);
+            setRepText('tdTotal', s.tdTotal);
 
             setReportElementFont('repValName', els.txtName.value);
             setReportElementFont('repValFather', els.txtFather.value);
             setReportElementFont('repValCaste', els.txtCaste.value);
-            
+
             const totalAge = parseInt(els.age.value, 10);
             const calcAge = parseInt(els.valLate.innerText) || 0;
 
-            if (currentLang === 'ur') {
-                document.getElementById('repValAge').innerHTML = `<span class="numeric-value">${totalAge}</span> سال`;
-                document.getElementById('repValCalcAge').innerHTML = `<span class="numeric-value">${calcAge}</span> سال`;
+            if (isUrdu) {
+                setRepHTML('repValAge', `<span class="numeric-value">${totalAge}</span> سال`);
+                setRepHTML('repValCalcAge', `<span class="numeric-value">${calcAge}</span> سال`);
             } else {
-                document.getElementById('repValAge').innerHTML = `<span class="numeric-value">${totalAge}</span> year${totalAge === 1 ? '' : 's'}`;
-                document.getElementById('repValCalcAge').innerHTML = `<span class="numeric-value">${calcAge}</span> year${calcAge === 1 ? '' : 's'}`;
+                setRepHTML('repValAge', `<span class="numeric-value">${totalAge}</span> year${totalAge === 1 ? '' : 's'}`);
+                setRepHTML('repValCalcAge', `<span class="numeric-value">${calcAge}</span> year${calcAge === 1 ? '' : 's'}`);
             }
-            
-            document.getElementById('repValAmount').innerText = els.amount.value ? parseFloat(els.amount.value).toLocaleString() : "-";
-            document.getElementById('tdValPCount').innerText = els.valPrayers.innerText;
-            document.getElementById('tdValPFidya').innerText = els.valPrayerFidya.innerText;
-            document.getElementById('tdValFCount').innerText = els.valFasts.innerText;
-            document.getElementById('tdValFFidya').innerText = els.valFastFidya.innerText;
-            document.getElementById('tdValTotalFidya').innerText = els.valTotalFidya.innerText;
-            if (els.roundsGroup.style.display !== 'none') {
-                document.getElementById('tdValPRounds').innerText = els.valPrayerRounds.innerText;
-                document.getElementById('tdValFRounds').innerText = els.valFastRounds.innerText;
-                document.getElementById('tdValTotalRounds').innerText = els.valTotalRounds.innerText;
-            } else {
-                document.getElementById('tdValPRounds').innerText = "-"; 
-                document.getElementById('tdValFRounds').innerText = "-"; 
-                document.getElementById('tdValTotalRounds').innerText = "-";
-            }
+
+            setRepText('repValAmount', els.amount.value ? parseFloat(els.amount.value).toLocaleString() : "-");
+            setRepText('tdValPCount', els.valPrayers.innerText);
+            setRepText('tdValPFidya', els.valPrayerFidya.innerText);
+            setRepText('tdValFCount', els.valFasts.innerText);
+            setRepText('tdValFFidya', els.valFastFidya.innerText);
+            setRepText('tdValTotalFidya', els.valTotalFidya.innerText);
+
+            const hasRounds = els.roundsGroup.style.display !== 'none';
+            setRepText('tdValPRounds', hasRounds ? els.valPrayerRounds.innerText : "-");
+            setRepText('tdValFRounds', hasRounds ? els.valFastRounds.innerText : "-");
+            setRepText('tdValTotalRounds', hasRounds ? els.valTotalRounds.innerText : "-");
+
             els.reportOverlay.classList.add('active');
             history.pushState({ overlay: 'report' }, '');
         }
 
         function closeReport() { els.reportOverlay.classList.remove('active'); }
-        
+
+        // Shared html2canvas options for all export functions
+        const CANVAS_OPTS = {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            onclone: (d) => d.documentElement.setAttribute('data-theme', 'light')
+        };
+
         function downloadAsImage() {
-            const container = els.reportContentArea;
-            html2canvas(container, { 
-                scale: 2, 
-                useCORS: true, 
-                backgroundColor: '#ffffff',
-                onclone: (clonedDoc) => { 
-                    clonedDoc.documentElement.setAttribute('data-theme', 'light'); 
-                } 
-            }).then(canvas => {
-                const link = document.createElement('a'); 
-                link.download = 'Fidya-Report.png'; 
-                link.href = canvas.toDataURL('image/png'); 
+            html2canvas(els.reportContentArea, CANVAS_OPTS).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Fidya-Report.png';
+                link.href = canvas.toDataURL('image/png');
                 link.click();
             });
         }
 
         function downloadAsPdf() {
-            const container = els.reportContentArea; 
             const { jsPDF } = window.jspdf;
-            html2canvas(container, { 
-                scale: 2, 
-                useCORS: true, 
-                backgroundColor: '#ffffff',
-                onclone: (clonedDoc) => { 
-                    clonedDoc.documentElement.setAttribute('data-theme', 'light'); 
-                }
-            }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png'); 
+            html2canvas(els.reportContentArea, CANVAS_OPTS).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
                 const pdf = new jsPDF('p', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth(); 
+                const pdfWidth = pdf.internal.pageSize.getWidth();
                 const imgProps = pdf.getImageProperties(imgData);
                 const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
-                pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, imgHeight); 
+                pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, imgHeight);
                 pdf.save('Fidya-Report.pdf');
             });
         }
-        
+
         async function shareReport() {
-            const container = els.reportContentArea;
             try {
-                const canvas = await html2canvas(container, { 
-                    scale: 2, 
-                    useCORS: true, 
-                    backgroundColor: '#ffffff',
-                    onclone: (clonedDoc) => { 
-                        clonedDoc.documentElement.setAttribute('data-theme', 'light'); 
-                    }
-                });
-                
+                const canvas = await html2canvas(els.reportContentArea, CANVAS_OPTS);
                 canvas.toBlob(async (blob) => {
                     const file = new File([blob], "fidya-report.png", { type: "image/png" });
-                    
                     if (navigator.share) {
                         try {
-                            await navigator.share({
-                                title: 'Fidya Report',
-                                text: 'Here is the Fidya calculation report.',
-                                files: [file]
-                            });
-                        } catch (err) {
-                            console.error('Share failed:', err);
-                        }
+                            await navigator.share({ title: 'Fidya Report', text: 'Here is the Fidya calculation report.', files: [file] });
+                        } catch (err) { console.error('Share failed:', err); }
                     } else {
                         showToast("Sharing not supported on this device/browser.");
                         const link = document.createElement('a');
@@ -2525,7 +3245,8 @@ lblFemaleLate: "Age minus <span class='numeric-text'>9</span> years",
             }
         }
 
-        function showToast(m) { els.toast.innerText=m; els.toast.classList.add('show'); setTimeout(()=>els.toast.classList.remove('show'),2500); }
+        const toastInner = document.getElementById('toastInner');
+        function showToast(m) { if(toastInner) toastInner.innerText=m; els.toast.classList.add('show'); setTimeout(()=>els.toast.classList.remove('show'),2500); }
 
         // ============================================================
         // SAVE & HISTORY SYSTEM
@@ -2542,29 +3263,28 @@ lblFemaleLate: "Age minus <span class='numeric-text'>9</span> years",
             updateHistBadge();
         }
 
+        const histBadge = document.getElementById('histCountBadge');
         function updateHistBadge() {
-            const records = histLoad();
-            const badge = document.getElementById('histCountBadge');
-            if (records.length > 0) {
-                badge.textContent = records.length > 99 ? '99+' : records.length;
-                badge.classList.add('visible');
+            const count = histLoad().length;
+            if (count > 0) {
+                histBadge.textContent = count > 99 ? '99+' : count;
+                histBadge.classList.add('visible');
             } else {
-                badge.classList.remove('visible');
+                histBadge.classList.remove('visible');
             }
         }
 
         function getCurrentFormData() {
             const isUrdu = (currentLang === 'ur');
-            const name = document.getElementById('txtName').value.trim();
-            const father = document.getElementById('txtFather').value.trim();
-            const caste = document.getElementById('txtCaste').value.trim();
-            const gender = document.getElementById('gender').value;
-            const age = document.getElementById('age').value;
-            const wheat = document.getElementById('wheatPrice').value;
-            const amount = document.getElementById('availableAmount').value;
-            const totalFidya = document.getElementById('valTotalFidya').innerText;
-            const calcSection = document.getElementById('calculationSection');
-            const hasResult = calcSection.style.display !== 'none';
+            const name = els.txtName.value.trim();
+            const father = els.txtFather.value.trim();
+            const caste = els.txtCaste.value.trim();
+            const gender = els.genderInput.value;
+            const age = els.age.value;
+            const wheat = els.wheat.value;
+            const amount = els.amount.value;
+            const totalFidya = els.valTotalFidya.innerText;
+            const hasResult = els.calcSection.style.display !== 'none';
 
             return {
                 id: Date.now(),
@@ -2572,44 +3292,74 @@ lblFemaleLate: "Age minus <span class='numeric-text'>9</span> years",
                 name: name || (isUrdu ? 'بے نام' : 'Unnamed'),
                 father: father || '',
                 caste: caste || '',
-                gender: gender,
-                age: age,
-                wheat: wheat,
-                amount: amount,
+                gender,
+                age,
+                wheat,
+                amount,
                 totalFidya: hasResult ? totalFidya : '-',
                 savedAt: new Date().toLocaleDateString()
             };
         }
 
+        function isAgeValid() {
+            const val = els.age.value.trim();
+            if (!val) return false;
+            const age = parseFloat(val);
+            if (isNaN(age) || age < 1 || age > 150) return false;
+            const gender = els.genderInput.value;
+            if (gender === 'male'   && age < 13) return false;
+            if (gender === 'female' && age < 10) return false;
+            return true;
+        }
+
         function saveCurrentRecord() {
-            const data = getCurrentFormData();
-            // Must have at least a name or age
-            if (!data.age && !data.name && data.name === (currentLang === 'ur' ? 'بے نام' : 'Unnamed')) {
-                showToast(currentLang === 'ur' ? 'پہلے کچھ معلومات درج کریں' : 'Please fill in some details first');
+            const isUrdu = (currentLang === 'ur');
+            const name   = els.txtName.value.trim();
+            const father = els.txtFather.value.trim();
+            const caste  = els.txtCaste.value.trim();
+            const gender = els.genderInput.value;
+            const age    = els.age.value.trim();
+            const wheat  = els.wheat.value.trim();
+            const amount = els.amount.value.trim();
+
+            const allFilled = name && father && caste && gender && age && wheat && amount;
+
+            if (!allFilled) {
+                showToast(isUrdu ? 'پہلے تمام خانے پُر کریں' : 'Please fill all fields first');
                 return;
             }
+            if (!isAgeValid()) {
+                showToast(isUrdu ? 'عمر درست نہیں ہے، درست عمر درج کریں' : 'Invalid age, please enter a valid age');
+                return;
+            }
+
+            const data = getCurrentFormData();
             const records = histLoad();
-            records.unshift(data); // add at top
+            records.unshift(data);
             histSave(records);
-            showToast(currentLang === 'ur' ? 'ریکارڈ محفوظ ہو گیا ✓' : 'Record saved ✓');
+            showToast(isUrdu ? 'ریکارڈ محفوظ ہو گیا ✓' : 'Record saved ✓');
+            updateHistBadge();
         }
 
         // ---- History Overlay ----
         let histSelectedIds = new Set();
         let histDragSrcIndex = null;
 
+        const histOverlayEl = document.getElementById('historyOverlay');
+        const histActionBarEl = document.getElementById('histActionBar');
+
         function openHistory() {
             histSelectedIds.clear();
             renderHistoryList();
-            document.getElementById('historyOverlay').classList.add('active');
+            histOverlayEl.classList.add('active');
             updateHistLang();
             history.pushState({ overlay: 'history' }, '');
         }
 
         function closeHistory() {
             histSelectedIds.clear();
-            document.getElementById('historyOverlay').classList.remove('active');
-            document.getElementById('histActionBar').classList.remove('visible');
+            histOverlayEl.classList.remove('active');
+            histActionBarEl.classList.remove('visible');
         }
 
         function updateHistLang() {
@@ -2757,46 +3507,38 @@ lblFemaleLate: "Age minus <span class='numeric-text'>9</span> years",
         }
 
         function updateSelectionUI() {
-            const bar = document.getElementById('histActionBar');
             const countEl = document.getElementById('histSelCount');
             const isUrdu = (currentLang === 'ur');
             const n = histSelectedIds.size;
             if (n > 0) {
-                bar.classList.add('visible');
+                histActionBarEl.classList.add('visible');
                 countEl.textContent = isUrdu ? n + " منتخب" : n + ' selected';
             } else {
-                bar.classList.remove('visible');
+                histActionBarEl.classList.remove('visible');
             }
         }
 
         function loadRecordIntoForm(rec) {
-            document.getElementById('txtName').value = rec.name !== (rec.lang === 'ur' ? 'بے نام' : 'Unnamed') ? rec.name : '';
-            document.getElementById('txtFather').value = rec.father || '';
-            document.getElementById('txtCaste').value = rec.caste || '';
-            document.getElementById('wheatPrice').value = rec.wheat || '';
-            document.getElementById('availableAmount').value = rec.amount || '';
+            els.txtName.value = rec.name !== (rec.lang === 'ur' ? 'بے نام' : 'Unnamed') ? rec.name : '';
+            els.txtFather.value = rec.father || '';
+            els.txtCaste.value = rec.caste || '';
+            els.wheat.value = rec.wheat || '';
+            els.amount.value = rec.amount || '';
 
-            // Set gender
-            const genderInput = document.getElementById('gender');
-            const genderText = document.getElementById('genderText');
-            const genderTrigger = document.getElementById('genderTrigger');
             if (rec.gender) {
-                genderInput.value = rec.gender;
-                const s = STRINGS[currentLang];
-                genderText.innerText = rec.gender === 'male' ? s.male : s.female;
-                genderTrigger.classList.remove('placeholder');
+                els.genderInput.value = rec.gender;
+                els.genderText.innerText = rec.gender === 'male' ? STRINGS[currentLang].male : STRINGS[currentLang].female;
+                els.genderTrigger.classList.remove('placeholder');
             }
 
-            // Set age
-            document.getElementById('age').value = rec.age || '';
+            els.age.value = rec.age || '';
 
-            // Trigger recalculation
-            setDynamicFont(document.getElementById('txtName'));
-            setDynamicFont(document.getElementById('txtFather'));
-            setDynamicFont(document.getElementById('txtCaste'));
+            setDynamicFont(els.txtName);
+            setDynamicFont(els.txtFather);
+            setDynamicFont(els.txtCaste);
             updatePlaceholders();
             calculate();
-            handleAgeInput(document.getElementById('age'));
+            handleAgeInput(els.age);
         }
 
         // Delete selected
@@ -2843,94 +3585,96 @@ function handleAgeInput(input) {
     const unitDisplay = document.getElementById("ageUnitDisplay");
     const val = input.value.trim();
     const age = parseInt(val);
-    
-    // صرف تب دکھائے جب عمر 1 سے 120 کے درمیان ہو (تاکہ غلط نمبر پر نظر نہ آئے)
-    if (val !== "" && !isNaN(age) && age >= 1 && age <= 120) {
+    const gender = els.genderInput ? els.genderInput.value : '';
+    const minAge = (gender === 'female') ? 10 : 13;
+
+    if (val !== "" && !isNaN(age) && age >= minAge && age <= 150) {
         textMeasurer.font = window.getComputedStyle(input).font;
         const textWidth = textMeasurer.measureText(val).width;
-        
         const isUrdu = (currentLang === "ur");
-        unitDisplay.innerText = isUrdu ? " سال" : " years";
-
-        // پوزیشننگ: اردو میں دائیں سے، انگلش میں بائیں سے
+        unitDisplay.innerText = isUrdu ? " سال" : " yrs";
         if (isUrdu) {
             unitDisplay.style.left = "auto";
-            unitDisplay.style.right = (textWidth + 18) + "px"; // نمبر کے بالکل ساتھ اردو میں
+            unitDisplay.style.right = (textWidth + 18) + "px";
         } else {
             unitDisplay.style.right = "auto";
-            unitDisplay.style.left = (textWidth + 18) + "px"; // نمبر کے بالکل ساتھ انگلش میں
+            unitDisplay.style.left = (textWidth + 18) + "px";
         }
-        
         unitDisplay.style.display = "block";
     } else {
         unitDisplay.style.display = "none";
     }
 }
 
-    </script>
+        // ===== VALIDATION POPUP EVENTS =====
+        const valOk = document.getElementById('validationPopupOk');
+        const valOverlay = document.getElementById('validationPopupOverlay');
+        if (valOk) valOk.addEventListener('click', function() { valOverlay.classList.remove('active'); });
+        if (valOverlay) valOverlay.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
 
- <script>
         // ===== BACK BUTTON HANDLER =====
-
-        // صفحہ لوڈ ہوتے وقت ایک base history entry بنائیں
-        // تاکہ پہلا بیک ہمیشہ ہمارے پاس آئے
         history.pushState({ page: 'main' }, '');
 
-        window.addEventListener('popstate', function(e) {
-            // Tutorial
-            const tut = document.getElementById('tutorialOverlay');
-            if (tut && tut.classList.contains('active')) { closeTutorial(); history.pushState({ page: 'main' }, ''); return; }
-            // Info popup
-            const info = document.getElementById('infoPopup');
-            if (info && info.classList.contains('active')) { closePopup(); history.pushState({ page: 'main' }, ''); return; }
-            // Report
-            const rep = document.getElementById('reportOverlay');
-            if (rep && rep.classList.contains('active')) { closeReport(); history.pushState({ page: 'main' }, ''); return; }
-            // History
-            const hist = document.getElementById('historyOverlay');
-            if (hist && hist.classList.contains('active')) { closeHistory(); history.pushState({ page: 'main' }, ''); return; }
-
-            // مین اسکرین پر ہیں — exit confirm دکھائیں
+        const tutOverlayEl = document.getElementById('tutorialOverlay');
+        window.addEventListener('popstate', function() {
+            if (tutOverlayEl && tutOverlayEl.classList.contains('active')) { closeTutorial(); history.pushState({ page: 'main' }, ''); return; }
+            if (els.popup && els.popup.classList.contains('active')) { closePopup(); history.pushState({ page: 'main' }, ''); return; }
+            if (els.reportOverlay && els.reportOverlay.classList.contains('active')) { closeReport(); history.pushState({ page: 'main' }, ''); return; }
+            if (histOverlayEl && histOverlayEl.classList.contains('active')) {
+                if (histSelectedIds.size > 0) {
+                    histSelectedIds.clear();
+                    renderHistoryList();
+                    history.pushState({ page: 'main' }, '');
+                    return;
+                }
+                closeHistory();
+                history.pushState({ page: 'main' }, '');
+                return;
+            }
             showExitConfirm();
         });
 
         // === EXIT CONFIRM POPUP ===
+        const exitOverlay = document.getElementById('exitConfirmOverlay');
+        const exitCard = exitOverlay.querySelector('.exit-card');
+        const exitTitle = document.getElementById('exitTitle');
+        const exitBody = document.getElementById('exitBody');
+        const exitNo = document.getElementById('exitConfirmNo');
+        const exitYes = document.getElementById('exitConfirmYes');
+
         function showExitConfirm() {
-            // واپس ایک state آگے دھکیلیں تاکہ ایپ یہیں رہے
             history.pushState({ page: 'main' }, '');
-            document.getElementById('exitConfirmOverlay').classList.add('active');
+            const isUr = (currentLang === 'ur');
+            exitTitle.innerText = isUr ? 'ایپ سے باہر' : 'Exit App';
+            exitBody.innerText = isUr ? 'کیا آپ واقعی ایپ سے باہر جانا چاہتے ہیں؟' : 'Are you sure you want to exit the app?';
+            exitNo.innerText = isUr ? 'نہیں' : 'No';
+            exitYes.innerText = isUr ? 'ہاں' : 'Yes';
+            exitCard.style.direction = isUr ? 'rtl' : 'ltr';
+            exitCard.style.fontFamily = isUr ? 'var(--font-urdu), serif' : 'var(--font-main), sans-serif';
+            exitOverlay.classList.add('active');
         }
-        function hideExitConfirm() {
-            document.getElementById('exitConfirmOverlay').classList.remove('active');
+        function hideExitConfirm() { exitOverlay.classList.remove('active'); }
+
+        exitYes.addEventListener('click', function() { hideExitConfirm(); history.go(-2); });
+        exitNo.addEventListener('click', hideExitConfirm);
+        exitOverlay.addEventListener('click', function(e) { if (e.target === this) hideExitConfirm(); });
+
+        // ===== SERVICE WORKER =====
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("./service-worker.js", { scope: "./" })
+                    .then(reg => console.log("✅ SW registered:", reg.scope))
+                    .catch(err => console.error("❌ SW failed:", err));
+            });
         }
 
-        document.getElementById('exitConfirmYes').addEventListener('click', function() {
-            hideExitConfirm();
-            // دو بار back کریں: ایک ہمارا pushState ہٹائیں، دوسرا اصل back
-            history.go(-2);
-        });
-        document.getElementById('exitConfirmNo').addEventListener('click', hideExitConfirm);
-        document.getElementById('exitConfirmOverlay').addEventListener('click', function(e) {
-            if (e.target === this) hideExitConfirm();
-        });
-        </script>
- <script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js", {
-      scope: "./"
-    })
-    .then(reg => console.log("✅ SW registered:", reg.scope))
-    .catch(err => console.error("❌ SW failed:", err));
-  });
-}
-</script>
+    </script>
 
 <script>
 // ===== SCALE LOCK SYSTEM =====
 (function () {
-    const BASE_WIDTH = 360;
-    const HEADER_HEIGHT = 50;
+    const BASE_WIDTH = 320;
+    const HEADER_HEIGHT = 44;
 
     function scaleApp() {
         const vw = window.innerWidth;
@@ -2962,6 +3706,8 @@ if ("serviceWorker" in navigator) {
             document.querySelector(".popup-overlay"),
             document.querySelector(".report-overlay"),
             document.querySelector(".history-overlay"),
+            document.getElementById("validationPopupOverlay"),
+            document.getElementById("exitConfirmOverlay"),
         ];
         overlays.forEach(function(el) {
             if (!el) return;
@@ -2969,6 +3715,13 @@ if ("serviceWorker" in navigator) {
             el.style.transform = scaled;
             el.style.height = (100 / scale) + "vh";
         });
+
+        // --- Toast (bottom notification) ---
+        const toastEl = document.getElementById("toast");
+        if (toastEl) {
+            toastEl.style.transformOrigin = "bottom center";
+            toastEl.style.transform = "translateX(-50%) scale(" + scale + ")";
+        }
     }
 
     window.addEventListener("resize", scaleApp);
@@ -2981,7 +3734,7 @@ if ("serviceWorker" in navigator) {
 
 
     <!-- ===== EXIT CONFIRM POPUP ===== -->
-    <div id="exitConfirmOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;justify-content:center;align-items:center;">
+    <div id="exitConfirmOverlay">
         <div class="exit-card">
             <div class="exit-card-title" id="exitTitle">ایپ سے باہر</div>
             <div class="exit-card-body" id="exitBody">کیا آپ واقعی ایپ سے باہر جانا چاہتے ہیں؟</div>
@@ -2992,7 +3745,18 @@ if ("serviceWorker" in navigator) {
         </div>
     </div>
     <style>
-        #exitConfirmOverlay { display:flex; opacity:0; visibility:hidden; transition:opacity 0.25s, visibility 0.25s; }
+        #exitConfirmOverlay {
+            display: flex; opacity: 0; visibility: hidden;
+            transition: opacity 0.25s, visibility 0.25s;
+            position: fixed; top: 0;
+            width: 320px; left: 50%;
+            transform: translateX(-50%);
+            transform-origin: top center;
+            height: 100vh;
+            z-index: 99999;
+            background: rgba(0,0,0,0.6);
+            justify-content: center; align-items: center;
+        }
         #exitConfirmOverlay.active { opacity:1; visibility:visible; }
         .exit-card {
             width: 280px; background: var(--panel-bg); border-radius: 16px;
@@ -3001,23 +3765,339 @@ if ("serviceWorker" in navigator) {
         .exit-card-title {
             background: var(--accent-color); color: #fff; text-align: center;
             padding: 14px 16px; font-size: 1rem; font-weight: bold;
-            font-family: var(--font-urdu), serif; line-height: 2.2;
+            line-height: 2.2;
         }
         .exit-card-body {
             padding: 18px 16px; text-align: center; font-size: 0.88rem;
-            line-height: 2.4; color: var(--text-color);
-            font-family: var(--font-urdu), serif;
+            line-height: 2; color: var(--text-color);
         }
         .exit-card-btns { display:flex; border-top:1px solid var(--glass-border); }
         .exit-card-btns button {
             flex:1; padding:14px 0; border:none; font-size:0.95rem;
-            font-family: var(--font-urdu), serif; font-weight:bold; cursor:pointer; transition:background 0.2s; line-height:2.2;
+            font-weight:bold; cursor:pointer; transition:background 0.2s; line-height:2;
         }
         #exitConfirmYes { background:#e74c3c; color:#fff; border-right:1px solid rgba(0,0,0,0.1); }
         #exitConfirmYes:active { background:#c0392b; }
         #exitConfirmNo { background:#2ecc71; color:#fff; }
         #exitConfirmNo:active { background:#27ae60; }
     </style>
+
+
+    <!-- ===== VALIDATION POPUP ===== -->
+    <div id="validationPopupOverlay">
+        <div class="val-card">
+            <div class="val-card-title" id="validationPopupTitle">فیلڈز خالی ہیں</div>
+            <div class="val-card-body" id="validationPopupBody"></div>
+            <div class="val-card-footer">
+                <button id="validationPopupOk">ٹھیک ہے</button>
+            </div>
+        </div>
+    </div>
+    <style>
+        #validationPopupOverlay {
+            display: flex; opacity: 0; visibility: hidden;
+            transition: opacity 0.25s, visibility 0.25s;
+            position: fixed; top: 0;
+            width: 320px; left: 50%;
+            transform: translateX(-50%);
+            transform-origin: top center;
+            height: 100vh;
+            z-index: 99998;
+            background: rgba(0,0,0,0.55);
+            justify-content: center; align-items: center;
+        }
+        #validationPopupOverlay.active { opacity: 1; visibility: visible; }
+        .val-card {
+            width: 300px; background: var(--panel-bg); border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4); overflow: hidden;
+        }
+        .val-card-title {
+            background: #e74c3c; color: #fff; text-align: center;
+            padding: 12px 16px; font-size: 1rem; font-weight: bold;
+            font-family: var(--font-urdu), serif; line-height: 2.2;
+        }
+        .val-card-body {
+            padding: 14px 18px; font-size: 0.85rem; line-height: 2.4;
+            color: var(--text-color); font-family: var(--font-urdu), serif;
+            direction: rtl; text-align: right;
+        }
+        .val-card-body ul {
+            margin: 6px 0 0 0; padding-right: 18px; padding-left: 0;
+        }
+        .val-card-body li { margin-bottom: 2px; color: #e74c3c; font-weight: bold; }
+        .val-card-footer {
+            padding: 10px 16px; text-align: center;
+            border-top: 1px solid var(--glass-border);
+        }
+        .val-card-footer button {
+            background: var(--accent-color); color: #fff; border: none;
+            border-radius: 20px; padding: 8px 32px; font-size: 0.9rem;
+            font-family: var(--font-urdu), serif; font-weight: bold;
+            cursor: pointer; line-height: 2;
+        }
+        .val-card-footer button:active { opacity: 0.8; }
+    </style>
+    <script>
+    class DemoEngine {
+        constructor(targetSelector) {
+            this.targetElement = document.querySelector(targetSelector);
+            this.steps =[];
+            this.isLocked = false;
+            
+            this.highlighter = new DemoHighlight(this.targetElement);
+            this.capturer = new DemoCapture(this.targetElement);
+            this.timeline = new DemoTimeline(this);
+            this.ui = new DemoUI(this);
+
+            this.init();
+        }
+        init() {
+            this.highlighter.init();
+            this.ui.renderControls();
+        }
+        captureStep() {
+            const clonedState = this.capturer.capture();
+            this.steps.push(clonedState);
+            console.log("اسٹیپ کیپچر ہو گیا! کل اسٹیپس: " + this.steps.length);
+        }
+        toggleLock() {
+            this.isLocked = !this.isLocked;
+            return this.isLocked;
+        }
+    }
+
+    class DemoHighlight {
+        constructor(target) { this.target = target; }
+        init() {
+            this.target.addEventListener('mousedown', (e) => {
+                if (e.target.tagName.match(/BUTTON|INPUT|TEXTAREA|SELECT|A/)) {
+                    e.target.classList.add('demo-highlight');
+                }
+            });
+            window.addEventListener('mouseup', () => this.removeHighlights());
+            this.target.addEventListener('mouseout', (e) => {
+                if (e.target.classList && e.target.classList.contains('demo-highlight')) {
+                    e.target.classList.remove('demo-highlight');
+                }
+            });
+        }
+        removeHighlights() {
+            const highlights = this.target.querySelectorAll('.demo-highlight');
+            highlights.forEach(el => el.classList.remove('demo-highlight'));
+        }
+    }
+
+    class DemoCapture {
+        constructor(target) { this.target = target; }
+        capture() {
+            const clone = this.target.cloneNode(true);
+            const originalInputs = this.target.querySelectorAll('input, textarea, select');
+            const clonedInputs = clone.querySelectorAll('input, textarea, select');
+
+            originalInputs.forEach((input, index) => {
+                if (input.type === 'checkbox' || input.type === 'radio') {
+                    clonedInputs[index].checked = input.checked;
+                } else { clonedInputs[index].value = input.value; }
+            });
+
+            const currentScroll = this.target.scrollTop;
+            const frame = document.createElement('div');
+            frame.className = 'timeline-frame';
+            clone.style.margin = "0";
+            clone.style.transform = `translateY(-${currentScroll}px)`;
+            clone.style.height = "auto";
+            clone.style.overflow = "visible";
+            frame.appendChild(clone);
+            return frame;
+        }
+    }
+
+    class DemoUI {
+        constructor(engine) {
+            this.engine = engine;
+            this.buttons =[];
+            this.waitScrollTimeout = null;
+            this.isWaitingForScroll = false;
+            this.engine.targetElement.addEventListener('scroll', () => this.handleAutoScrollCapture());
+        }
+
+        renderControls() {
+            this.createDraggableEmoji("📸", 20, 20, () => this.engine.captureStep());
+            this.scrollBtn = this.createDraggableEmoji("⏳", 80, 20, (btn) => this.toggleWaitScroll(btn));
+            this.createDraggableEmoji("🎬", 140, 20, () => this.engine.timeline.finalize());
+            
+            // لاک بٹن (مجرموں کو باندھنے والا)
+            const lockBtn = this.createDraggableEmoji("🔓", 200, 20, (btn) => {
+                const locked = this.engine.toggleLock();
+                btn.innerText = locked ? "🔒" : "🔓";
+                // تمام بٹنوں کا کرسر تبدیل کریں
+                this.buttons.forEach(b => {
+                    b.style.cursor = locked ? 'pointer' : 'grab';
+                });
+            });
+        }
+
+        renderTimelineControls() {
+            this.prevBtn = this.createDraggableEmoji("⏪", 20, 100, () => this.engine.timeline.prevStep(), true);
+            this.nextBtn = this.createDraggableEmoji("⏩", 80, 100, () => this.engine.timeline.nextStep(), true);
+            this.autoBtn = this.createDraggableEmoji("⏯️", 140, 100, () => this.engine.timeline.toggleAutoPlay(), true);
+            this.closeBtn = this.createDraggableEmoji("❌", 200, 100, () => this.engine.timeline.closeTimeline(), true);
+        }
+
+        createDraggableEmoji(emoji, startX, startY, onClick, isTimelineControl = false) {
+            const btn = document.createElement('button');
+            btn.className = `demo-control-btn ${isTimelineControl ? 'timeline-ui' : 'main-ui'}`;
+            btn.innerText = emoji;
+            btn.style.left = `${startX}px`; 
+            btn.style.top = `${startY}px`;
+            btn.style.cursor = 'grab';
+            document.body.appendChild(btn);
+
+            let isDragging = false, hasMoved = false;
+            let startClientX, startClientY, initialX, initialY;
+
+            const startDrag = (e) => {
+                isDragging = true; 
+                hasMoved = false;
+                startClientX = e.touches ? e.touches[0].clientX : e.clientX;
+                startClientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                const rect = btn.getBoundingClientRect();
+                initialX = rect.left; 
+                initialY = rect.top;
+
+                if (!this.engine.isLocked) {
+                    btn.style.cursor = 'grabbing';
+                }
+            };
+
+            const moveDrag = (e) => {
+                if (!isDragging) return;
+                
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                // فاصلہ ناپیں
+                const dx = clientX - startClientX;
+                const dy = clientY - startClientY;
+
+                // 3 پکسل کی رعایت: اگر تھوڑا سا ہلا ہے تو اسے ڈریگ نہیں مانیں گے
+                if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+                    hasMoved = true;
+                    // اگر لاک نہیں ہے تو ہی مجرم حرکت کر سکے گا
+                    if (!this.engine.isLocked) {
+                        if(e.cancelable) e.preventDefault();
+                        btn.style.left = `${initialX + dx}px`;
+                        btn.style.top = `${initialY + dy}px`;
+                    }
+                }
+            };
+
+            const endDrag = (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                
+                btn.style.cursor = this.engine.isLocked ? 'pointer' : 'grab';
+                
+                // اگر 3 پکسل سے زیادہ نہیں ہلا تھا، تو اس کا مطلب ہے جج صاحب نے کلک کیا ہے!
+                if (!hasMoved) { 
+                    onClick(btn); 
+                }
+            };
+
+            // ماؤس کے ایونٹس
+            btn.addEventListener('mousedown', startDrag);
+            window.addEventListener('mousemove', moveDrag);
+            window.addEventListener('mouseup', endDrag);
+            
+            // ٹچ اسکرین / موبائل کے ایونٹس
+            btn.addEventListener('touchstart', startDrag, {passive: false});
+            window.addEventListener('touchmove', moveDrag, {passive: false});
+            window.addEventListener('touchend', endDrag);
+
+            this.buttons.push(btn);
+            return btn;
+        }
+
+        toggleWaitScroll(btn) {
+            this.isWaitingForScroll = !this.isWaitingForScroll;
+            btn.innerText = this.isWaitingForScroll ? "🛑" : "⏳";
+        }
+
+        handleAutoScrollCapture() {
+            if (!this.isWaitingForScroll) return;
+            clearTimeout(this.waitScrollTimeout);
+            this.waitScrollTimeout = setTimeout(() => {
+                this.engine.captureStep();
+                this.isWaitingForScroll = false;
+                this.scrollBtn.innerText = "⏳";
+            }, 600);
+        }
+
+        toggleUIMode(isTimelineMode) {
+            document.querySelectorAll('.main-ui').forEach(el => el.style.display = isTimelineMode ? 'none' : 'block');
+            if (isTimelineMode) { this.renderTimelineControls(); } 
+            else { document.querySelectorAll('.timeline-ui').forEach(el => el.remove()); }
+        }
+    }
+
+    class DemoTimeline {
+        constructor(engine) {
+            this.engine = engine;
+            this.currentIndex = 0;
+            this.autoPlayInterval = null;
+        }
+        finalize() {
+            if (this.engine.steps.length === 0) { alert("پہلے 📸 بٹن سے کچھ ریکارڈ تو کریں!"); return; }
+            this.currentIndex = 0;
+            const track = document.getElementById('timeline-track');
+            track.innerHTML = '';
+            this.engine.steps.forEach(stepDOM => track.appendChild(stepDOM));
+            
+            document.getElementById('app-viewport').style.display = 'none';
+            document.getElementById('timeline-preview-container').style.display = 'flex';
+            this.engine.ui.toggleUIMode(true);
+            this.updateTransform();
+        }
+        closeTimeline() {
+            this.stopAutoPlay();
+            document.getElementById('timeline-preview-container').style.display = 'none';
+            document.getElementById('app-viewport').style.display = 'block';
+            this.engine.ui.toggleUIMode(false);
+        }
+        nextStep() {
+            if (this.currentIndex < this.engine.steps.length - 1) {
+                this.currentIndex++; this.updateTransform();
+            } else { this.stopAutoPlay(); }
+        }
+        prevStep() {
+            if (this.currentIndex > 0) {
+                this.currentIndex--; this.updateTransform();
+            }
+        }
+        updateTransform() {
+            const track = document.getElementById('timeline-track');
+            track.style.transform = `translateY(-${this.currentIndex * 666}px)`;
+        }
+        toggleAutoPlay() {
+            if (this.autoPlayInterval) { this.stopAutoPlay(); } 
+            else {
+                this.autoPlayInterval = setInterval(() => {
+                    if(this.currentIndex < this.engine.steps.length - 1) { this.nextStep(); } 
+                    else { this.currentIndex = 0; this.updateTransform(); }
+                }, 1500);
+            }
+        }
+        stopAutoPlay() {
+            if (this.autoPlayInterval) { clearInterval(this.autoPlayInterval); this.autoPlayInterval = null; }
+        }
+    }
+
+    // === کیمرہ مین (انجن) کو کام پر لگانے کا آرڈر ===
+    document.addEventListener("DOMContentLoaded", () => {
+        const engine = new DemoEngine('#app-viewport');
+    });
+</script>
 
 </body>
 </html>
