@@ -526,22 +526,22 @@
             height: 44px;
             background-color: var(--header-bg); box-shadow: var(--shadow);
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 8px; z-index: 1000;
+            padding: 0 4px; z-index: 1000;
             left: 50%;
             transform: translateX(-50%);
             transform-origin: top center;
             box-sizing: border-box;
-            overflow: hidden;
+            overflow: visible;
         }
 
-        .app-title { font-size: 0.78rem; font-weight: 700; color: var(--text-color); flex-shrink: 0; }
+        .app-title { font-size: 0.78rem; font-weight: 700; color: var(--text-color); flex-shrink: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 
-        .header-controls { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
+        .header-controls { display: flex; gap: 2px; align-items: center; flex-shrink: 0; }
 
         .icon-btn {
             background: none; border: none; cursor: pointer; color: var(--text-color);
             font-size: 1rem; padding: 2px; border-radius: 50%; display: flex;
-            align-items: center; justify-content: center; width: 26px; height: 26px;
+            align-items: center; justify-content: center; width: 22px; height: 22px;
             flex-shrink: 0;
         }
 
@@ -995,7 +995,7 @@ input[type="number"]::placeholder {
     color: var(--text-color);
     font-size: 1.1rem; padding: 4px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    width: 28px; height: 28px;
+    width: 22px; height: 22px;
 }
 #saveRecordBtn svg, #historyBtn svg { width: 16px; height: 16px; fill: currentColor; }
 
@@ -1606,10 +1606,10 @@ This process is commonly known as <b>Hila-e-Isqat</b> or <b>Isqat-e-Salah wa Saw
 <br><br>
 <b>Prayer &amp; Fast Fidya:</b><br>
 Each day has <b>6 prayers</b> (Fajr, Zuhr, Asr, Maghrib, Isha, Witr) and <b>1 fast</b> (in Ramadan).<br>
-• A <b>lunar year</b> = 355 days is used.<br>
+• A <b>lunar year</b> = 365 days is used.<br>
 • Each missed prayer/fast = <b>½ Saa' of wheat</b> = approx. <b>1 Kg 633g</b> (in today's weight).<br>
 • The app calculates:<br>
-&nbsp;&nbsp;— Total prayers = calculated years × 355 × 6<br>
+&nbsp;&nbsp;— Total prayers = calculated years × 365 × 6<br>
 &nbsp;&nbsp;— Total fasts = calculated years × 30<br>
 &nbsp;&nbsp;— Fidya amount = quantity × price of 40Kg wheat ÷ 40
 <br><br>
@@ -2036,8 +2036,10 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
         };
 
         let tutCurrentSlide = 0;
+        let _tutActive = false; // اینیمیشنز کو روکنے کے لیے فلیگ
 
         function openTutorial() {
+            _tutActive = true; 
             tutCurrentSlide = 0;
             buildTutDots();
             renderTutSlide();
@@ -2046,25 +2048,28 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
             preloadAdjacentImages(tutCurrentSlide);
         }
 
-        // یہ ایک الگ فنکشن ہے
-function preloadAdjacentImages(currentIndex) {
-    const slides = TUTORIAL_SLIDES[currentLang];
-    
-    // اگلی تصویر پری لوڈ کریں
-    if (currentIndex < slides.length - 1) {
-        const imgNext = new Image();
-        imgNext.src = slides[currentIndex + 1].img;
-    }
-    
-    // پچھلی تصویر پری لوڈ کریں
-    if (currentIndex > 0) {
-        const imgPrev = new Image();
-        imgPrev.src = slides[currentIndex - 1].img;
-    }
-}
+        function preloadAdjacentImages(currentIndex) {
+            const slides = TUTORIAL_SLIDES[currentLang];
+            if (currentIndex < slides.length - 1) {
+                const imgNext = new Image();
+                imgNext.src = slides[currentIndex + 1].img;
+            }
+            if (currentIndex > 0) {
+                const imgPrev = new Image();
+                imgPrev.src = slides[currentIndex - 1].img;
+            }
+        }
 
         function closeTutorial() {
+            _tutActive = false; // کلوز کرتے ہی سارا بیک گراؤنڈ پروسیس رک جائے گا
             document.getElementById('tutorialOverlay').classList.remove('active');
+            
+            const imgArea = document.getElementById('tutImgArea');
+            if (imgArea) {
+                if (imgArea._blinkIv) { clearInterval(imgArea._blinkIv); delete imgArea._blinkIv; }
+                if (imgArea._phaseIv) { clearInterval(imgArea._phaseIv); delete imgArea._phaseIv; }
+            }
+            _captureRelease();
         }
 
         function buildTutDots() {
@@ -2079,11 +2084,9 @@ function preloadAdjacentImages(currentIndex) {
             });
         }
 
-        // Walk only TEXT nodes and wrap digit runs in .tut-num spans
         function wrapDigitsInTextNodes(el) {
             const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
                 acceptNode: (node) => {
-                    // Skip text inside SVG elements
                     let p = node.parentElement;
                     while (p) {
                         if (p.tagName && p.tagName.toLowerCase() === 'svg') return NodeFilter.FILTER_REJECT;
@@ -2117,14 +2120,10 @@ function preloadAdjacentImages(currentIndex) {
             const isUrdu = (currentLang === 'ur');
             const total = slides.length;
 
-            // Title bar
             document.getElementById('tutTitleBar').innerText = isUrdu ? 'استعمال کا طریقہ' : 'How to Use';
-
-            // Heading & body
             document.getElementById('tutHeading').innerHTML = slide.heading;
             document.getElementById('tutBody').innerHTML = slide.body;
 
-            // Wrap digit sequences in English-font spans (text nodes only, skip HTML/SVG)
             if (isUrdu) {
                 ['tutHeading', 'tutBody'].forEach(id => {
                     const el = document.getElementById(id);
@@ -2132,16 +2131,15 @@ function preloadAdjacentImages(currentIndex) {
                 });
             }
 
-            // Image area — live preview
             const imgArea = document.getElementById('tutImgArea');
             imgArea.innerHTML = '';
             const counter = document.createElement('div');
             counter.className = 'tutorial-slide-num';
             counter.textContent = (tutCurrentSlide + 1) + ' / ' + total;
             imgArea.appendChild(counter);
-            tutCaptureLivePreview(tutCurrentSlide);   // async, non-blocking
+            
+            tutCaptureLivePreview(tutCurrentSlide); 
 
-            // Nav buttons
             const prevBtn = document.getElementById('tutPrevBtn');
             const nextBtn = document.getElementById('tutNextBtn');
             prevBtn.disabled = (tutCurrentSlide === 0);
@@ -2155,20 +2153,13 @@ function preloadAdjacentImages(currentIndex) {
                 nextBtn.innerHTML = 'Next →';
             }
 
-            // Dots
             document.querySelectorAll('.tutorial-dot').forEach((dot, i) => {
                 dot.classList.toggle('active', i === tutCurrentSlide);
             });
             preloadAdjacentImages(tutCurrentSlide);
-
-            // فعّال بٹنوں کو listeners لگائیں
             tutAttachIconListeners();
         }
 
-
-        // ================================================================
-        // TUTORIAL ICON ACTION SYSTEM
-        // ================================================================
         const TUT_ACTION_MAP = {
             tutorial:  { btnId:'tutorialBtn',       overlay:null             },
             save:      { btnId:'saveRecordBtn',      overlay:null             },
@@ -2254,9 +2245,6 @@ function preloadAdjacentImages(currentIndex) {
             }, 370);
         }
 
-        // ================================================================
-        // فرضی ڈیٹا + history strips
-        // ================================================================
         const TUT_DUMMY = {
             ur: { name:'عبدالقادر', father:'عبدالشکور', caste:'سہجانی' },
             en: { name:'Abdul Qadir', father:'Abdul Shakoor', caste:'Sajani' },
@@ -2291,7 +2279,6 @@ function preloadAdjacentImages(currentIndex) {
             els.wheat.value  = '5000';
             els.amount.value = '50000';
             if (typeof calculate === 'function') calculate();
-            // calculation section force show کرو — animation bypass
             if (els.calcSection) {
                 els.calcSection.classList.remove('bounce-out','bounce-in');
                 els.calcSection.style.display = 'block';
@@ -2319,7 +2306,6 @@ function preloadAdjacentImages(currentIndex) {
             els.amount.value = s.amt;
             if (s.gender && s.age && s.wheat && typeof calculate === 'function') calculate();
             else if (typeof hideResults === 'function') hideResults();
-            // animation واپس
             if (els.calcSection) els.calcSection.style.animation = '';
         }
 
@@ -2370,7 +2356,6 @@ function preloadAdjacentImages(currentIndex) {
                 if (ab) ab.classList.add('visible');
                 const sc2 = document.getElementById('histSelCount');
                 if (sc2) sc2.innerText = isUr ? '۲ منتخب' : '2 selected';
-                // 1.8s بعد delete animation
                 setTimeout(() => {
                     histList.querySelectorAll('.tut-fake-strip.selected').forEach(s => {
                         s.classList.add('tut-del-anim');
@@ -2387,41 +2372,19 @@ function preloadAdjacentImages(currentIndex) {
             if (ab) ab.classList.remove('visible');
         }
 
-        // ================================================================
-        // LIVE PREVIEW — html2canvas
-        // ================================================================
-        // captH: پکسل میں اونچائی (لمبا captH = سکرول انیمیشن)
-        // scrollAnim: true = اوپر سے نیچے سکرول
-        // hl: پیلی ring (element ID)
-        // yellows: پیلے مستطیل IDs
-        // multiHl: یکے بعد دیگرے blink IDs
-        // histScene: 'histDrag' | 'histDel' | null
         const TUT_PREVIEW_CFG = [
-            // 0: خوش آمدید — پوری اسکرین، خالی فیلڈز، اوپر سے نیچے سکرول
             { fill:false, scene:'main',    scrollY:0,   captH:520, scrollAnim:true,  hl:null,              yellows:null,                              multiHl:null,                                    histScene:null      },
-            // 1: زبان — header دکھاؤ + langToggle، رکی رہے
             { fill:false, scene:'main',    scrollY:0,   captH:520, scrollAnim:false, hl:'langToggle',      yellows:null,                              multiHl:null,                                    histScene:null      },
-            // 2: ذاتی معلومات — نام بھرا + پیلے خانے، پوری اسکرین
             { fill:true,  scene:'main',    scrollY:0,   captH:520, scrollAnim:false, hl:null,              yellows:['txtName','txtFather','txtCaste'], multiHl:null,                                    histScene:null      },
-            // 3: جنس
             { fill:true,  scene:'main',    scrollY:112, captH:100, scrollAnim:false, hl:'genderTrigger',   yellows:null,                              multiHl:null,                                    histScene:null      },
-            // 4: عمر
             { fill:true,  scene:'main',    scrollY:148, captH:90,  scrollAnim:false, hl:'age',             yellows:null,                              multiHl:null,                                    histScene:null      },
-            // 5: گندم
             { fill:true,  scene:'main',    scrollY:198, captH:90,  scrollAnim:false, hl:'wheatPrice',      yellows:null,                              multiHl:null,                                    histScene:null      },
-            // 6: نتائج — پورا سکرول
             { fill:true,  scene:'main',    scrollY:0,   captH:620, scrollAnim:true,  hl:null,              yellows:null,                              multiHl:null,                                    histScene:null      },
-            // 7: موجود رقم
             { fill:true,  scene:'main',    scrollY:238, captH:90,  scrollAnim:false, hl:'availableAmount', yellows:null,                              multiHl:null,                                    histScene:null      },
-            // 8: رپورٹ — مین اسکرین → انگلی ٹیپ → رپورٹ سکرول + 3 بٹن بلنک
             { fill:true,  scene:'report',  scrollY:0,   captH:720, scrollAnim:true,  hl:null, yellows:null, multiHl:['btnSaveImg','btnSavePdf','btnShareRep'], histScene:null, twoPhase:true },
-            // 9: ریکارڈ سیو
             { fill:true,  scene:'main',    scrollY:0,   captH:68,  scrollAnim:false, hl:'saveRecordBtn',   yellows:null,                              multiHl:null,                                    histScene:null      },
-            // 10: ہسٹری بٹن
             { fill:false, scene:'main',    scrollY:0,   captH:68,  scrollAnim:false, hl:'historyBtn',      yellows:null,                              multiHl:null,                                    histScene:null      },
-            // 11: ریکارڈ drag
             { fill:false, scene:'history', scrollY:0,   captH:400, scrollAnim:true,  hl:null,              yellows:null,                              multiHl:null,                                    histScene:'histDrag' },
-            // 12: منتخب + حذف
             { fill:false, scene:'history', scrollY:0,   captH:320, scrollAnim:false, hl:'histDelSelBtn',   yellows:null,                              multiHl:null,                                    histScene:'histDel'  },
         ];
 
@@ -2434,6 +2397,8 @@ function preloadAdjacentImages(currentIndex) {
         }
 
         async function tutCaptureLivePreview(idx) {
+            if (!_tutActive) return;
+
             if (typeof html2canvas !== 'function') { _showPreviewPlaceholder(idx); return; }
             if (_capturing) return;
             _capturing = true;
@@ -2457,273 +2422,225 @@ function preloadAdjacentImages(currentIndex) {
             const tutOv    = document.getElementById('tutorialOverlay');
             const histOv   = document.getElementById('historyOverlay');
             const repOv    = document.getElementById('reportOverlay');
-            const prevHist = histOv.classList.contains('active');
-            const prevRep  = repOv.classList.contains('active');
-            let openedHist = false, openedRep = false;
-            let hlRects = [], mRects = [];
+            
+            // SCREEN CROP FIX - 100% PERFECT CAPTURE (Scale & RTL Bypass)
+            const getCloneFix = () => (cloneDoc) => {
+                const tu = cloneDoc.getElementById('tutorialOverlay');
+                if (tu) tu.style.visibility = 'hidden';
+
+                // Force everything to act like a static 320px screen at top-left
+                const resetEl = (idOrClass) => {
+                    const el = cloneDoc.querySelector(idOrClass);
+                    if (el) {
+                        el.style.setProperty('left', '0', 'important');
+                        el.style.setProperty('transform', 'none', 'important');
+                        el.style.setProperty('margin', '0', 'important');
+                        el.style.setProperty('width', '320px', 'important');
+                        el.style.setProperty('position', 'absolute', 'important');
+                    }
+                };
+
+                resetEl('.top-bar');
+                resetEl('#app-fixed-size');
+                resetEl('#reportOverlay');
+                resetEl('#historyOverlay');
+
+                const wrapper = cloneDoc.getElementById('app-scale-wrapper');
+                if (wrapper) {
+                    wrapper.style.setProperty('padding-top', '44px', 'important');
+                    wrapper.style.setProperty('display', 'block', 'important'); 
+                }
+                
+                cloneDoc.body.style.setProperty('margin', '0', 'important');
+                cloneDoc.body.style.setProperty('padding', '0', 'important');
+            };
+
+            const vw = document.documentElement.clientWidth;
+            const appScale = vw / 320;
+            const coordSc = dispW / vw;
+            const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-color').trim() || '#f4f7f6';
 
             // ================================================================
             // دو مرحلہ capture (مرحلہ 7 — reportBtn ٹیپ → رپورٹ)
             // ================================================================
             if (cfg.twoPhase) {
-                // فرضی ڈیٹا بھرو
                 _tutFill();
 
                 tutOv.style.opacity = '0'; tutOv.style.visibility = 'hidden'; tutOv.style.pointerEvents = 'none';
                 await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(r))));
 
-                const vw2     = window.innerWidth;
-                const capSc2  = dispW / vw2;
-                const capH2   = Math.round(520 * (vw2 / 320));
-                const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-color').trim() || '#f4f7f6';
-                const cloneFix = (cloneDoc) => {
-                    const tu = cloneDoc.getElementById('tutorialOverlay'); if (tu) tu.style.display = 'none';
-                    const hdr = cloneDoc.querySelector('.top-bar');
-                    if (hdr) { hdr.style.overflow='visible'; hdr.style.width=vw2+'px'; hdr.style.left='0'; hdr.style.transform='none'; }
-                    const hc = cloneDoc.querySelector('.header-controls');
-                    if (hc) { hc.style.overflow='visible'; hc.style.flexShrink='0'; }
-                    const fw = cloneDoc.getElementById('app-fixed-size'); if (fw) { fw.style.transform='none'; fw.style.width=vw2+'px'; }
-                };
-
-                // Phase 1: مین اسکرین + reportBtn position
                 let urlMain = null, btnRect = null;
                 try {
-                    const cvs1 = await html2canvas(document.body, { x:0, y:0, width:vw2, height:capH2, scale:capSc2, useCORS:true, allowTaint:true, backgroundColor:bgColor, logging:false, onclone:cloneFix });
+                    const cvs1 = await html2canvas(document.body, { 
+                        x: 0, y: 0, 
+                        width: 320, height: 520, windowWidth: 320, // Forces pure 320px rendering
+                        scale: 2, useCORS: true, backgroundColor: bgColor, logging: false, 
+                        onclone: getCloneFix() 
+                    });
                     urlMain = cvs1.toDataURL('image/jpeg', 0.9);
                     const rBtn = document.getElementById('reportBtn');
                     if (rBtn) {
                         const r = rBtn.getBoundingClientRect();
-                        btnRect = { x:r.left*capSc2, y:r.top*capSc2, w:r.width*capSc2, h:r.height*capSc2 };
+                        btnRect = { x: r.left * coordSc, y: r.top * coordSc, w: r.width * coordSc, h: r.height * coordSc };
                     }
                 } catch(e) { console.warn('phase1 err', e); }
 
-                // Phase 2: رپورٹ اسکرین
                 if (els.calcSection) els.calcSection.style.display = 'block';
                 try { openReport(); } catch(ex) {}
                 repOv.style.transition = 'none'; repOv.style.opacity = '1'; repOv.style.visibility = 'visible'; repOv.classList.add('active');
                 await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-                const capH2r = Math.round(cfg.captH * (vw2 / 320));
                 let urlReport = null, rMRects = [];
                 try {
                     const cvs2 = await html2canvas(document.body, {
-                        x:0, y:0, width:vw2, height:capH2r, scale:capSc2,
-                        useCORS:true, allowTaint:true, backgroundColor:bgColor, logging:false,
-                        onclone: (cloneDoc) => {
-                            cloneFix(cloneDoc);
-                            const SELS = ['.report-overlay','.report-actions'];
-                            SELS.forEach(sel => { cloneDoc.querySelectorAll(sel).forEach(el => { el.style.position='absolute'; el.style.left='0'; el.style.right='auto'; el.style.transform='none'; el.style.width=vw2+'px'; }); });
-                        }
+                        x: 0, y: 0, 
+                        width: 320, height: cfg.captH || 720, windowWidth: 320, // Forces pure 320px rendering
+                        scale: 2, useCORS: true, backgroundColor: bgColor, logging: false,
+                        onclone: getCloneFix()
                     });
                     urlReport = cvs2.toDataURL('image/jpeg', 0.9);
                     if (cfg.multiHl) cfg.multiHl.forEach(id => {
                         const el = document.getElementById(id); if (!el) return;
                         const r = el.getBoundingClientRect();
-                        rMRects.push({ x:r.left*capSc2, y:r.top*capSc2, w:r.width*capSc2, h:r.height*capSc2 });
+                        rMRects.push({ x: r.left * coordSc, y: r.top * coordSc, w: r.width * coordSc, h: r.height * coordSc });
                     });
                 } catch(e) { console.warn('phase2 err', e); }
 
-                // cleanup
                 repOv.style.transition=''; repOv.style.opacity=''; repOv.style.visibility=''; repOv.classList.remove('active');
                 _tutClear();
                 tutOv.style.opacity=''; tutOv.style.visibility=''; tutOv.style.pointerEvents='';
 
                 spin.remove();
                 _captureRelease();
-                if (idx !== tutCurrentSlide) return;
+                if (!_tutActive || idx !== tutCurrentSlide) return;
 
                 if (!urlMain && !urlReport) { _showPreviewPlaceholder(idx); return; }
 
-                // ===== Display: Phase 1 پہلے، پھر Phase 2 =====
                 const phWrap = document.createElement('div');
                 phWrap.className = 'tlv-img';
                 phWrap.style.cssText = 'position:absolute;inset:0;overflow:hidden;';
                 imgArea.insertBefore(phWrap, counter);
 
-                // Phase 1 image
                 const img1 = document.createElement('img');
                 img1.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:auto;z-index:2;';
                 img1.src = urlMain || '';
                 phWrap.appendChild(img1);
 
-                // reportBtn پر پیلا گول دائرہ
                 if (btnRect) {
                     const ring = document.createElement('div');
                     ring.className = 'tut-btn-ring-pulse';
                     ring.style.cssText = `left:${btnRect.x}px;top:${btnRect.y}px;width:${btnRect.w}px;height:${btnRect.h}px;z-index:3;`;
                     phWrap.appendChild(ring);
-
-                    // انگلی emoji
-                    const finger = document.createElement('div');
-                    finger.className = 'tut-finger';
-                    finger.textContent = '☝️';
-                    finger.style.cssText = `left:${btnRect.x + btnRect.w/2}px;top:${btnRect.y + btnRect.h*1.6}px;z-index:4;`;
-                    phWrap.appendChild(finger);
                 }
 
-                // Phase 2 image (نیچے چھپا ہوا)
-                const capH2r_px = capH2r * capSc2;
+                const capH2r_px = Math.round(cfg.captH * dispW / 320);
                 const img2 = document.createElement('img');
                 img2.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:auto;z-index:1;opacity:0;';
                 img2.src = urlReport || '';
                 phWrap.appendChild(img2);
 
-                // tap sound AudioContext سے
-                const playTap = () => {
-                    try {
-                        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.08, ctx.sampleRate);
-                        const data = buf.getChannelData(0);
-                        for (let i = 0; i < data.length; i++) data[i] = (Math.random()*2-1) * Math.pow(1 - i/data.length, 4) * 0.6;
-                        const src = ctx.createBufferSource();
-                        src.buffer = buf;
-                        const gain = ctx.createGain();
-                        gain.gain.setValueAtTime(1, ctx.currentTime);
-                        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.08);
-                        src.connect(gain); gain.connect(ctx.destination);
-                        src.start();
-                    } catch(e) {}
-                };
-
-                // Phase cycle: Phase1 → انگلی ٹیپ → آواز → Phase2 → sکرول → loop
                 let _phase = 1;
-                const fingerEl  = phWrap.querySelector('.tut-finger');
                 const scrollH2  = Math.max(0, capH2r_px - dispH);
                 const scrollDur = Math.max(4, 2 + Math.ceil(scrollH2 / 60));
 
                 const runCycle = () => {
-                    if (!phWrap.isConnected) return;
+                    if (!_tutActive || !phWrap.isConnected) return; 
+
                     if (_phase === 1) {
-                        // انگلی ٹیپ animation
-                        if (fingerEl) {
-                            fingerEl.style.animation = 'none';
-                            fingerEl.offsetHeight; // reflow
-                            fingerEl.style.animation = 'tut-finger-tap 0.55s ease forwards';
-                            fingerEl.addEventListener('animationend', () => {
-                                if (!phWrap.isConnected) return;
-                                playTap();
-                                // Phase 2 میں جاؤ
-                                img2.style.opacity = '0';
-                                img2.style.animation = 'tut-phase-fadein 0.5s ease forwards';
-                                img1.style.zIndex = '1';
-                                img2.style.zIndex = '3';
-                                // scroll اگر لمبا ہے
-                                if (scrollH2 > 30) {
-                                    img2.style.transform = 'translateY(0)';
-                                    img2.style.transition = `transform ${scrollDur}s ease-in-out 0.8s`;
-                                    requestAnimationFrame(() => { img2.style.transform = `translateY(-${scrollH2}px)`; });
-                                }
-                                // multiHl blink
-                                if (rMRects.length && phWrap.isConnected) {
-                                    let bi2 = 0;
-                                    const doB2 = () => {
-                                        if (!phWrap.isConnected) return;
-                                        phWrap.querySelectorAll('.tlv-mring2').forEach(e => e.remove());
-                                        const r = rMRects[bi2 % rMRects.length]; bi2++;
-                                        const el = document.createElement('div');
-                                        el.className = 'tlv-ring tlv-mring2 tut-ring';
-                                        el.style.cssText = `left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px;z-index:4;border-radius:${(r.w<55&&r.h<55)?'50%':'8px'};`;
-                                        phWrap.appendChild(el);
-                                    };
-                                    doB2();
-                                    imgArea._blinkIv = setInterval(doB2, 1800);
-                                }
-                                _phase = 2;
-                                setTimeout(() => {
-                                    // واپس Phase 1
-                                    if (!phWrap.isConnected) return;
+                        setTimeout(() => {
+                            if (!_tutActive || !phWrap.isConnected) return;
+                            img2.style.opacity = '0';
+                            img2.style.animation = 'tut-phase-fadein 0.5s ease forwards';
+                            img1.style.zIndex = '1';
+                            img2.style.zIndex = '3';
+                            if (scrollH2 > 30) {
+                                img2.style.transform = 'translateY(0)';
+                                img2.style.transition = `transform ${scrollDur}s ease-in-out 0.8s`;
+                                requestAnimationFrame(() => { img2.style.transform = `translateY(-${scrollH2}px)`; });
+                            }
+                            if (rMRects.length && phWrap.isConnected) {
+                                let bi2 = 0;
+                                const doB2 = () => {
+                                    if (!_tutActive || !phWrap.isConnected) return;
                                     phWrap.querySelectorAll('.tlv-mring2').forEach(e => e.remove());
-                                    if (imgArea._blinkIv) { clearInterval(imgArea._blinkIv); delete imgArea._blinkIv; }
-                                    img1.style.zIndex = '2'; img2.style.zIndex = '1';
-                                    img2.style.animation = 'none'; img2.style.opacity = '0';
-                                    img2.style.transition = 'none'; img2.style.transform = 'translateY(0)';
-                                    if (fingerEl) { fingerEl.style.animation = 'none'; fingerEl.style.opacity = '1'; }
-                                    _phase = 1;
-                                    setTimeout(runCycle, 1200); // Phase 1 پر رکو
-                                }, (scrollDur + 2.5) * 1000);
-                            }, { once: true });
-                        }
+                                    const r = rMRects[bi2 % rMRects.length]; bi2++;
+                                    const el = document.createElement('div');
+                                    el.className = 'tlv-ring tlv-mring2 tut-ring';
+                                    el.style.cssText = `left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px;z-index:4;border-radius:${(r.w<55&&r.h<55)?'50%':'8px'};`;
+                                    phWrap.appendChild(el);
+                                };
+                                doB2();
+                                imgArea._blinkIv = setInterval(doB2, 1800);
+                            }
+                            _phase = 2;
+                            setTimeout(() => {
+                                if (!_tutActive || !phWrap.isConnected) return;
+                                phWrap.querySelectorAll('.tlv-mring2').forEach(e => e.remove());
+                                if (imgArea._blinkIv) { clearInterval(imgArea._blinkIv); delete imgArea._blinkIv; }
+                                img1.style.zIndex = '2'; img2.style.zIndex = '1';
+                                img2.style.animation = 'none'; img2.style.opacity = '0';
+                                img2.style.transition = 'none'; img2.style.transform = 'translateY(0)';
+                                _phase = 1;
+                                setTimeout(runCycle, 1200); 
+                            }, (scrollDur + 2.5) * 1000);
+                        }, 600);
                     }
                 };
-                setTimeout(runCycle, 1500); // پہلی بار 1.5s بعد شروع ہو
-                return; // normal flow یہاں ختم
+                setTimeout(() => { if (_tutActive) runCycle(); }, 1500); 
+                return; 
             }
+
             // ================================================================
-            // (end two-phase section)
-
-            const tutOv2    = document.getElementById('tutorialOverlay');
-            const histOv2   = document.getElementById('historyOverlay');
-            const repOv2    = document.getElementById('reportOverlay');
-            const prevHist2 = histOv2.classList.contains('active');
-            const prevRep2  = repOv2.classList.contains('active');
-            let openedHist2 = false, openedRep2 = false;
+            // نارمل کیپچر (باقی تمام سٹیپس کے لیے)
+            // ================================================================
             let hlRects2 = [], mRects2 = [];
+            const prevHist2 = histOv.classList.contains('active');
+            const prevRep2  = repOv.classList.contains('active');
+            let openedHist2 = false, openedRep2 = false;
 
-            // فرضی ڈیٹا بھرو
             if (cfg.fill) _tutFill();
 
-            // history overlay کھولو
             if (cfg.scene === 'history' && !prevHist2) {
-                histOv2.style.transition = 'none';
-                histOv2.style.opacity    = '1';
-                histOv2.style.visibility = 'visible';
-                histOv2.classList.add('active');
+                histOv.style.transition = 'none';
+                histOv.style.opacity    = '1';
+                histOv.style.visibility = 'visible';
+                histOv.classList.add('active');
                 if (cfg.histScene) _tutMakeStrips(cfg.histScene);
                 openedHist2 = true;
             }
 
-            // report overlay کھولو
             if (cfg.scene === 'report') {
                 if (els.calcSection) els.calcSection.style.display = 'block';
                 try { openReport(); } catch(ex) {}
-                repOv2.style.transition = 'none';
-                repOv2.style.opacity    = '1';
-                repOv2.style.visibility = 'visible';
-                repOv2.classList.add('active');
+                repOv.style.transition = 'none';
+                repOv.style.opacity    = '1';
+                repOv.style.visibility = 'visible';
+                repOv.classList.add('active');
                 openedRep2 = true;
             }
 
-            // tutorial عارضی طور پر چھپاؤ
-            tutOv2.style.opacity       = '0';
-            tutOv2.style.visibility    = 'hidden';
-            tutOv2.style.pointerEvents = 'none';
+            tutOv.style.opacity       = '0';
+            tutOv.style.visibility    = 'hidden';
+            tutOv.style.pointerEvents = 'none';
 
-            // 3 frames انتظار
-            await new Promise(r => requestAnimationFrame(() =>
-                requestAnimationFrame(() =>
-                    requestAnimationFrame(r))));
+            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(r))));
 
-            const vw       = window.innerWidth;
-            const appScale = vw / 320;
-            const CAPH     = cfg.captH || 166;
-            const sY       = (cfg.scrollY || 0) * appScale;
-            const capH_vp  = CAPH * appScale;
-            const capSc    = dispW / vw;
-
-            let dataUrl   = null;
+            let dataUrl = null;
+            const captureY = cfg.scrollY || 0;
+            const sY_scaled = captureY * appScale; 
 
             try {
-                const bgColor = getComputedStyle(document.documentElement)
-                    .getPropertyValue('--bg-color').trim() || '#f4f7f6';
-
                 const cvs = await html2canvas(document.body, {
-                    x: 0, y: sY,
-                    width: vw, height: capH_vp,
-                    scale: capSc,
-                    useCORS: true, allowTaint: true,
-                    backgroundColor: bgColor, logging: false,
-                    onclone: (cloneDoc) => {
-                        const tu = cloneDoc.getElementById('tutorialOverlay');
-                        if (tu) tu.style.display = 'none';
-                        const hdr = cloneDoc.querySelector('.top-bar');
-                        if (hdr) { hdr.style.overflow='visible'; hdr.style.width=vw+'px'; hdr.style.left='0'; hdr.style.transform='none'; }
-                        const hc = cloneDoc.querySelector('.header-controls');
-                        if (hc) { hc.style.overflow='visible'; hc.style.flexWrap='nowrap'; hc.style.flexShrink='0'; }
-                        const fw = cloneDoc.getElementById('app-fixed-size');
-                        if (fw) { fw.style.transform='none'; fw.style.width=vw+'px'; }
-                        const sw = cloneDoc.getElementById('app-scale-wrapper');
-                        if (sw) { sw.style.width=vw+'px'; }
-                    }
+                    x: 0, 
+                    y: captureY, // بغیر اسکیل کے اصلی Y پوزیشن
+                    width: 320, 
+                    height: cfg.captH || 166, 
+                    windowWidth: 320, // Forces pure 320px rendering
+                    scale: 2, 
+                    useCORS: true, 
+                    backgroundColor: bgColor, 
+                    logging: false,
+                    onclone: getCloneFix()
                 });
                 dataUrl = cvs.toDataURL('image/jpeg', 0.9);
 
@@ -2731,7 +2648,7 @@ function preloadAdjacentImages(currentIndex) {
                     const el = document.getElementById(id);
                     if (!el) return null;
                     const r = el.getBoundingClientRect();
-                    return { x:r.left*capSc, y:(r.top-sY)*capSc, w:r.width*capSc, h:r.height*capSc };
+                    return { x: r.left * coordSc, y: (r.top - sY_scaled) * coordSc, w: r.width * coordSc, h: r.height * coordSc };
                 };
                 if (cfg.yellows) cfg.yellows.forEach(id => { const r=getRS(id); if(r) hlRects2.push({...r,yellow:true}); });
                 if (cfg.hl)      { const r=getRS(cfg.hl); if(r) hlRects2.push({...r,yellow:false}); }
@@ -2739,32 +2656,31 @@ function preloadAdjacentImages(currentIndex) {
 
             } catch(e) { console.warn('capture err:', e); }
 
-            // tutorial واپس
-            tutOv2.style.opacity       = '';
-            tutOv2.style.visibility    = '';
-            tutOv2.style.pointerEvents = '';
+            tutOv.style.opacity       = '';
+            tutOv.style.visibility    = '';
+            tutOv.style.pointerEvents = '';
 
             if (openedHist2) {
                 _tutClearStrips();
-                histOv2.style.transition = '';
-                histOv2.style.opacity    = '';
-                histOv2.style.visibility = '';
-                histOv2.classList.remove('active');
+                histOv.style.transition = '';
+                histOv.style.opacity    = '';
+                histOv.style.visibility = '';
+                histOv.classList.remove('active');
             }
             if (openedRep2) {
-                repOv2.style.transition = '';
-                repOv2.style.opacity    = '';
-                repOv2.style.visibility = '';
-                repOv2.classList.remove('active');
+                repOv.style.transition = '';
+                repOv.style.opacity    = '';
+                repOv.style.visibility = '';
+                repOv.classList.remove('active');
             }
             if (cfg.fill) _tutClear();
 
             spin.remove();
             _captureRelease();
-            if (idx !== tutCurrentSlide) return;
+            if (!_tutActive || idx !== tutCurrentSlide) return;
 
             if (dataUrl) {
-                const captH_px = capH_vp * capSc;
+                const captH_px = Math.round((cfg.captH || 166) * dispW / 320);
                 const img = document.createElement('img');
 
                 if (cfg.scrollAnim && captH_px > dispH + 30) {
@@ -2791,7 +2707,7 @@ function preloadAdjacentImages(currentIndex) {
                 if (mRects2.length) {
                     let bi = 0;
                     const doB = () => {
-                        if (!imgArea.isConnected) return;
+                        if (!_tutActive || !imgArea.isConnected) return;
                         imgArea.querySelectorAll('.tlv-mring').forEach(e => e.remove());
                         const r = mRects2[bi % mRects2.length]; bi++;
                         const el = document.createElement('div');
@@ -3069,7 +2985,7 @@ function preloadAdjacentImages(currentIndex) {
     showResults();
 
     const lateYears = age - (g === 'male' ? 12 : 9);
-    const days = lateYears * 355;
+    const days = lateYears * 365;
     const prayers = days * 6;
     const fasts = lateYears * 30;
 
@@ -3677,7 +3593,7 @@ function handleAgeInput(input) {
     const HEADER_HEIGHT = 44;
 
     function scaleApp() {
-        const vw = window.innerWidth;
+        const vw = document.documentElement.clientWidth;
         const scale = vw / BASE_WIDTH;
         const tx = "translateX(-50%)";
         const scaled = tx + " scale(" + scale + ")";
