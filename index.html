@@ -9,7 +9,7 @@
     
     <!-- PDF and Image Generation Libraries --> 
     <script src="html2canvas.min.js"></script>
-<script src="jspdf.umd.min.js"></script>
+    <script src="jspdf.umd.min.js"></script>
 
     <style>
     	@font-face {
@@ -298,6 +298,10 @@
             display: flex; flex-direction: column;
             height: 88vh;
             max-height: 620px;
+            border: 2px solid rgba(0,0,0,0.5);
+        }
+        [data-theme="dark"] .tutorial-card {
+            border-color: rgba(255,255,255,0.5);
         }
 
         .tutorial-top-bar {
@@ -330,9 +334,12 @@
             background: linear-gradient(135deg, #e8f4fd 0%, #dbeafe 100%);
             display: flex; align-items: center; justify-content: center;
             position: relative; overflow: hidden;
+            border: 1.5px solid rgba(0,0,0,0.18);
+            border-radius: 12px;
         }
         [data-theme="dark"] .tutorial-image-area {
             background: linear-gradient(135deg, #1a2a3a 0%, #1e3a5f 100%);
+            border-color: rgba(255,255,255,0.18);
         }
         .tutorial-image-area img {
             width: 100%;
@@ -359,10 +366,16 @@
         }
 
         .tutorial-text-area {
-            flex-grow: 1;        /* fills all space between image and nav */
-            overflow-y: auto;    /* only this part scrolls if text is long */
+            flex-grow: 1;
+            overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             padding: 14px 16px 6px;
+            border: 1.5px solid rgba(0,0,0,0.12);
+            border-radius: 8px;
+            margin: 6px 8px;
+        }
+        [data-theme="dark"] .tutorial-text-area {
+            border-color: rgba(255,255,255,0.12);
         }
         .tutorial-slide-heading {
             font-size: 0.95rem; font-weight: 700;
@@ -600,6 +613,8 @@
             min-height: 18px; 
             line-height: 18px;
             white-space: nowrap; display: block; overflow: visible;
+            pointer-events: none;
+            cursor: default;
         }
 
         .required-star { color: var(--error-color); margin: 0 2px; }
@@ -692,19 +707,26 @@
             box-shadow: var(--shadow); display: flex; flex-direction: column; 
         }
         .result-row { 
-            display: flex; justify-content: space-between; align-items: center; 
+            display: flex; justify-content: space-between; align-items: flex-start; 
             padding: 2px 0;
             margin: 0; min-height: 24px;
             border-bottom: 1px solid rgba(0,0,0,0.03); 
+            flex-wrap: wrap;
+            gap: 2px;
         }
         .result-row:last-child { border-bottom: none; }
         .res-label { 
             font-size: 0.8rem;
             font-weight: 500; white-space: nowrap; overflow: visible; line-height: 1.4; padding-right: 5px; 
+            flex-shrink: 0;
         }
         .res-value { 
             font-size: 0.9rem;
-            font-weight: 600; color: var(--accent-color); line-height: 1; flex-shrink: 0; font-family: var(--font-main) !important; 
+            font-weight: 600; color: var(--accent-color); line-height: 1.4; font-family: var(--font-main) !important;
+            word-break: break-all;
+            overflow-wrap: anywhere;
+            text-align: right;
+            max-width: 100%;
         }
         .bounce-in { animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards; }
         .bounce-out { animation: bounceOut 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards; }
@@ -727,6 +749,10 @@
         .popup-card-container {
             width: 96%; height: 94%; background-color: var(--bg-color); border-radius: 14px;
             display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.3); overflow: hidden;
+            border: 2px solid rgba(0,0,0,0.5);
+        }
+        [data-theme="dark"] .popup-card-container {
+            border-color: rgba(255,255,255,0.5);
         }
         .popup-header { flex-shrink: 0; height: 50px; background-color: var(--panel-bg); box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom-left-radius: 20px; border-bottom-right-radius: 5px; z-index: 20; }
         [dir="rtl"] .popup-header { border-bottom-left-radius: 5px; border-bottom-right-radius: 20px; }
@@ -800,6 +826,7 @@
         .report-overlay { position: fixed; top: 0; width: 320px; left: 50%; transform: translateX(-50%); transform-origin: top center; height: 100vh; background-color: var(--bg-color); z-index: 2500; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
         .report-overlay.active { opacity: 1; visibility: visible; }
         .report-container { width: 100%; max-width: 600px; margin: 20px auto; background: var(--panel-bg); border: 1px solid var(--input-border); box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 20px; border-radius: 10px; color: var(--text-color); position: relative; }
+        [data-theme="dark"] .report-container { border-color: rgba(255,255,255,0.4); }
         
         .btn-close-rep { 
             position: absolute; 
@@ -855,17 +882,14 @@
         }
 
         .report-actions { 
-            position: fixed; 
-            bottom: 60px; 
-            /* Fixed width for buttons too */
-            width: 100%;
-            max-width: 450px;
             display: flex; 
             justify-content: center; 
-            gap: 15px; 
-            pointer-events: none; 
+            gap: 8px;
+            margin-top: 20px;
+            padding-bottom: 20px;
+            flex-wrap: wrap;
         }
-        .report-btn { pointer-events: auto; padding: 10px 15px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 5px; color: white; font-size: 0.85rem; }
+        .report-btn { padding: 7px 10px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 4px; color: white; font-size: 0.75rem; }
         .btn-img { background-color: var(--accent-color); }
         .btn-pdf { background-color: var(--error-color); }
         .btn-share { background-color: var(--share-color); }
@@ -1383,17 +1407,17 @@ input[type="number"]::placeholder {
                 </div>
                 <div class="report-row-full">
                     <span class="report-field-label" id="repLblAmount">Available Amount:</span>
-                    <span class="report-field-value numeric-value" id="repValAmount">0</span>
+                    <span class="report-field-value numeric-value" id="repValAmount" style="word-break:break-all;overflow-wrap:anywhere;max-width:60%;text-align:right;">0</span>
                 </div>
             </div>
 
             <table class="report-table">
                 <thead>
                     <tr>
-                        <th id="thType" style="width: 16%;">Type</th>
+                        <th id="thType" style="width: 21%;">Type</th>
                         <th id="thCount" style="width: 24%;">Count</th>
                         <th id="thFidya" style="width: 35%;">Fidya Amount</th>
-                        <th id="thRounds" style="width: 25%;">Rounds</th>
+                        <th id="thRounds" style="width: 20%;">Rounds</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -1422,21 +1446,21 @@ input[type="number"]::placeholder {
             <div style="margin-top:20px; text-align:center; font-size:0.8rem; opacity:0.6;">
                 Generated by Fidya Calculator
             </div>
-        </div>
 
-        <div class="report-actions">
-            <button class="report-btn btn-img" id="btnSaveImg">
-                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
-                Picture
-            </button>
-            <button class="report-btn btn-pdf" id="btnSavePdf">
-                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v2.5zm2.5 3.5h-1.5V7h1.5v6zm2 0h-1.5v-2h-2v2h-1.5V7h5.5v2h-2v4zM20 22H4c-1.1 0-2-.9-2-2V6h2v14h16v2z"/></svg>
-                PDF
-            </button>
-            <button class="report-btn btn-share" id="btnShareRep">
-                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
-                Share
-            </button>
+            <div class="report-actions">
+                <button class="report-btn btn-img" id="btnSaveImg">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    Picture
+                </button>
+                <button class="report-btn btn-pdf" id="btnSavePdf">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v2.5zm2.5 3.5h-1.5V7h1.5v6zm2 0h-1.5v-2h-2v2h-1.5V7h5.5v2h-2v4zM20 22H4c-1.1 0-2-.9-2-2V6h2v14h16v2z"/></svg>
+                    PDF
+                </button>
+                <button class="report-btn btn-share" id="btnShareRep">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+                    Share
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1870,6 +1894,8 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
 
         els.infoBtn.addEventListener('click', openPopup);
         els.closePopup.addEventListener('click', closePopup);
+        // popup overlay باہر کلک پر بند نہ ہو — صرف ✕ بٹن سے بند ہو
+        els.popup.addEventListener('click', function(e) { e.stopPropagation(); });
         els.dontShowAgain.addEventListener('change', (e) => { localStorage.setItem('dontShowPopup', e.target.checked); });
 
         els.reportBtn.addEventListener('click', openReport);
@@ -1882,13 +1908,15 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
         // TUTORIAL / HOW TO USE SYSTEM
         // ============================================================
         // ---- Reusable inline icon HTML snippets (CLICKABLE) ----
-        const IC = {
+        function makeIC(lang) {
+            const langLabel = lang === 'ur' ? 'Ur' : 'En';
+            return {
             tutorial: `<span class="tut-icon tut-icon-btn" data-tut-action="tutorial"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></span>`,
             save:     `<span class="tut-icon tut-icon-btn" data-tut-action="save"><svg viewBox="0 0 24 24"><path d="M17 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm2 16H5V5h11.17L19 7.83V19zm-7-7c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zM6 6h9v4H6z"/></svg></span>`,
             history:  `<span class="tut-icon tut-icon-btn" data-tut-action="history"><svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg></span>`,
             report:   `<span class="tut-icon tut-icon-btn" data-tut-action="report"><svg viewBox="0 0 24 24"><path d="M19 8h-1V3H6v5H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zM8 5h8v3H8V5zm8 12v2H8v-4h8v2zm2-2v-2H6v2H4v-4c0-.55.45-1 1-1h14c.55 0 1 .45 1 1v4h-2z"/></svg></span>`,
             theme:    `<span class="tut-icon tut-icon-btn" data-tut-action="theme"><svg viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1z"/></svg></span>`,
-            lang:     `<span class="tut-icon tut-icon-btn" data-tut-action="lang" style="font-size:0.6rem;font-weight:700;color:#fff;background:var(--accent-color);font-family:'Segoe UI',sans-serif;">En</span>`,
+            lang:     `<span class="tut-icon tut-icon-btn" data-tut-action="lang" style="font-size:0.6rem;font-weight:700;color:#fff;background:var(--accent-color);font-family:'Segoe UI',sans-serif;">${langLabel}</span>`,
             info:     `<span class="tut-icon tut-icon-btn" data-tut-action="info" style="font-size:0.7rem;font-weight:bold;font-style:italic;color:#fff;font-family:serif;">i</span>`,
             drag:     `<span class="tut-icon-plain tut-icon-btn" data-tut-action="drag"><svg viewBox="0 0 24 24"><path d="M3 15h18v-2H3v2zm0 4h18v-2H3v2zm0-8h18V9H3v2zm0-6v2h18V5H3z"/></svg></span>`,
             load:     `<span class="tut-icon-plain tut-icon-btn" data-tut-action="load"><svg viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/><path d="M12 16V4" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg></span>`,
@@ -1896,19 +1924,22 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
             imgBtn:   `<span class="tut-icon tut-icon-btn" data-tut-action="imgBtn"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" fill="#fff"/></svg></span>`,
             pdfBtn:   `<span class="tut-icon tut-icon-btn" data-tut-action="pdfBtn" style="background:var(--error-color);"><svg viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v2.5zm2.5 3.5h-1.5V7h1.5v6zm4.5 0h-3V7H20v1.5h-2v1h2V11h-2v2zm2 6H4c-1.1 0-2-.9-2-2V6h2v14h16v2z" fill="#fff"/></svg></span>`,
             shareBtn: `<span class="tut-icon tut-icon-btn" data-tut-action="shareBtn" style="background:var(--share-color);"><svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" fill="#fff"/></svg></span>`,
-        };
+            };
+        }
+        let IC = makeIC('ur'); // شروع میں default
 
-        const TUTORIAL_SLIDES = {
+        function getTutorialSlides(ic) {
+          return {
             en: [
                 {
                     img: "tutorial-en-1.png",
                     heading: "Welcome to Fidya Calculator",
-                    body: `This app helps you calculate <b>Fidya</b> for missed prayers and fasts of a deceased person. It calculates based on wheat price and age.<br><br>Tap the ${IC.tutorial} button anytime to open this guide.`
+                    body: `This app helps you calculate <b>Fidya</b> for missed prayers and fasts of a deceased person. It calculates based on wheat price and age.<br><br>Tap the ${ic.tutorial} button anytime to open this guide.`
                 },
                 {
                     img: "tutorial-en-lang.png",
                     heading: "Switch Language",
-                    body: `Tap the ${IC.lang} button in the top-right corner to switch between <b>English</b> and <b>Urdu</b>. The entire app — labels, placeholders, results and this guide — will instantly switch to the selected language.`
+                    body: `Tap the ${ic.lang} button in the top-right corner to switch between <b>English</b> and <b>Urdu</b>. The entire app — labels, placeholders, results and this guide — will instantly switch to the selected language.`
                 },
                 {
                     img: "tutorial-en-2.png",
@@ -1943,39 +1974,39 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
                 {
                     img: "tutorial-en-8.png",
                     heading: "Step 7: Generate Report",
-                    body: `Tap the ${IC.report} <b>Report</b> button in the header to generate a complete Fidya report. From the report screen you can:<br>&bull; ${IC.imgBtn} Save as <b>Image</b><br>&bull; ${IC.pdfBtn} Save as <b>PDF</b><br>&bull; ${IC.shareBtn} <b>Share</b> directly`
+                    body: `Tap the ${ic.report} <b>Report</b> button in the header to generate a complete Fidya report. From the report screen you can:<br>&bull; ${ic.imgBtn} Save as <b>Image</b><br>&bull; ${ic.pdfBtn} Save as <b>PDF</b><br>&bull; ${ic.shareBtn} <b>Share</b> directly`
                 },
                 {
                     img: "tutorial-en-9.png",
                     heading: "Step 8: Save a Record",
-                    body: `Tap the ${IC.save} <b>Save</b> button in the header to save the current form data. All details — name, father's name, age, wheat price and total Fidya — will be saved instantly. You can save <b>unlimited records</b>.`
+                    body: `Tap the ${ic.save} <b>Save</b> button in the header to save the current form data. All details — name, father's name, age, wheat price and total Fidya — will be saved instantly. You can save <b>unlimited records</b>.`
                 },
                 {
                     img: "tutorial-en-10.png",
                     heading: "Step 9: View Saved Records",
-                    body: `Tap the ${IC.history} <b>History</b> button in the header to open saved records. A <b>red badge</b> on the icon shows how many records are saved. Each strip shows the name, father's name, age and Fidya amount.`
+                    body: `Tap the ${ic.history} <b>History</b> button in the header to open saved records. A <b>red badge</b> on the icon shows how many records are saved. Each strip shows the name, father's name, age and Fidya amount.`
                 },
                 {
                     img: "tutorial-en-11.png",
                     heading: "Step 10: Reorder Records",
-                    body: `Hold and drag the ${IC.drag} <b>drag handle</b> on the right side of any strip to move it up or down. Numbers update automatically.`
+                    body: `Hold and drag the ${ic.drag} <b>drag handle</b> on the right side of any strip to move it up or down. Numbers update automatically.`
                 },
                 {
                     img: "tutorial-en-12.png",
                     heading: "Step 11: Select & Delete",
-                    body: `Tap any strip to <b>select</b> it (turns blue). Select multiple strips and tap ${IC.del} <b>Delete</b> to remove them. Use <b>Select All</b> to select every record at once. Tap ${IC.load} to load a record back into the form.`
+                    body: `Tap any strip to <b>select</b> it (turns blue). Select multiple strips and tap ${ic.del} <b>Delete</b> to remove them. Use <b>Select All</b> to select every record at once. Tap ${ic.load} to load a record back into the form.`
                 }
             ],
             ur: [
                 {
                     img: "tutorial-ur-1.png",
                     heading: "فدیہ کیلکولیٹر میں خوش آمدید",
-                    body: `یہ ایپ کسی مرحوم یا مرحومہ کی چھوٹی ہوئی نمازوں اور روزوں کا <b>فدیہ</b> حساب کرتی ہے۔ گندم کی قیمت اور عمر کی بنیاد پر حساب ہوتا ہے۔<br><br>${IC.tutorial} بٹن دبائیں تو یہ گائیڈ دوبارہ کھل جائے گی۔`
+                    body: `یہ ایپ کسی مرحوم یا مرحومہ کی چھوٹی ہوئی نمازوں اور روزوں کا <b>فدیہ</b> حساب کرتی ہے۔ گندم کی قیمت اور عمر کی بنیاد پر حساب ہوتا ہے۔<br><br>${ic.tutorial} بٹن دبائیں تو یہ گائیڈ دوبارہ کھل جائے گی۔`
                 },
                 {
                     img: "tutorial-ur-lang.png",
                     heading: "زبان تبدیل کریں",
-                    body: `اوپر دائیں کونے میں ${IC.lang} بٹن دبائیں تاکہ <b>اردو</b> اور <b>انگریزی</b> کے درمیان سوئچ ہو سکے۔ یہ ایک ٹوگل بٹن ہے — ایک بار دبائیں تو اردو، دوبارہ دبائیں تو انگریزی۔ پوری ایپ کے تمام لیبل، نتائج اور یہ گائیڈ بھی فوری طور پر بدل جائیں گے۔`
+                    body: `اوپر دائیں کونے میں ${ic.lang} بٹن دبائیں تاکہ <b>اردو</b> اور <b>انگریزی</b> کے درمیان سوئچ ہو سکے۔ یہ ایک ٹوگل بٹن ہے — ایک بار دبائیں تو اردو، دوبارہ دبائیں تو انگریزی۔ پوری ایپ کے تمام لیبل، نتائج اور یہ گائیڈ بھی فوری طور پر بدل جائیں گے۔`
                 },
                 {
                     img: "tutorial-ur-2.png",
@@ -2010,30 +2041,31 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
                 {
                     img: "tutorial-ur-8.png",
                     heading: "مرحلہ 7: رپورٹ بنائیں",
-                    body: `ہیڈر میں ${IC.report} <b>رپورٹ</b> بٹن دبائیں تاکہ مکمل فدیہ رپورٹ بنے۔ رپورٹ اسکرین سے آپ:<br>• ${IC.imgBtn} <b>تصویر</b> کے طور پر محفوظ کریں<br>• ${IC.pdfBtn} <b>پی ڈی ایف</b> بنائیں<br>• ${IC.shareBtn} براہِ راست <b>شیئر</b> کریں`
+                    body: `ہیڈر میں ${ic.report} <b>رپورٹ</b> بٹن دبائیں تاکہ مکمل فدیہ رپورٹ بنے۔ رپورٹ اسکرین سے آپ:<br>• ${ic.imgBtn} <b>تصویر</b> کے طور پر محفوظ کریں<br>• ${ic.pdfBtn} <b>پی ڈی ایف</b> بنائیں<br>• ${ic.shareBtn} براہِ راست <b>شیئر</b> کریں`
                 },
                 {
                     img: "tutorial-ur-9.png",
                     heading: "مرحلہ 8: ریکارڈ محفوظ کریں",
-                    body: `ہیڈر میں ${IC.save} <b>سیو</b> بٹن دبائیں تاکہ موجودہ فارم کا ڈیٹا محفوظ ہو جائے۔ نام، ولدیت، عمر، گندم قیمت اور کل فدیہ — سب فوری سیو ہو گا۔ آپ <b>لامحدود ریکارڈز</b> محفوظ کر سکتے ہیں۔`
+                    body: `ہیڈر میں ${ic.save} <b>سیو</b> بٹن دبائیں تاکہ موجودہ فارم کا ڈیٹا محفوظ ہو جائے۔ نام، ولدیت، عمر، گندم قیمت اور کل فدیہ — سب فوری سیو ہو گا۔ آپ <b>لامحدود ریکارڈز</b> محفوظ کر سکتے ہیں۔`
                 },
                 {
                     img: "tutorial-ur-10.png",
                     heading: "مرحلہ 9: محفوظ ریکارڈز دیکھیں",
-                    body: `ہیڈر میں ${IC.history} <b>ہسٹری</b> بٹن دبائیں تاکہ محفوظ ریکارڈز کھلیں۔ آئیکن پر <b>سرخ بیج</b> بتاتا ہے کتنے ریکارڈ محفوظ ہیں۔ ہر پٹی میں نام، ولدیت، عمر اور فدیہ کی رقم نظر آتی ہے۔`
+                    body: `ہیڈر میں ${ic.history} <b>ہسٹری</b> بٹن دبائیں تاکہ محفوظ ریکارڈز کھلیں۔ آئیکن پر <b>سرخ بیج</b> بتاتا ہے کتنے ریکارڈ محفوظ ہیں۔ ہر پٹی میں نام، ولدیت، عمر اور فدیہ کی رقم نظر آتی ہے۔`
                 },
                 {
                     img: "tutorial-ur-11.png",
                     heading: "مرحلہ 10: ریکارڈز کی ترتیب بدلیں",
-                    body: `کسی بھی پٹی کے دائیں طرف ${IC.drag} <b>ہینڈل</b> پکڑ کر اوپر یا نیچے کھینچیں۔ نمبر خود بخود بدل جاتے ہیں۔`
+                    body: `کسی بھی پٹی کے دائیں طرف ${ic.drag} <b>ہینڈل</b> پکڑ کر اوپر یا نیچے کھینچیں۔ نمبر خود بخود بدل جاتے ہیں۔`
                 },
                 {
                     img: "tutorial-ur-12.png",
                     heading: "مرحلہ 11: منتخب کریں اور حذف کریں",
-                    body: `کسی پٹی پر ٹیپ کریں تو وہ <b>نیلی</b> ہو جائے گی (منتخب)۔ ایک یا کئی پٹیاں منتخب کر کے ${IC.del} <b>حذف کریں</b> دبائیں۔ <b>سب منتخب</b> سے ایک ہی بار میں سب منتخب ہوں۔ ${IC.load} دبائیں تو ریکارڈ واپس فارم میں لوڈ ہو۔`
+                    body: `کسی پٹی پر ٹیپ کریں تو وہ <b>نیلی</b> ہو جائے گی (منتخب)۔ ایک یا کئی پٹیاں منتخب کر کے ${ic.del} <b>حذف کریں</b> دبائیں۔ <b>سب منتخب</b> سے ایک ہی بار میں سب منتخب ہوں۔ ${ic.load} دبائیں تو ریکارڈ واپس فارم میں لوڈ ہو۔`
                 }
             ]
-        };
+          };
+        }
 
         let tutCurrentSlide = 0;
         let _tutActive = false; // اینیمیشنز کو روکنے کے لیے فلیگ
@@ -2049,7 +2081,7 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
         }
 
         function preloadAdjacentImages(currentIndex) {
-            const slides = TUTORIAL_SLIDES[currentLang];
+            const slides = getTutorialSlides(IC)[currentLang];
             if (currentIndex < slides.length - 1) {
                 const imgNext = new Image();
                 imgNext.src = slides[currentIndex + 1].img;
@@ -2073,7 +2105,7 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
         }
 
         function buildTutDots() {
-            const slides = TUTORIAL_SLIDES[currentLang];
+            const slides = getTutorialSlides(IC)[currentLang];
             const dotsEl = document.getElementById('tutDots');
             dotsEl.innerHTML = '';
             slides.forEach((_, i) => {
@@ -2115,7 +2147,8 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
         }
 
         function renderTutSlide() {
-            const slides = TUTORIAL_SLIDES[currentLang];
+            IC = makeIC(currentLang); // زبان کے مطابق IC اپڈیٹ کریں
+            const slides = getTutorialSlides(IC)[currentLang];
             const slide = slides[tutCurrentSlide];
             const isUrdu = (currentLang === 'ur');
             const total = slides.length;
@@ -2196,11 +2229,19 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
         function tutRunAction(action) {
             const cfg = TUT_ACTION_MAP[action];
             if (!cfg) return;
+            if (_tutBusy) return;
             _tutBusy = true;
-            const tutOv = document.getElementById('tutorialOverlay');
+
+            const tutOv  = document.getElementById('tutorialOverlay');
+            const imgArea = document.getElementById('tutImgArea');
+
+            // موجودہ preview content محفوظ کر لیں
+            const savedImgHTML = imgArea ? imgArea.innerHTML : '';
+
             tutOv.style.transition    = 'opacity 0.35s';
             tutOv.style.opacity       = '0';
             tutOv.style.pointerEvents = 'none';
+
             setTimeout(() => {
                 let openedOv = null;
                 if (cfg.overlay) {
@@ -2228,6 +2269,10 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
                         tutOv.style.opacity       = '';
                         tutOv.style.pointerEvents = '';
                         _tutBusy = false;
+                        // محفوظ preview واپس لگائیں — دوبارہ screenshot نہیں
+                        if (imgArea && savedImgHTML) {
+                            imgArea.innerHTML = savedImgHTML;
+                        }
                     };
                     tutOv.addEventListener('transitionend', function d() { tutOv.removeEventListener('transitionend', d); done(); });
                     setTimeout(done, 500);
@@ -2445,6 +2490,16 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
                 resetEl('#reportOverlay');
                 resetEl('#historyOverlay');
 
+                // رپورٹ بٹنوں کو fixed سے absolute بنائیں تاکہ capture میں نظر آئیں
+                const repActions = cloneDoc.querySelector('.report-actions');
+                if (repActions) {
+                    repActions.style.setProperty('position', 'absolute', 'important');
+                    repActions.style.setProperty('bottom', '10px', 'important');
+                    repActions.style.setProperty('left', '0', 'important');
+                    repActions.style.setProperty('width', '320px', 'important');
+                    repActions.style.setProperty('max-width', '320px', 'important');
+                }
+
                 const wrapper = cloneDoc.getElementById('app-scale-wrapper');
                 if (wrapper) {
                     wrapper.style.setProperty('padding-top', '44px', 'important');
@@ -2457,7 +2512,10 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
 
             const vw = document.documentElement.clientWidth;
             const appScale = vw / 320;
-            const coordSc = dispW / vw;
+            // coordSc: تصویر 320px میں کھینچی جاتی ہے، پری ویو dispW px میں دکھتی ہے
+            // getBoundingClientRect() اصل اسکرین کوآرڈینیٹس دیتا ہے (appScale سے scaled)
+            // ہائی لائٹ کو تصویر کے مطابق لگانا ہے: (rect / appScale) * (dispW / 320)
+            const coordSc = dispW / (320 * appScale);
             const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-color').trim() || '#f4f7f6';
 
             // ================================================================
@@ -2481,7 +2539,8 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
                     const rBtn = document.getElementById('reportBtn');
                     if (rBtn) {
                         const r = rBtn.getBoundingClientRect();
-                        btnRect = { x: r.left * coordSc, y: r.top * coordSc, w: r.width * coordSc, h: r.height * coordSc };
+                        const scaleF = dispW / (320 * appScale);
+                        btnRect = { x: r.left * scaleF, y: r.top * scaleF, w: r.width * scaleF, h: r.height * scaleF };
                     }
                 } catch(e) { console.warn('phase1 err', e); }
 
@@ -2502,7 +2561,18 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
                     if (cfg.multiHl) cfg.multiHl.forEach(id => {
                         const el = document.getElementById(id); if (!el) return;
                         const r = el.getBoundingClientRect();
-                        rMRects.push({ x: r.left * coordSc, y: r.top * coordSc, w: r.width * coordSc, h: r.height * coordSc });
+                        // رپورٹ بٹن fixed ہیں، تصویر میں ان کی پوزیشن تصویر کی اونچائی کے آخر میں ہوتی ہے
+                        // captH px میں تصویر ہے، dispW/320 کے تناسب سے پوزیشن نکالیں
+                        const imgH_px = Math.round((cfg.captH || 720) * dispW / 320);
+                        const scaleF = dispW / (320 * appScale);
+                        // بٹن bottom: 60px پر fixed ہیں، تصویر میں ان کی Y = imgH - (bottom + btnH)
+                        const btnY_inImg = imgH_px - Math.round((60 + r.height / appScale) * dispW / 320) - Math.round(r.height * scaleF);
+                        rMRects.push({ 
+                            x: r.left * scaleF, 
+                            y: Math.max(0, btnY_inImg),
+                            w: r.width * scaleF, 
+                            h: r.height * scaleF 
+                        });
                     });
                 } catch(e) { console.warn('phase2 err', e); }
 
@@ -2558,20 +2628,7 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
                                 img2.style.transition = `transform ${scrollDur}s ease-in-out 0.8s`;
                                 requestAnimationFrame(() => { img2.style.transform = `translateY(-${scrollH2}px)`; });
                             }
-                            if (rMRects.length && phWrap.isConnected) {
-                                let bi2 = 0;
-                                const doB2 = () => {
-                                    if (!_tutActive || !phWrap.isConnected) return;
-                                    phWrap.querySelectorAll('.tlv-mring2').forEach(e => e.remove());
-                                    const r = rMRects[bi2 % rMRects.length]; bi2++;
-                                    const el = document.createElement('div');
-                                    el.className = 'tlv-ring tlv-mring2 tut-ring';
-                                    el.style.cssText = `left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px;z-index:4;border-radius:${(r.w<55&&r.h<55)?'50%':'8px'};`;
-                                    phWrap.appendChild(el);
-                                };
-                                doB2();
-                                imgArea._blinkIv = setInterval(doB2, 1800);
-                            }
+                            // دوسری اسکرین (رپورٹ) پر کوئی ہائی لائٹ رنگ نہیں
                             _phase = 2;
                             setTimeout(() => {
                                 if (!_tutActive || !phWrap.isConnected) return;
@@ -2627,7 +2684,10 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
 
             let dataUrl = null;
             const captureY = cfg.scrollY || 0;
-            const sY_scaled = captureY * appScale; 
+            // captureY 320px space میں ہے، screen پر appScale سے گنا ہوگا
+            // getBoundingClientRect() screen pixels دیتا ہے
+            // ہائی لائٹ کے لیے: screen_y - (captureY * appScale) پھر coordSc سے تبدیل
+            const sY_screen = captureY * appScale; 
 
             try {
                 const cvs = await html2canvas(document.body, {
@@ -2648,7 +2708,7 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
                     const el = document.getElementById(id);
                     if (!el) return null;
                     const r = el.getBoundingClientRect();
-                    return { x: r.left * coordSc, y: (r.top - sY_scaled) * coordSc, w: r.width * coordSc, h: r.height * coordSc };
+                    return { x: r.left * coordSc, y: (r.top - sY_screen) * coordSc, w: r.width * coordSc, h: r.height * coordSc };
                 };
                 if (cfg.yellows) cfg.yellows.forEach(id => { const r=getRS(id); if(r) hlRects2.push({...r,yellow:true}); });
                 if (cfg.hl)      { const r=getRS(cfg.hl); if(r) hlRects2.push({...r,yellow:false}); }
@@ -2735,14 +2795,15 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
 
         document.getElementById('tutorialBtn').addEventListener('click', openTutorial);
         document.getElementById('closeTutorialBtn').addEventListener('click', closeTutorial);
+        // باہر کلک پر بند نہ ہو — صرف ✕ بٹن سے بند ہو
         document.getElementById('tutorialOverlay').addEventListener('click', function(e) {
-            if (e.target === this) { if(typeof tutStopAutoPlay==='function') tutStopAutoPlay(); closeTutorial(); }
+            e.stopPropagation();
         });
         document.getElementById('tutPrevBtn').addEventListener('click', () => {
             if (tutCurrentSlide > 0) { tutCurrentSlide--; renderTutSlide(); }
         });
         document.getElementById('tutNextBtn').addEventListener('click', () => {
-            const slides = TUTORIAL_SLIDES[currentLang];
+            const slides = getTutorialSlides(IC)[currentLang];
             if (tutCurrentSlide < slides.length - 1) { tutCurrentSlide++; renderTutSlide(); }
         });
 
@@ -2759,7 +2820,7 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
             const dy = e.changedTouches[0].clientY - tutTouchStartY;
             // Only swipe if horizontal movement is dominant
             if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
-                const slides = TUTORIAL_SLIDES[currentLang];
+                const slides = getTutorialSlides(IC)[currentLang];
                 const isRtl = (currentLang === 'ur');
                 // RTL: swipe right = next, swipe left = prev; LTR: reversed
                 if (dx < 0 && !isRtl || dx > 0 && isRtl) {
@@ -2778,7 +2839,7 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
 
         function tutStartAutoPlay() {
             tutStopAutoPlay();
-            const slides = TUTORIAL_SLIDES[currentLang];
+            const slides = getTutorialSlides(IC)[currentLang];
             tutAutoInterval = setInterval(() => {
                 if (tutCurrentSlide < slides.length - 1) {
                     tutCurrentSlide++;
@@ -3108,56 +3169,194 @@ Again, if rounds contain a decimal, it is <b>rounded UP</b> — ensuring no sing
 
         function closeReport() { els.reportOverlay.classList.remove('active'); }
 
-        // Shared html2canvas options for all export functions
-        const CANVAS_OPTS = {
-            scale: 2,
-            useCORS: true,
-            backgroundColor: '#ffffff',
-            onclone: (d) => d.documentElement.setAttribute('data-theme', 'light')
-        };
+        // ============================================================
+        // REPORT EXPORT — اصل کام کرنے والا طریقہ
+        // ============================================================
+        async function captureReportImage() {
+            // بٹن چھپائیں
+            const actionsEl  = document.querySelector('.report-actions');
+            const closeBtnEl = document.getElementById('closeReportBtn');
+            if (actionsEl)  actionsEl.style.display = 'none';
+            if (closeBtnEl) closeBtnEl.style.visibility = 'hidden';
 
-        function downloadAsImage() {
-            html2canvas(els.reportContentArea, CANVAS_OPTS).then(canvas => {
+            // Light mode عارضی طور پر لگائیں
+            const wasDark = (currentTheme === 'dark');
+            if (wasDark) document.documentElement.setAttribute('data-theme', 'light');
+            await new Promise(r => setTimeout(r, 150));
+
+            const BASE = 320;
+            const CAPTURE_SCALE = 3;
+
+            // ============================================================
+            // نئی حکمتِ عملی: document.body capture + crop کی بجائے
+            // رپورٹ content کو ایک off-screen 320px div میں clone کریں
+            // اور اسے directly html2canvas کو دیں
+            // اس طرح scaleApp() کی transform اور viewport offset
+            // بالکل کوئی اثر نہیں ڈالتی — نہ crop کا حساب، نہ غلطی
+            //
+            // پرانے طریقے کا مسئلہ:
+            //   scaleApp() overlay پر translateX(-50%) scale(vw/320) لگاتا ہے
+            //   repRect actual screen width (مثلاً 390px) سے measure ہوتی ہے
+            //   html2canvas windowWidth:320 پر render کرتا ہے
+            //   یہ دونوں coordinates کبھی match نہیں کرتے → crop غلط
+            //
+            // نئے طریقے کا فائدہ:
+            //   captureDiv always position:fixed top:0 left:0 width:320px
+            //   html2canvas اسے directly target کرتا ہے
+            //   کوئی crop calculation نہیں → ہمیشہ پوری رپورٹ
+            // ============================================================
+            const captureDiv = document.createElement('div');
+            captureDiv.setAttribute('data-cap', '1');
+            captureDiv.style.cssText =
+                'position:fixed;top:0;left:0;' +
+                'width:' + BASE + 'px;' +
+                'background:#ffffff;' +
+                'opacity:0;pointer-events:none;' +
+                'overflow:visible;z-index:-1;' +
+                'padding:8px;';
+
+            // خوبصورت border wrapper
+            const borderWrap = document.createElement('div');
+            borderWrap.style.cssText =
+                'border: 2.5px solid #3498db;' +
+                'border-radius: 14px;' +
+                'overflow: hidden;' +
+                'box-shadow: 0 0 0 5px rgba(52,152,219,0.13), inset 0 0 0 1px rgba(52,152,219,0.08);' +
+                'background: #ffffff;';
+
+            // صرف report content area کا clone — margin:0 تاکہ flush بیٹھے
+            const repClone = els.reportContentArea.cloneNode(true);
+            repClone.style.margin = '0';
+            repClone.style.border = 'none';
+            repClone.style.boxShadow = 'none';
+            repClone.style.borderRadius = '0';
+            borderWrap.appendChild(repClone);
+            captureDiv.appendChild(borderWrap);
+            document.body.appendChild(captureDiv);
+
+            // DOM settle ہونے دیں
+            await new Promise(r => setTimeout(r, 80));
+
+            let canvas;
+            try {
+                canvas = await html2canvas(captureDiv, {
+                    scale:           CAPTURE_SCALE,
+                    useCORS:         true,
+                    backgroundColor: '#ffffff',
+                    logging:         false,
+                    scrollX:         0,
+                    scrollY:         0,
+                    onclone: (clonedDoc) => {
+                        clonedDoc.documentElement.setAttribute('data-theme', 'light');
+                        // clone میں captureDiv visible بنائیں
+                        const cap = clonedDoc.querySelector('[data-cap="1"]');
+                        if (cap) {
+                            cap.style.opacity = '1';
+                            cap.style.zIndex  = '1';
+                        }
+                        // text spacing lock
+                        const st = clonedDoc.createElement('style');
+                        st.textContent =
+                            '* { word-spacing:normal !important;' +
+                            '    letter-spacing:normal !important;' +
+                            '    text-rendering:geometricPrecision !important; }' +
+                            '[dir="rtl"] th,[dir="rtl"] td { text-align:center !important; }';
+                        clonedDoc.head.appendChild(st);
+                    }
+                });
+            } finally {
+                // عارضی div ہمیشہ ہٹائیں چاہے error ہو
+                if (captureDiv.parentNode) document.body.removeChild(captureDiv);
+            }
+
+            // theme اور بٹن واپس
+            if (wasDark) document.documentElement.setAttribute('data-theme', 'dark');
+            if (actionsEl)  actionsEl.style.display = '';
+            if (closeBtnEl) closeBtnEl.style.visibility = '';
+
+            return canvas;
+        }
+
+        async function downloadAsImage() {
+            try {
+                showToast(currentLang === 'ur' ? 'تصویر بن رہی ہے...' : 'Generating image...');
+                const canvas = await captureReportImage();
                 const link = document.createElement('a');
                 link.download = 'Fidya-Report.png';
                 link.href = canvas.toDataURL('image/png');
                 link.click();
-            });
+            } catch(e) {
+                console.error(e);
+                showToast(currentLang === 'ur' ? 'خرابی آئی' : 'Error, try again.');
+            }
         }
 
-        function downloadAsPdf() {
-            const { jsPDF } = window.jspdf;
-            html2canvas(els.reportContentArea, CANVAS_OPTS).then(canvas => {
+        async function downloadAsPdf() {
+            try {
+                showToast(currentLang === 'ur' ? 'پی ڈی ایف بن رہی ہے...' : 'Generating PDF...');
+                const canvas = await captureReportImage();
                 const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
+
+                // jsPDF کو مختلف طریقوں سے ڈھونڈیں
+                const JsPDFClass = (window.jspdf && window.jspdf.jsPDF)
+                    || window.jsPDF
+                    || (window.jspdf && window.jspdf.default)
+                    || null;
+
+                if (!JsPDFClass) {
+                    showToast(currentLang === 'ur' ? 'jsPDF لائبریری نہیں ملی' : 'jsPDF library not found');
+                    return;
+                }
+
+                const pdf = new JsPDFClass('p', 'mm', 'a4');
+                const pdfW = pdf.internal.pageSize.getWidth();
+                const pdfH = pdf.internal.pageSize.getHeight();
                 const imgProps = pdf.getImageProperties(imgData);
-                const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
-                pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, imgHeight);
+                const imgH = (imgProps.height * pdfW) / imgProps.width;
+                const finalH = imgH > pdfH ? pdfH : imgH;
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfW, finalH);
                 pdf.save('Fidya-Report.pdf');
-            });
+            } catch(e) {
+                console.error(e);
+                showToast(currentLang === 'ur' ? 'خرابی آئی' : 'Error, try again.');
+            }
         }
 
         async function shareReport() {
             try {
-                const canvas = await html2canvas(els.reportContentArea, CANVAS_OPTS);
+                showToast(currentLang === 'ur' ? 'تصویر بن رہی ہے...' : 'Generating image...');
+                const canvas = await captureReportImage();
+
+                const name   = els.txtName.value.trim();
+                const gender = els.genderInput.value;
+                const isUrdu = currentLang === 'ur';
+
+                let shareText;
+                if (isUrdu) {
+                    const genderWord = gender === 'female' ? 'مرحومہ' : 'مرحوم';
+                    const nameStr = name ? ` ${name}` : '';
+                    shareText = `${genderWord}${nameStr} کی فدیہ رپورٹ ملاحظہ فرمائیں اور اس کے مطابق ادائیگی کریں۔`;
+                } else {
+                    const genderWord = gender === 'female' ? 'Late' : 'Late';
+                    const nameStr = name ? ` ${name}` : '';
+                    shareText = `Fidya report for ${genderWord}${nameStr}. Please review and fulfill accordingly.`;
+                }
+
                 canvas.toBlob(async (blob) => {
-                    const file = new File([blob], "fidya-report.png", { type: "image/png" });
-                    if (navigator.share) {
-                        try {
-                            await navigator.share({ title: 'Fidya Report', text: 'Here is the Fidya calculation report.', files: [file] });
-                        } catch (err) { console.error('Share failed:', err); }
+                    const file = new File([blob], 'Fidya-Report.png', { type: 'image/png' });
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try { await navigator.share({ title: 'Fidya Report', text: shareText, files: [file] }); }
+                        catch(err) { /* cancel */ }
                     } else {
-                        showToast("Sharing not supported on this device/browser.");
                         const link = document.createElement('a');
                         link.download = 'Fidya-Report.png';
                         link.href = canvas.toDataURL('image/png');
                         link.click();
                     }
                 }, 'image/png');
-            } catch (e) {
-                console.error('Error generating image for share:', e);
-                showToast("Error generating report for sharing.");
+            } catch(e) {
+                console.error(e);
+                showToast(currentLang === 'ur' ? 'خرابی آئی' : 'Error, try again.');
             }
         }
 
@@ -3528,13 +3727,22 @@ function handleAgeInput(input) {
         if (valOk) valOk.addEventListener('click', function() { valOverlay.classList.remove('active'); });
         if (valOverlay) valOverlay.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
 
+        // ===== TAP OUTSIDE INPUT → BLUR (کی بورڈ بند) =====
+        document.addEventListener('click', function(e) {
+            const active = document.activeElement;
+            if (!active) return;
+            const tag = active.tagName;
+            if (tag !== 'INPUT' && tag !== 'TEXTAREA') return;
+            // اگر کلک خود input کے اندر ہو تو کچھ نہ کریں
+            if (active.contains(e.target) || active === e.target) return;
+            active.blur();
+        }, true);
+
         // ===== BACK BUTTON HANDLER =====
         history.pushState({ page: 'main' }, '');
 
         const tutOverlayEl = document.getElementById('tutorialOverlay');
         window.addEventListener('popstate', function() {
-            if (tutOverlayEl && tutOverlayEl.classList.contains('active')) { closeTutorial(); history.pushState({ page: 'main' }, ''); return; }
-            if (els.popup && els.popup.classList.contains('active')) { closePopup(); history.pushState({ page: 'main' }, ''); return; }
             if (els.reportOverlay && els.reportOverlay.classList.contains('active')) { closeReport(); history.pushState({ page: 'main' }, ''); return; }
             if (histOverlayEl && histOverlayEl.classList.contains('active')) {
                 if (histSelectedIds.size > 0) {
@@ -3547,7 +3755,20 @@ function handleAgeInput(input) {
                 history.pushState({ page: 'main' }, '');
                 return;
             }
-            showExitConfirm();
+            // اگر فارم میں کوئی ڈیٹا ہو تبھی پوچھیں
+            const hasData = (els.txtName && els.txtName.value.trim()) ||
+                            (els.txtFather && els.txtFather.value.trim()) ||
+                            (els.txtCaste && els.txtCaste.value.trim()) ||
+                            (els.genderInput && els.genderInput.value) ||
+                            (els.age && els.age.value.trim()) ||
+                            (els.wheat && els.wheat.value.trim()) ||
+                            (els.amount && els.amount.value.trim());
+            if (hasData) {
+                showExitConfirm();
+            } else {
+                history.go(-1);
+                setTimeout(() => { window.close(); }, 300);
+            }
         });
 
         // === EXIT CONFIRM POPUP ===
@@ -3571,7 +3792,11 @@ function handleAgeInput(input) {
         }
         function hideExitConfirm() { exitOverlay.classList.remove('active'); }
 
-        exitYes.addEventListener('click', function() { hideExitConfirm(); history.go(-2); });
+        exitYes.addEventListener('click', function() { 
+            hideExitConfirm(); 
+            history.go(-1);
+            setTimeout(() => { window.close(); }, 300);
+        });
         exitNo.addEventListener('click', hideExitConfirm);
         exitOverlay.addEventListener('click', function(e) { if (e.target === this) hideExitConfirm(); });
 
