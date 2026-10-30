@@ -1,0 +1,605 @@
+name: Build & Release APK
+
+# خودکار: main پر ہر کمٹ پر Debug APK بنتی ہے اور GitHub Release میں اپلوڈ ہوتی ہے۔
+# مینول: Actions ٹیب > "Build & Release APK" > Run workflow سے بھی چل سکتی ہے۔
+on:
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: "خالی چھوڑ دیں تو خودکار اگلا نمبر لگ جائے گا (مثلاً v1.12)"
+        required: false
+        default: ""
+  push:
+    branches:
+      - main
+
+# 🆕 نیا کمٹ آتے ہی اسی برانچ کی پرانی چلتی ہوئی بلڈز خود بند ہو جائیں گی
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write   # ریلیز بنانے اور اپلوڈ کرنے کے لیے ضروری
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # نمبر خالی ہو تو پچھلی ریلیز کا نمبر پڑھ کر اس میں 1 جمع کر دیتا ہے (v1.11 → v1.12)
+      - name: Determine version
+        id: version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          INPUT_VERSION="${{ github.event.inputs.version_name }}"
+          if [ -n "$INPUT_VERSION" ]; then
+            NEXT_VERSION="$INPUT_VERSION"
+          else
+            LATEST_TAG=$(gh release list --limit 1 --json tagName -q '.[0].tagName' 2>/dev/null || echo "")
+            if [ -z "$LATEST_TAG" ]; then
+              NEXT_VERSION="v1.0"
+            else
+              BASE="${LATEST_TAG#v}"
+              MAJOR="${BASE%%.*}"
+              MINOR="${BASE#*.}"
+              NEXT_VERSION="v${MAJOR}.$((MINOR + 1))"
+            fi
+          fi
+          echo "version_name=$NEXT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "پچھلا: ${LATEST_TAG:-none} — اگلا: $NEXT_VERSION"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      # Gradle خود انسٹال ہوتا ہے، gradlew یا gradle-wrapper.jar کی ضرورت نہیں
+      # (8.9: AGP 8.7.3 کے لیے کم از کم یہی ورژن چاہیے)
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      # [نیا — مکمل خودکار] ریپو میں کوئی بھی Gradle فائل ہو یا نہ ہو، یہ اسٹیپ:
+      #  1) AndroidManifest.xml سے ایپ ماڈیول خود ڈھونڈتا ہے (فولڈر کا نام کچھ بھی ہو)
+      #  2) تمام .kt/.java/.xml فائلوں کے import پڑھ کر خود طے کرتا ہے کہ کون سی لائبریری چاہیے
+      #     (Media3، Coil، Compose، Room، Retrofit، Firebase، CameraX، ML Kit وغیرہ)
+      #  3) Compose / KSP / Hilt / Serialization پلگ اِن ضرورت ہو تو خود لگاتا ہے
+      #  4) settings، root build، gradle.properties اور app/build.gradle.kts خود بناتا ہے
+      # اگر کوئی لائبریری ٹیبل میں نہ ہو تو لاگ میں "⚠️ نامعلوم import" کی فہرست آئے گی۔
+      # ایسی لائبریری کے لیے ریپو کی روٹ میں extra-dependencies.txt بنائیں، ہر سطر میں ایک:
+      #    group:artifact:version        (عام)
+      #    ksp:group:artifact:version    (annotation processor)
+      #    repo:https://example.com/maven (اضافی ریپوزٹری)
+      - name: Generate Gradle files
+        env:
+          VERSION_NAME: ${{ steps.version.outputs.version_name }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          cat > /tmp/gen_gradle.py <<'PYEOF'
+          import os, re, sys, glob, collections
+
+          VERSION = (os.environ.get("VERSION_NAME") or "v0.1").lstrip("v") or "0.1"
+          RUN = os.environ.get("RUN_NUMBER") or "1"
+
+          KOTLIN = "2.0.21"
+          KSP = "2.0.21-1.0.28"
+          AGP = "8.7.3"
+          M3 = "1.4.1"
+          LC = "2.8.7"
+          COIL = "2.7.0"
+          COIL3 = "3.0.4"
+          HILT = "2.52"
+          ROOM = "2.6.1"
+          FIREBASE_BOM = "33.5.1"
+
+          # (import-prefix, dependency) — "@x" = پلگ اِن/فیچر، "ksp:" = پروسیسر، "bom:" = BOM
+          MAP = [
+              ("androidx.core", "androidx.core:core-ktx:1.15.0"),
+              ("androidx.core.splashscreen", "androidx.core:core-splashscreen:1.0.1"),
+              ("androidx.activity", "androidx.activity:activity-ktx:1.9.3"),
+              ("androidx.activity.compose", "androidx.activity:activity-compose:1.9.3"),
+              ("androidx.appcompat", "androidx.appcompat:appcompat:1.7.0"),
+              ("androidx.fragment", "androidx.fragment:fragment-ktx:1.8.5"),
+              ("androidx.lifecycle", "androidx.lifecycle:lifecycle-runtime-ktx:" + LC),
+              ("androidx.lifecycle", "androidx.lifecycle:lifecycle-viewmodel-ktx:" + LC),
+              ("androidx.lifecycle", "androidx.lifecycle:lifecycle-livedata-ktx:" + LC),
+              ("androidx.lifecycle", "androidx.lifecycle:lifecycle-service:" + LC),
+              ("androidx.lifecycle.compose", "androidx.lifecycle:lifecycle-runtime-compose:" + LC),
+              ("androidx.lifecycle.runtime.compose", "androidx.lifecycle:lifecycle-runtime-compose:" + LC),
+              ("androidx.lifecycle.viewmodel.compose", "androidx.lifecycle:lifecycle-viewmodel-compose:" + LC),
+              ("androidx.navigation.compose", "androidx.navigation:navigation-compose:2.8.4"),
+              ("androidx.navigation.fragment", "androidx.navigation:navigation-fragment-ktx:2.8.4"),
+              ("androidx.navigation.ui", "androidx.navigation:navigation-ui-ktx:2.8.4"),
+              ("androidx.constraintlayout.widget", "androidx.constraintlayout:constraintlayout:2.2.0"),
+              ("androidx.constraintlayout.compose", "androidx.constraintlayout:constraintlayout-compose:1.1.0"),
+              ("androidx.recyclerview", "androidx.recyclerview:recyclerview:1.3.2"),
+              ("androidx.cardview", "androidx.cardview:cardview:1.0.0"),
+              ("androidx.viewpager2", "androidx.viewpager2:viewpager2:1.1.0"),
+              ("androidx.swiperefreshlayout", "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"),
+              ("androidx.coordinatorlayout", "androidx.coordinatorlayout:coordinatorlayout:1.2.0"),
+              ("androidx.drawerlayout", "androidx.drawerlayout:drawerlayout:1.2.0"),
+              ("androidx.preference", "androidx.preference:preference-ktx:1.2.1"),
+              ("androidx.work", "androidx.work:work-runtime-ktx:2.9.1"),
+              ("androidx.datastore", "androidx.datastore:datastore:1.1.1"),
+              ("androidx.datastore.preferences", "androidx.datastore:datastore-preferences:1.1.1"),
+              ("androidx.room", "androidx.room:room-runtime:" + ROOM),
+              ("androidx.room", "androidx.room:room-ktx:" + ROOM),
+              ("androidx.room", "ksp:androidx.room:room-compiler:" + ROOM),
+              ("androidx.security.crypto", "androidx.security:security-crypto:1.1.0-alpha06"),
+              ("androidx.biometric", "androidx.biometric:biometric:1.1.0"),
+              ("androidx.documentfile", "androidx.documentfile:documentfile:1.0.1"),
+              ("androidx.webkit", "androidx.webkit:webkit:1.12.1"),
+              ("androidx.exifinterface", "androidx.exifinterface:exifinterface:1.3.7"),
+              ("androidx.palette", "androidx.palette:palette-ktx:1.0.0"),
+              ("androidx.browser", "androidx.browser:browser:1.8.0"),
+              ("androidx.startup", "androidx.startup:startup-runtime:1.2.0"),
+              ("androidx.media", "androidx.media:media:1.7.0"),
+              ("androidx.mediarouter", "androidx.mediarouter:mediarouter:1.7.0"),
+              ("androidx.window", "androidx.window:window:1.3.0"),
+              ("androidx.paging", "androidx.paging:paging-runtime-ktx:3.3.4"),
+              ("androidx.paging.compose", "androidx.paging:paging-compose:3.3.4"),
+              ("androidx.glance", "androidx.glance:glance-appwidget:1.1.1"),
+              ("androidx.glance", "androidx.glance:glance-material3:1.1.1"),
+              ("androidx.hilt.navigation.compose", "androidx.hilt:hilt-navigation-compose:1.2.0"),
+              ("androidx.camera", "androidx.camera:camera-core:1.4.0"),
+              ("androidx.camera", "androidx.camera:camera-camera2:1.4.0"),
+              ("androidx.camera", "androidx.camera:camera-lifecycle:1.4.0"),
+              ("androidx.camera", "androidx.camera:camera-view:1.4.0"),
+              ("androidx.camera.video", "androidx.camera:camera-video:1.4.0"),
+              # Compose
+              ("androidx.compose", "@compose"),
+              ("androidx.compose.runtime.livedata", "androidx.compose.runtime:runtime-livedata"),
+              ("androidx.compose.material3.windowsizeclass", "androidx.compose.material3:material3-window-size-class"),
+              ("androidx.compose.ui.text.googlefonts", "androidx.compose.ui:ui-text-google-fonts"),
+              # Media3 (ExoPlayer)
+              ("androidx.media3", "androidx.media3:media3-exoplayer:" + M3),
+              ("androidx.media3.exoplayer.hls", "androidx.media3:media3-exoplayer-hls:" + M3),
+              ("androidx.media3.exoplayer.dash", "androidx.media3:media3-exoplayer-dash:" + M3),
+              ("androidx.media3.exoplayer.rtsp", "androidx.media3:media3-exoplayer-rtsp:" + M3),
+              ("androidx.media3.exoplayer.smoothstreaming", "androidx.media3:media3-exoplayer-smoothstreaming:" + M3),
+              ("androidx.media3.ui", "androidx.media3:media3-ui:" + M3),
+              ("androidx.media3.session", "androidx.media3:media3-session:" + M3),
+              ("androidx.media3.datasource.okhttp", "androidx.media3:media3-datasource-okhttp:" + M3),
+              ("androidx.media3.transformer", "androidx.media3:media3-transformer:" + M3),
+              ("androidx.media3.effect", "androidx.media3:media3-effect:" + M3),
+              ("androidx.media3.muxer", "androidx.media3:media3-muxer:" + M3),
+              ("com.google.android.exoplayer2", "com.google.android.exoplayer:exoplayer:2.19.1"),
+              ("org.videolan.libvlc", "org.videolan.android:libvlc-all:3.6.0"),
+              # Material / UI
+              ("com.google.android.material", "com.google.android.material:material:1.12.0"),
+              ("com.airbnb.lottie", "com.airbnb.android:lottie:6.6.0"),
+              ("com.airbnb.lottie.compose", "com.airbnb.android:lottie-compose:6.6.0"),
+              ("com.google.accompanist.permissions", "com.google.accompanist:accompanist-permissions:0.36.0"),
+              ("com.google.accompanist.systemuicontroller", "com.google.accompanist:accompanist-systemuicontroller:0.36.0"),
+              ("com.google.accompanist.drawablepainter", "com.google.accompanist:accompanist-drawablepainter:0.36.0"),
+              ("com.github.chrisbanes.photoview", "com.github.chrisbanes:PhotoView:2.3.0"),
+              ("com.github.mikephil.charting", "com.github.PhilJay:MPAndroidChart:v3.1.0"),
+              # تصاویر
+              ("coil", "io.coil-kt:coil:" + COIL),
+              ("coil.compose", "io.coil-kt:coil-compose:" + COIL),
+              ("coil.decode.VideoFrameDecoder", "io.coil-kt:coil-video:" + COIL),
+              ("coil.request.videoFrameMillis", "io.coil-kt:coil-video:" + COIL),
+              ("coil.request.videoFrameMicros", "io.coil-kt:coil-video:" + COIL),
+              ("coil.request.videoFrameOption", "io.coil-kt:coil-video:" + COIL),
+              ("coil.request.videoFramePercent", "io.coil-kt:coil-video:" + COIL),
+              ("coil.decode.GifDecoder", "io.coil-kt:coil-gif:" + COIL),
+              ("coil.decode.ImageDecoderDecoder", "io.coil-kt:coil-gif:" + COIL),
+              ("coil.decode.SvgDecoder", "io.coil-kt:coil-svg:" + COIL),
+              ("coil3", "io.coil-kt.coil3:coil:" + COIL3),
+              ("coil3.compose", "io.coil-kt.coil3:coil-compose:" + COIL3),
+              ("coil3.network", "io.coil-kt.coil3:coil-network-okhttp:" + COIL3),
+              ("coil3.video", "io.coil-kt.coil3:coil-video:" + COIL3),
+              ("coil3.gif", "io.coil-kt.coil3:coil-gif:" + COIL3),
+              ("coil3.svg", "io.coil-kt.coil3:coil-svg:" + COIL3),
+              ("com.bumptech.glide", "com.github.bumptech.glide:glide:4.16.0"),
+              ("com.bumptech.glide.integration.compose", "com.github.bumptech.glide:compose:1.0.0-beta01"),
+              ("com.bumptech.glide.annotation", "ksp:com.github.bumptech.glide:ksp:4.16.0"),
+              ("com.squareup.picasso", "com.squareup.picasso:picasso:2.8"),
+              # نیٹ ورک / ڈیٹا
+              ("okhttp3", "com.squareup.okhttp3:okhttp:4.12.0"),
+              ("okhttp3.logging", "com.squareup.okhttp3:logging-interceptor:4.12.0"),
+              ("okio", "com.squareup.okio:okio:3.9.1"),
+              ("retrofit2", "com.squareup.retrofit2:retrofit:2.11.0"),
+              ("retrofit2.converter.gson", "com.squareup.retrofit2:converter-gson:2.11.0"),
+              ("retrofit2.converter.moshi", "com.squareup.retrofit2:converter-moshi:2.11.0"),
+              ("retrofit2.converter.scalars", "com.squareup.retrofit2:converter-scalars:2.11.0"),
+              ("retrofit2.converter.kotlinx.serialization", "com.squareup.retrofit2:converter-kotlinx-serialization:2.11.0"),
+              ("com.google.gson", "com.google.code.gson:gson:2.11.0"),
+              ("com.squareup.moshi", "com.squareup.moshi:moshi:1.15.1"),
+              ("com.squareup.moshi", "com.squareup.moshi:moshi-kotlin:1.15.1"),
+              ("io.ktor.client", "io.ktor:ktor-client-core:3.0.1"),
+              ("io.ktor.client", "io.ktor:ktor-client-android:3.0.1"),
+              ("io.ktor.client.plugins.contentnegotiation", "io.ktor:ktor-client-content-negotiation:3.0.1"),
+              ("io.ktor.client.plugins.logging", "io.ktor:ktor-client-logging:3.0.1"),
+              ("io.ktor.serialization.kotlinx.json", "io.ktor:ktor-serialization-kotlinx-json:3.0.1"),
+              ("kotlinx.coroutines", "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0"),
+              ("kotlinx.coroutines.tasks", "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0"),
+              ("kotlinx.serialization", "@serialization"),
+              ("kotlinx.serialization", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3"),
+              ("kotlinx.datetime", "org.jetbrains.kotlinx:kotlinx-datetime:0.6.1"),
+              ("kotlinx.collections.immutable", "org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.8"),
+              ("kotlinx.parcelize", "@parcelize"),
+              ("android.os.Parcelize", "@parcelize"),
+              # DI
+              ("dagger.hilt", "@hilt"),
+              ("dagger.hilt", "com.google.dagger:hilt-android:" + HILT),
+              ("dagger.hilt", "ksp:com.google.dagger:hilt-android-compiler:" + HILT),
+              ("javax.inject", "javax.inject:javax.inject:1"),
+              ("org.koin", "io.insert-koin:koin-android:4.0.0"),
+              ("org.koin.androidx.compose", "io.insert-koin:koin-androidx-compose:4.0.0"),
+              ("org.koin.compose", "io.insert-koin:koin-compose:4.0.0"),
+              # Google / Firebase
+              ("com.google.firebase", "bom:com.google.firebase:firebase-bom:" + FIREBASE_BOM),
+              ("com.google.firebase.auth", "com.google.firebase:firebase-auth"),
+              ("com.google.firebase.firestore", "com.google.firebase:firebase-firestore"),
+              ("com.google.firebase.database", "com.google.firebase:firebase-database"),
+              ("com.google.firebase.storage", "com.google.firebase:firebase-storage"),
+              ("com.google.firebase.messaging", "com.google.firebase:firebase-messaging"),
+              ("com.google.firebase.analytics", "com.google.firebase:firebase-analytics"),
+              ("com.google.firebase.crashlytics", "com.google.firebase:firebase-crashlytics"),
+              ("com.google.firebase.remoteconfig", "com.google.firebase:firebase-config"),
+              ("com.google.android.gms.common", "com.google.android.gms:play-services-base:18.5.0"),
+              ("com.google.android.gms.tasks", "com.google.android.gms:play-services-tasks:18.2.0"),
+              ("com.google.android.gms.location", "com.google.android.gms:play-services-location:21.3.0"),
+              ("com.google.android.gms.maps", "com.google.android.gms:play-services-maps:19.0.0"),
+              ("com.google.android.gms.ads", "com.google.android.gms:play-services-ads:23.5.0"),
+              ("com.google.android.gms.auth", "com.google.android.gms:play-services-auth:21.2.0"),
+              ("com.google.android.play.core.appupdate", "com.google.android.play:app-update-ktx:2.1.0"),
+              ("com.google.android.play.core.review", "com.google.android.play:review-ktx:2.0.2"),
+              ("com.android.billingclient", "com.android.billingclient:billing-ktx:7.1.1"),
+              ("com.google.mlkit.vision.text", "com.google.mlkit:text-recognition:16.0.1"),
+              ("com.google.mlkit.vision.barcode", "com.google.mlkit:barcode-scanning:17.3.0"),
+              ("com.google.mlkit.vision.face", "com.google.mlkit:face-detection:16.1.7"),
+              ("com.google.mlkit.vision.label", "com.google.mlkit:image-labeling:17.0.9"),
+              ("com.google.mlkit.nl.translate", "com.google.mlkit:translate:17.0.3"),
+              ("com.google.mlkit.nl.languageid", "com.google.mlkit:language-id:17.0.6"),
+              ("org.tensorflow.lite", "org.tensorflow:tensorflow-lite:2.16.1"),
+              ("org.tensorflow.lite.support", "org.tensorflow:tensorflow-lite-support:0.4.4"),
+              ("org.tensorflow.lite.gpu", "org.tensorflow:tensorflow-lite-gpu:2.16.1"),
+              # دیگر عام لائبریریاں
+              ("com.google.zxing", "com.google.zxing:core:3.5.3"),
+              ("com.journeyapps.barcodescanner", "com.journeyapps:zxing-android-embedded:4.3.0"),
+              ("org.jsoup", "org.jsoup:jsoup:1.18.1"),
+              ("timber.log", "com.jakewharton.timber:timber:5.0.1"),
+              ("net.lingala.zip4j", "net.lingala.zip4j:zip4j:2.11.5"),
+              ("com.github.barteksc.pdfviewer", "com.github.mhiew:android-pdf-viewer:3.2.0-beta.3"),
+              ("com.tom_roush.pdfbox", "com.tom-roush:pdfbox-android:2.0.27.0"),
+              ("org.apache.commons.io", "commons-io:commons-io:2.17.0"),
+              ("org.apache.commons.compress", "org.apache.commons:commons-compress:1.27.1"),
+              ("org.apache.commons.lang3", "org.apache.commons:commons-lang3:3.17.0"),
+              ("org.apache.commons.codec", "commons-codec:commons-codec:1.17.1"),
+          ]
+
+          COMPOSE_DEPS = [
+              "bom:androidx.compose:compose-bom:2024.11.00",
+              "androidx.compose.ui:ui", "androidx.compose.ui:ui-graphics",
+              "androidx.compose.ui:ui-tooling-preview", "androidx.compose.foundation:foundation",
+              "androidx.compose.material3:material3", "androidx.compose.material:material-icons-extended",
+              "androidx.compose.runtime:runtime", "androidx.activity:activity-compose:1.9.3",
+              "androidx.core:core-ktx:1.15.0", "debug:androidx.compose.ui:ui-tooling",
+          ]
+
+          SKIP = ("java.", "javax.", "android.", "kotlin.", "dalvik.", "org.json", "org.w3c", "org.xml",
+                  "org.xmlpull", "org.jetbrains.", "libcore.", "sun.", "junit.", "org.junit")
+
+
+          def read(p):
+              with open(p, encoding="utf-8", errors="ignore") as f:
+                  return f.read()
+
+
+          def write(p, t):
+              d = os.path.dirname(p)
+              if d:
+                  os.makedirs(d, exist_ok=True)
+              with open(p, "w", encoding="utf-8") as f:
+                  f.write(t)
+
+
+          # ---------- 1) ایپ ماڈیول ڈھونڈیں ----------
+          cands = [p for p in glob.glob("**/src/main/AndroidManifest.xml", recursive=True)
+                   if "/build/" not in "/" + p]
+          if not cands:
+              print("❌ کوئی AndroidManifest.xml (src/main/ میں) نہیں ملی — فائلیں app/src/main/ میں رکھیں")
+              sys.exit(1)
+          cands.sort(key=lambda p: (0 if "android.intent.action.MAIN" in read(p) else 1, p.count("/")))
+          manifest = cands[0]
+          mod = os.path.dirname(os.path.dirname(os.path.dirname(manifest)))
+          if mod == "":
+              print("❌ سورس براہِ راست روٹ میں ہے؛ اسے کسی فولڈر (مثلاً app/) میں رکھیں: app/src/main/...")
+              sys.exit(1)
+          print("📦 ایپ ماڈیول:", mod)
+
+          # ---------- 2) موجودہ build فائل سے ہم آہنگی (اگر ہو) ----------
+          old = ""
+          for n in ("build.gradle.kts", "build.gradle"):
+              p = os.path.join(mod, n)
+              if os.path.exists(p):
+                  old = read(p)
+                  break
+
+
+          def grab(rx):
+              m = re.search(rx, old)
+              return m.group(1) if m else None
+
+
+          # ---------- 3) سورس اور XML اسکین ----------
+          imports, pkgs = set(), collections.Counter()
+          for dp, dn, fn in os.walk(os.path.join(mod, "src", "main")):
+              for f in fn:
+                  fp = os.path.join(dp, f)
+                  if f.endswith((".kt", ".java")):
+                      t = read(fp)
+                      for m in re.finditer(r'^\s*import\s+(?:static\s+)?([\w.]+)', t, re.M):
+                          imports.add(m.group(1).rstrip("."))
+                      m = re.search(r'^\s*package\s+([\w.]+)', t, re.M)
+                      if m:
+                          pkgs[m.group(1)] += 1
+                  elif f.endswith(".xml"):
+                      t = read(fp)
+                      for m in re.finditer(r'\b((?:androidx|com\.google\.android\.material)\.[A-Za-z0-9_.]+)', t):
+                          imports.add(m.group(1).rstrip("."))
+                      if re.search(r'Theme\.(Material3|MaterialComponents)', t):
+                          imports.add("com.google.android.material.theme")
+                      if "Theme.AppCompat" in t:
+                          imports.add("androidx.appcompat.app")
+
+
+          def common(ps):
+              out = []
+              for seg in zip(*[p.split(".") for p in ps]):
+                  if len(set(seg)) == 1:
+                      out.append(seg[0])
+                  else:
+                      break
+              return ".".join(out)
+
+
+          man_pkg = re.search(r'<manifest[^>]*\spackage="([\w.]+)"', read(manifest))
+          src_ns = None
+          if pkgs:
+              c = common(list(pkgs))
+              src_ns = c if c.count(".") >= 1 else pkgs.most_common(1)[0][0]
+          ns = grab(r'namespace\s*=?\s*["\']([\w.]+)["\']') or (man_pkg.group(1) if man_pkg else None) or src_ns or "com.example.app"
+          appid = grab(r'applicationId\s*=?\s*["\']([\w.]+)["\']') or ns
+          minsdk = grab(r'minSdk(?:Version)?\s*=?\s*(\d+)') or "26"
+          targetsdk = grab(r'targetSdk(?:Version)?\s*=?\s*(\d+)') or "35"
+          print("🏷️  namespace:", ns, "| applicationId:", appid, "| minSdk:", minsdk)
+
+          # ---------- 4) import → dependency ----------
+          deps = collections.OrderedDict()
+          flags = set()
+
+
+          def add(c):
+              if c.startswith("@"):
+                  flags.add(c[1:])
+              elif c.startswith("ksp:"):
+                  flags.add("ksp")
+                  deps[("ksp", c[4:])] = 1
+              elif c.startswith("bom:"):
+                  deps[("bom", c[4:])] = 1
+              elif c.startswith("debug:"):
+                  deps[("debugImplementation", c[6:])] = 1
+              else:
+                  deps[("implementation", c)] = 1
+
+
+          own = set(pkgs) | {ns}
+          unknown = collections.Counter()
+          for imp in sorted(imports):
+              if ".databinding." in imp:
+                  flags.add("viewbinding")
+              hit = False
+              for p, c in MAP:
+                  if imp == p or imp.startswith(p + "."):
+                      hit = True
+                      add(c)
+              if hit or imp.startswith(SKIP):
+                  continue
+              if any(imp == o or imp.startswith(o + ".") for o in own):
+                  continue
+              if any(imp.startswith(o.rsplit(".", 1)[0] + ".") for o in own if o.count(".") >= 2):
+                  continue
+              unknown[".".join(imp.split(".")[:3])] += 1
+
+          if "compose" in flags:
+              for c in COMPOSE_DEPS:
+                  add(c)
+
+          # اضافی لائبریریاں (دستی فائل، اختیاری)
+          repos = []
+          for ef in ("extra-dependencies.txt", os.path.join(mod, "extra-dependencies.txt")):
+              if os.path.exists(ef):
+                  for line in read(ef).splitlines():
+                      line = line.split("#")[0].strip()
+                      if not line:
+                          continue
+                      if line.startswith("repo:"):
+                          repos.append(line[5:].strip())
+                      else:
+                          add(line)
+
+          if os.path.exists(os.path.join(mod, "google-services.json")) and any("firebase" in c for _, c in deps):
+              flags.add("googleservices")
+
+          need_jitpack = any(c.startswith("com.github.") and not c.startswith("com.github.bumptech")
+                             for _, c in deps)
+
+          # ---------- 5) پرانی Gradle فائلیں ہٹائیں ----------
+          for d in (".", mod):
+              for n in ("build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts"):
+                  p = os.path.join(d, n)
+                  if os.path.exists(p):
+                      os.remove(p)
+          if os.path.exists("gradle/libs.versions.toml"):
+              os.remove("gradle/libs.versions.toml")
+
+          # ---------- 6) فائلیں بنائیں ----------
+          proj = re.sub(r'[^A-Za-z0-9_-]', "", os.path.basename(os.getcwd())) or "App"
+          S = ['pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }',
+               'dependencyResolutionManagement {',
+               '    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)',
+               '    repositories {',
+               '        google()',
+               '        mavenCentral()']
+          if need_jitpack:
+              S.append('        maven("https://jitpack.io")')
+          for r in repos:
+              S.append('        maven("%s")' % r)
+          S += ['    }', '}', 'rootProject.name = "%s"' % proj, 'include(":app")']
+          if mod != "app":
+              S.append('project(":app").projectDir = file("%s")' % mod)
+          write("settings.gradle.kts", "\n".join(S) + "\n")
+
+          R = ['plugins {',
+               '    id("com.android.application") version "%s" apply false' % AGP,
+               '    id("org.jetbrains.kotlin.android") version "%s" apply false' % KOTLIN]
+          if "compose" in flags:
+              R.append('    id("org.jetbrains.kotlin.plugin.compose") version "%s" apply false' % KOTLIN)
+          if "serialization" in flags:
+              R.append('    id("org.jetbrains.kotlin.plugin.serialization") version "%s" apply false' % KOTLIN)
+          if "ksp" in flags:
+              R.append('    id("com.google.devtools.ksp") version "%s" apply false' % KSP)
+          if "hilt" in flags:
+              R.append('    id("com.google.dagger.hilt.android") version "%s" apply false' % HILT)
+          if "googleservices" in flags:
+              R.append('    id("com.google.gms.google-services") version "4.4.2" apply false')
+          R.append('}')
+          write("build.gradle.kts", "\n".join(R) + "\n")
+
+          write("gradle.properties",
+                "org.gradle.jvmargs=-Xmx3072m -Dfile.encoding=UTF-8\n"
+                "kotlin.daemon.jvm.options=-Xmx2048m\n"
+                "android.useAndroidX=true\n"
+                "kotlin.code.style=official\n"
+                "android.nonTransitiveRClass=true\n")
+
+          A = ['plugins {',
+               '    id("com.android.application")',
+               '    id("org.jetbrains.kotlin.android")']
+          if "compose" in flags:
+              A.append('    id("org.jetbrains.kotlin.plugin.compose")')
+          if "serialization" in flags:
+              A.append('    id("org.jetbrains.kotlin.plugin.serialization")')
+          if "ksp" in flags:
+              A.append('    id("com.google.devtools.ksp")')
+          if "hilt" in flags:
+              A.append('    id("com.google.dagger.hilt.android")')
+          if "parcelize" in flags:
+              A.append('    id("kotlin-parcelize")')
+          if "googleservices" in flags:
+              A.append('    id("com.google.gms.google-services")')
+          A += ['}', '',
+                'android {',
+                '    namespace = "%s"' % ns,
+                '    compileSdk = 35',
+                '',
+                '    defaultConfig {',
+                '        applicationId = "%s"' % appid,
+                '        minSdk = %s' % minsdk,
+                '        targetSdk = %s' % targetsdk,
+                '        versionCode = %s' % RUN,
+                '        versionName = "%s"' % VERSION,
+                '        vectorDrawables { useSupportLibrary = true }',
+                '    }',
+                '',
+                '    buildTypes {',
+                '        release {',
+                '            isMinifyEnabled = true',
+                '            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))',
+                '        }',
+                '    }',
+                '    compileOptions {',
+                '        sourceCompatibility = JavaVersion.VERSION_17',
+                '        targetCompatibility = JavaVersion.VERSION_17',
+                '    }',
+                '    kotlinOptions { jvmTarget = "17" }',
+                '    buildFeatures {']
+          if "compose" in flags:
+              A.append('        compose = true')
+          if "viewbinding" in flags:
+              A.append('        viewBinding = true')
+          A += ['    }',
+                '    packaging {',
+                '        resources {',
+                '            excludes += setOf("/META-INF/{AL2.0,LGPL2.1}", "/META-INF/DEPENDENCIES",',
+                '                "/META-INF/LICENSE*", "/META-INF/NOTICE*", "/META-INF/INDEX.LIST")',
+                '        }',
+                '    }',
+                '    lint { abortOnError = false }',
+                '}', '',
+                'dependencies {']
+          libdir = os.path.join(mod, "libs")
+          if os.path.isdir(libdir) and glob.glob(os.path.join(libdir, "*.jar")) + glob.glob(os.path.join(libdir, "*.aar")):
+              A.append('    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))')
+          order = sorted(deps.keys(), key=lambda k: 0 if k[0] == "bom" else 1)
+          for conf, c in order:
+              if conf == "bom":
+                  A.append('    implementation(platform("%s"))' % c)
+              else:
+                  A.append('    %s("%s")' % (conf, c))
+          A.append('}')
+          write(os.path.join(mod, "build.gradle.kts"), "\n".join(A) + "\n")
+
+          # ---------- 7) رپورٹ ----------
+          print("")
+          print("✅ خودکار طے شدہ پلگ اِن:", ", ".join(sorted(flags)) or "کوئی نہیں")
+          print("✅ خودکار شامل کی گئی dependencies:")
+          for conf, c in order:
+              print("   %s  %s" % (conf, c))
+          if unknown:
+              print("")
+              print("⚠️ نامعلوم import (ٹیبل میں نہیں؛ بلڈ فیل ہو تو extra-dependencies.txt میں لکھیں):")
+              for k, v in unknown.most_common():
+                  print("   %s  (%d)" % (k, v))
+          PYEOF
+          python3 /tmp/gen_gradle.py
+          echo "---- generated ----"
+          ls -la . 
+          cat settings.gradle.kts build.gradle.kts
+
+      # مستقل debug keystore (Secret سے) تاکہ ہر بلڈ کا سگنیچر ایک جیسا رہے اور
+      # اپڈیٹ انسٹال ہو سکے۔ Secret نہ ہو تو یہ اسٹیپ خاموشی سے چھوڑ دیا جاتا ہے۔
+      - name: Restore persistent debug keystore
+        env:
+          DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$DEBUG_KEYSTORE_BASE64" ]; then
+            mkdir -p ~/.android
+            echo "$DEBUG_KEYSTORE_BASE64" | base64 -d > ~/.android/debug.keystore
+            echo "✅ مستقل debug keystore بحال کر دی گئی"
+          else
+            echo "ℹ️ Secret موجود نہیں — نئی خودکار (عارضی) کلید استعمال ہوگی"
+          fi
+
+      - name: Build Debug APK
+        run: gradle assembleDebug
+
+      - name: Locate APK
+        id: locate_apk
+        run: |
+          APK_PATH=$(find . -path "*/build/outputs/apk/debug/*.apk" -not -path "*/build/intermediates/*" | head -n 1)
+          if [ -z "$APK_PATH" ]; then
+            echo "❌ کوئی Debug APK نہیں ملی"
+            exit 1
+          fi
+          echo "apk_path=$APK_PATH" >> "$GITHUB_OUTPUT"
+          echo "ملی APK: $APK_PATH"
+
+      - name: Create GitHub Release & Upload APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version_name }}
+          name: "Build ${{ steps.version.outputs.version_name }} (debug)"
+          files: ${{ steps.locate_apk.outputs.apk_path }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
