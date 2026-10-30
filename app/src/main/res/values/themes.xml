@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.FidyaCalc" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">#3498db</item>
+        <item name="android:windowBackground">@android:color/white</item>
+    </style>
+</resources>
