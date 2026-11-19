@@ -46,6 +46,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.doOnLayout
 import androidx.webkit.WebViewAssetLoader
 import org.json.JSONArray
 import java.io.ByteArrayInputStream
@@ -55,6 +56,9 @@ import java.io.File
 private const val ASSET_HOST = "appassets.androidplatform.net"
 private const val START_URL = "https://$ASSET_HOST/assets/index.html"
 private const val BRIDGE_NAME = "AndroidApp"
+
+// true ہو تو ایپ کھلنے کے 2 سیکنڈ بعد ایک ٹوسٹ میں ویو پورٹ کے ناپ دکھتے ہیں (مسئلہ ڈھونڈنے کے لیے)
+private const val DEBUG_VIEWPORT = true
 
 // true کر دیں تو اوپر کی اسٹیٹس بار (وقت، بیٹری، سگنل) چھپ جائے گی۔ عام حالت میں false۔
 private const val HIDE_STATUS_BAR = false
@@ -94,7 +98,11 @@ class MainActivity : ComponentActivity() {
 
         val wv = createWebView()
         webView = wv
-        if (savedInstanceState == null) wv.loadUrl(START_URL)
+        // صفحہ تب لوڈ کریں جب WebView کا اصل سائز بن چکا ہو۔ HTML کے پاپ اپس اسکرین کی اونچائی (vh)
+        // پر بنے ہیں؛ سائز صفر ہونے کی حالت میں لوڈ ہو تو وہ سکڑ کر ایک پٹی رہ جاتے ہیں۔
+        if (savedInstanceState == null) {
+            wv.doOnLayout { wv.loadUrl(START_URL) }
+        }
 
         setContent {
             // سسٹم بیک: HTML کی اپنی ہسٹری (رپورٹ/ہسٹری بند کرنا، ایگزٹ) ویسے ہی چلتی ہے
@@ -211,6 +219,21 @@ class MainActivity : ComponentActivity() {
                     super.onPageFinished(view, url)
                     view.evaluateJavascript(BRIDGE_SHIM, null)
                     view.evaluateJavascript(COLOR_SYNC, null)
+                    // سائز کے بعد HTML کی اسکیل ترتیب دوبارہ چلوا دیں
+                    val nudge = "window.dispatchEvent(new Event('resize'));"
+                    view.postDelayed({ view.evaluateJavascript(nudge, null) }, 300)
+                    view.postDelayed({ view.evaluateJavascript(nudge, null) }, 1200)
+                    if (DEBUG_VIEWPORT) {
+                        view.postDelayed({
+                            view.evaluateJavascript(
+                                "(function(){var o=document.getElementById('historyOverlay');" +
+                                "return innerWidth+'x'+innerHeight+' cw='+document.documentElement.clientWidth" +
+                                "+' dpr='+devicePixelRatio+' hist='+(o?o.style.height+'/'+getComputedStyle(o).height:'-')})()"
+                            ) { r ->
+                                Toast.makeText(this@MainActivity, "VP " + r, Toast.LENGTH_LONG).show()
+                            }
+                        }, 2000)
+                    }
                 }
             }
 
