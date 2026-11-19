@@ -213,11 +213,13 @@ class MainActivity : ComponentActivity() {
                 override fun onPageStarted(view: WebView, url: String?, favicon: android.graphics.Bitmap?) {
                     super.onPageStarted(view, url, favicon)
                     view.evaluateJavascript(BRIDGE_SHIM, null)
+                    view.evaluateJavascript(VH_FIX, null)
                 }
 
                 override fun onPageFinished(view: WebView, url: String?) {
                     super.onPageFinished(view, url)
                     view.evaluateJavascript(BRIDGE_SHIM, null)
+                    view.evaluateJavascript(VH_FIX, null)
                     view.evaluateJavascript(COLOR_SYNC, null)
                     // سائز کے بعد HTML کی اسکیل ترتیب دوبارہ چلوا دیں
                     val nudge = "window.dispatchEvent(new Event('resize'));"
@@ -420,6 +422,34 @@ private const val COLOR_SYNC = """
   setTimeout(send, 1500);
   new MutationObserver(function(){ send(); setTimeout(send, 400); })
     .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] });
+})();
+"""
+
+/**
+ * اس WebView میں CSS کا vh یونٹ صفر نکل رہا تھا (جانچ سے ثابت: innerHeight 655 مگر 100vh = 0px)،
+ * اس لیے HTML کے پاپ اپس (.full-overlay) کی اونچائی صفر بنتی تھی۔
+ * یہاں اسکرین کی اصل اونچائی px میں نکال کر ان کی اونچائی خود طے کی جاتی ہے۔
+ * HTML کا اپنا کوڈ نہیں بدلتا؛ صرف ایک اضافی CSS اصول (!important) لگتا ہے۔
+ */
+private const val VH_FIX = """
+(function(){
+  if (window.__vhFixDone) return;
+  window.__vhFixDone = true;
+  var st = document.createElement('style');
+  st.id = 'android-vh-fix';
+  st.textContent = '.full-overlay{height:var(--real-h,100%) !important;}';
+  (document.head || document.documentElement).appendChild(st);
+  function fix(){
+    var s = (document.documentElement.clientWidth || 320) / 320;
+    document.documentElement.style.setProperty('--real-h', (window.innerHeight / s) + 'px');
+  }
+  fix();
+  window.addEventListener('resize', fix);
+  window.addEventListener('orientationchange', fix);
+  document.addEventListener('DOMContentLoaded', fix);
+  window.addEventListener('load', fix);
+  setTimeout(fix, 300);
+  setTimeout(fix, 1200);
 })();
 """
 
