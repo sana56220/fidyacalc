@@ -58,7 +58,7 @@ private const val START_URL = "https://$ASSET_HOST/assets/index.html"
 private const val BRIDGE_NAME = "AndroidApp"
 
 // true ہو تو ایپ کھلنے کے 2 سیکنڈ بعد ایک ٹوسٹ میں ویو پورٹ کے ناپ دکھتے ہیں (مسئلہ ڈھونڈنے کے لیے)
-private const val DEBUG_VIEWPORT = true
+private const val DEBUG_VIEWPORT = false
 
 // true کر دیں تو اوپر کی اسٹیٹس بار (وقت، بیٹری، سگنل) چھپ جائے گی۔ عام حالت میں false۔
 private const val HIDE_STATUS_BAR = false
