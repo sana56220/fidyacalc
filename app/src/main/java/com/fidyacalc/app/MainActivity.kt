@@ -437,11 +437,12 @@ private const val VH_FIX = """
   window.__vhFixDone = true;
   var st = document.createElement('style');
   st.id = 'android-vh-fix';
-  st.textContent = '.full-overlay{height:var(--real-h,100%) !important;}';
+  st.textContent = '.full-overlay{height:var(--real-h,100%) !important;} .tutorial-card{height:calc(var(--vh1,6px) * 88) !important;}';
   (document.head || document.documentElement).appendChild(st);
   function fix(){
     var s = (document.documentElement.clientWidth || 320) / 320;
     document.documentElement.style.setProperty('--real-h', (window.innerHeight / s) + 'px');
+    document.documentElement.style.setProperty('--vh1', (window.innerHeight / 100) + 'px');
   }
   fix();
   window.addEventListener('resize', fix);
