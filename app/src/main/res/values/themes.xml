@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- اسٹیٹس بار اور نیویگیشن بار شفاف: ان کے پیچھے رنگ Kotlin صفحے کے رنگ سے ملا کر لگاتی ہے،
+         اس لیے اوپر کوئی الگ نیلی/سفید پٹی نہیں بنتی -->
     <style name="Theme.FidyaCalc" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:statusBarColor">#3498db</item>
         <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 </resources>
